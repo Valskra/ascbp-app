@@ -1,0 +1,82 @@
+/* === Garet === */
+@font-face {
+    font-family: 'Garet';
+    src: url('/fonts/garet/Garet-Book.woff2') format('woff2'),
+         url('/fonts/garet/Garet-Book.woff') format('woff');
+    font-weight: 400; /* Book = Regular */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Garet';
+    src: url('/fonts/garet/Garet-Heavy.woff2') format('woff2'),
+         url('/fonts/garet/Garet-Heavy.woff') format('woff');
+    font-weight: 900; /* Heavy */
+    font-style: normal;
+}
+
+/* === Scandia === */
+@font-face {
+    font-family: 'Scandia';
+    src: url('/fonts/scandia/Scandia-Regular.woff2') format('woff2'),
+         url('/fonts/scandia/Scandia-Regular.woff') format('woff');
+    font-weight: 400; /* Regular */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Scandia';
+    src: url('/fonts/scandia/Scandia-Bold.woff2') format('woff2'),
+         url('/fonts/scandia/Scandia-Bold.woff') format('woff');
+    font-weight: 700; /* Bold */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Scandia';
+    src: url('/fonts/scandia/Scandia-Light.woff2') format('woff2'),
+         url('/fonts/scandia/Scandia-Light.woff') format('woff');
+    font-weight: 300; /* Light */
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Scandia';
+    src: url('/fonts/scandia/Scandia-Medium.woff2') format('woff2'),
+         url('/fonts/scandia/Scandia-Medium.woff') format('woff');
+    font-weight: 500; /* Medium */
+    font-style: normal;
+}
+
+/* === Italics === */
+@font-face {
+    font-family: 'Scandia';
+    src: url('/fonts/scandia/Scandia-RegularItalic.woff2') format('woff2'),
+         url('/fonts/scandia/Scandia-RegularItalic.woff') format('woff');
+    font-weight: 400; /* Regular Italic */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Scandia';
+    src: url('/fonts/scandia/Scandia-BoldItalic.woff2') format('woff2'),
+         url('/fonts/scandia/Scandia-BoldItalic.woff') format('woff');
+    font-weight: 700; /* Bold Italic */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Scandia';
+    src: url('/fonts/scandia/Scandia-LightItalic.woff2') format('woff2'),
+         url('/fonts/scandia/Scandia-LightItalic.woff') format('woff');
+    font-weight: 300; /* Light Italic */
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Scandia';
+    src: url('/fonts/scandia/Scandia-MediumItalic.woff2') format('woff2'),
+         url('/fonts/scandia/Scandia-MediumItalic.woff') format('woff');
+    font-weight: 500; /* Medium Italic */
+    font-style: italic;
+}

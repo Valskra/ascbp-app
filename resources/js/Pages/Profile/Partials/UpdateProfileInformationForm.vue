@@ -36,22 +36,12 @@ const form = useForm({
             </p>
         </header>
 
-        <form
-            @submit.prevent="form.patch(route('profile.update'))"
-            class="mt-6 space-y-6"
-        >
+        <form @submit.prevent="form.patch(route('profile.update'))" class="mt-6 space-y-6">
             <div>
                 <InputLabel for="firstname" value="Prénom" />
 
-                <TextInput
-                    id="firstname"
-                    type="text"
-                    class="mt-1 block w-full"
-                    v-model="form.firstname"
-                    required
-                    autofocus
-                    autocomplete="firstname"
-                />
+                <TextInput id="firstname" type="text" class="mt-1 block w-full" v-model="form.firstname" required
+                    autofocus autocomplete="firstname" />
 
                 <InputError class="mt-2" :message="form.errors.firstname" />
             </div>
@@ -59,15 +49,8 @@ const form = useForm({
             <div>
                 <InputLabel for="lastname" value="Nom" />
 
-                <TextInput
-                    id="lastname"
-                    type="text"
-                    class="mt-1 block w-full"
-                    v-model="form.lastname"
-                    required
-                    autofocus
-                    autocomplete="lastname"
-                />
+                <TextInput id="lastname" type="text" class="mt-1 block w-full" v-model="form.lastname" required
+                    autofocus autocomplete="lastname" />
 
                 <InputError class="mt-2" :message="form.errors.lastname" />
             </div>
@@ -75,14 +58,8 @@ const form = useForm({
             <div>
                 <InputLabel for="email" value="Email" />
 
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autocomplete="username"
-                />
+                <TextInput id="email" type="email" class="mt-1 block w-full" v-model="form.email" required
+                    autocomplete="username" />
 
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
@@ -90,40 +67,25 @@ const form = useForm({
             <div v-if="mustVerifyEmail && user.email_verified_at === null">
                 <p class="mt-2 text-sm text-gray-800 dark:text-gray-200">
                     Votre email n'est pas vérifié.
-                    <Link
-                        :href="route('verification.send')"
-                        method="post"
-                        as="button"
-                        class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
-                    >
-                        Cliquez ici pour renvoyer l'e-mail de vérification.
+                    <Link :href="route('verification.send')" method="post" as="button"
+                        class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800">
+                    Cliquez ici pour renvoyer l'e-mail de vérification.
                     </Link>
                 </p>
 
-                <div
-                    v-show="status === 'verification-link-sent'"
-                    class="mt-2 text-sm font-medium text-green-600 dark:text-green-400"
-                >
+                <div v-show="status === 'verification-link-sent'"
+                    class="mt-2 text-sm font-medium text-green-600 dark:text-green-400">
                     Un nouveau lien de vérification a été envoyé à votre adresse
                     e-mail.
                 </div>
             </div>
 
             <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing"
-                    >Enregistrer</PrimaryButton
-                >
+                <PrimaryButton :disabled="form.processing">Enregistrer</PrimaryButton>
 
-                <Transition
-                    enter-active-class="transition ease-in-out"
-                    enter-from-class="opacity-0"
-                    leave-active-class="transition ease-in-out"
-                    leave-to-class="opacity-0"
-                >
-                    <p
-                        v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600 dark:text-gray-400"
-                    >
+                <Transition enter-active-class="transition ease-in-out" enter-from-class="opacity-0"
+                    leave-active-class="transition ease-in-out" leave-to-class="opacity-0">
+                    <p v-if="form.recentlySuccessful" class="text-sm text-gray-600 dark:text-gray-400">
                         Enregistré.
                     </p>
                 </Transition>

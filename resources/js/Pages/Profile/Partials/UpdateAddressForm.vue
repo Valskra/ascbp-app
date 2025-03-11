@@ -61,7 +61,6 @@ const form = useForm({
                                 <input id="address" type="text" v-model="form.address"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
                             </td>
-                            <InputError class="mt-2" :message="form.errors.address" />
                         </tr>
 
                         <tr class="border-b border-gray-300 dark:border-gray-600">
@@ -73,7 +72,6 @@ const form = useForm({
                                 <input id="city" type="text" v-model="form.city"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
                             </td>
-                            <InputError class="mt-2" :message="form.errors.city" />
                         </tr>
                         <tr class="border-b border-gray-300 dark:border-gray-600">
                             <td
@@ -84,7 +82,6 @@ const form = useForm({
                                 <input id="postal_code" type="text" v-model="form.postal_code"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
                             </td>
-                            <InputError class="mt-2" :message="form.errors.postal_code" />
                         </tr>
                         <tr class="border-b border-gray-300 dark:border-gray-600">
                             <td
@@ -95,11 +92,14 @@ const form = useForm({
                                 <input id="country" type="text" v-model="form.country"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
                             </td>
-                            <InputError class="mt-2" :message="form.errors.country" />
                         </tr>
                     </tbody>
                 </table>
             </div>
+            <InputError class="mt-2" :message="form.errors.address" />
+            <InputError class="mt-2" :message="form.errors.city" />
+            <InputError class="mt-2" :message="form.errors.postal_code" />
+            <InputError class="mt-2" :message="form.errors.country" />
 
 
             <div class="flex justify-end">

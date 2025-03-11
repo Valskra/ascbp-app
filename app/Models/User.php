@@ -60,6 +60,10 @@ class User extends Authenticatable
 
     public function birthAddress()
     {
-        return $this->hasOne(Address::class)->where('label', 'birth');
+        return $this->hasOne(Address::class)->where('label', 'birth')->withDefault([
+            'city' => '',
+            'postal_code' => '',
+            'country' => '',
+        ]);
     }
 }

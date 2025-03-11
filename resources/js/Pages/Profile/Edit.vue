@@ -59,7 +59,7 @@ defineProps({
                             <UpdateAddressForm :user="user" labelWidth="25%" />
                             <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
 
-                            <UpdateBirthForm :user="user" :birthAddress="user.birthAddress" labelWidth="32%" />
+                            <UpdateBirthForm :user="user" labelWidth="32%" />
                         </div>
                         <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
 

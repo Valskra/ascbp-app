@@ -6,8 +6,9 @@ import InputError from '@/Components/InputError.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 
 const props = defineProps({
-    user: Object,
-    birthAddress: Object,
+    user: {
+        type: Object
+    },
     labelWidth: {
         type: String,
         default: '30%'
@@ -16,8 +17,9 @@ const props = defineProps({
 
 const form = useForm({
     birth_date: props.user.birth_date ?? '',
-    city: props.birthAddress?.city ?? '',
-    country: props.birthAddress?.country ?? '',
+    city: props.user.birth_address?.city ?? '',
+    postal_code: props.user.birth_address?.postal_code ?? '',
+    country: props.user.birth_address?.country ?? '',
 });
 </script>
 
@@ -43,7 +45,6 @@ const form = useForm({
             </p>
         </header>
 
-
         <form @submit.prevent="form.patch(route('profile.updateAddress'))" class="mt-6 space-y-3">
             <div class="overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
                 <table class="w-full border-collapse">
@@ -54,10 +55,9 @@ const form = useForm({
                                 Date de naissance
                             </td>
                             <td class="text-gray-700 dark:text-gray-300 value">
-                                <input id="birth_date" type="date" v-model="form.birth_date"
-                                    class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
+                                <input id="birth_date" type="date" v-model="form.birth_date" class=" w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200
+                                    focus:ring-0" />
                             </td>
-                            <InputError class="mt-2" :message="form.errors.birth_date" />
 
                         </tr>
 
@@ -70,7 +70,6 @@ const form = useForm({
                                 <input id="city" type="text" v-model="form.city"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
                             </td>
-                            <InputError class="mt-2" :message="form.errors.city" />
                         </tr>
                         <tr class="border-b border-gray-300 dark:border-gray-600">
                             <td
@@ -81,7 +80,6 @@ const form = useForm({
                                 <input id="postal_code" type="text" v-model="form.postal_code"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
                             </td>
-                            <InputError class="mt-2" :message="form.errors.postal_code" />
                         </tr>
                         <tr class="border-b border-gray-300 dark:border-gray-600">
                             <td
@@ -92,11 +90,14 @@ const form = useForm({
                                 <input id="country" type="text" v-model="form.country"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
                             </td>
-                            <InputError class="mt-2" :message="form.errors.country" />
                         </tr>
                     </tbody>
                 </table>
             </div>
+            <InputError class="mt-2" :message="form.errors.birth_date" />
+            <InputError class="mt-2" :message="form.errors.city" />
+            <InputError class="mt-2" :message="form.errors.postal_code" />
+            <InputError class="mt-2" :message="form.errors.country" />
 
 
             <div class="flex justify-end">

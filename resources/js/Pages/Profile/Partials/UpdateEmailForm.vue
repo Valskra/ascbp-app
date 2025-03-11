@@ -62,7 +62,6 @@ const form = useForm({
                                 <input id="email" type="email" v-model="form.email" required
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
                             </td>
-                            <InputError class="mt-2" :message="form.errors.email" />
                         </tr>
 
                         <tr class="border-b border-gray-300 dark:border-gray-600">
@@ -74,7 +73,7 @@ const form = useForm({
                                 <input id="email_pro" type="email" v-model="form.email_pro"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
                             </td>
-                            <InputError class="mt-2" :message="form.errors.email_pro" />
+
                         </tr>
                     </tbody>
                 </table>
@@ -94,7 +93,8 @@ const form = useForm({
                     </div>
                 </div>
             </div>
-
+            <InputError class="mt-2" :message="form.errors.email" />
+            <InputError class="mt-2" :message="form.errors.email_pro" />
 
             <div class="flex justify-end">
                 <PrimaryButton @click="form.patch(route('profile.updateEmail'))" :disabled="form.processing"

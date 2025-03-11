@@ -21,7 +21,7 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
-            'user' => $request->user()->load('homeAddress'),
+            'user' => $request->user()->load('homeAddress', 'birthAddress'),
         ]);
     }
 
@@ -30,7 +30,8 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
-            'user' => $request->user()->load('homeAddress'),
+            'user' => $request->user()->load('homeAddress', 'birthAddress'),
+
         ]);
     }
     /**
@@ -150,17 +151,26 @@ class ProfileController extends Controller
     public function updateBirth(Request $request)
     {
         $validated = $request->validate([
-            'birth_date' => 'date',
+            'birth_date' => 'required|date|before:today',
             'city' => 'nullable|string|max:100',
+            'postal_code' => 'nullable|string|max:5',
             'country' => 'nullable|string|max:100',
         ]);
 
         $user = $request->user();
 
+        // 1️⃣ Mettre à jour la date de naissance dans `users`
         $user->birth_date = $validated['birth_date'];
-        $user->birth()->updateOrCreate(
+        $user->save();
+
+        // 2️⃣ Mettre à jour ou créer l'adresse de naissance dans `addresses`
+        $user->birthAddress()->updateOrCreate(
             ['label' => 'birth'],
-            $validated
+            [
+                'city' => $validated['city'],
+                'postal_code' => $validated['postal_code'],
+                'country' => $validated['country'],
+            ]
         );
 
         return back()->with('status', 'birth-updated');

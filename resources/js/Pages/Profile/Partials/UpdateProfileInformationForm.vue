@@ -50,7 +50,7 @@ const form = useForm({
                 <InputLabel for="lastname" value="Nom" />
 
                 <TextInput id="lastname" type="text" class="mt-1 block w-full" v-model="form.lastname" required
-                    autofocus autocomplete="lastname" />
+                    autocomplete="lastname" />
 
                 <InputError class="mt-2" :message="form.errors.lastname" />
             </div>

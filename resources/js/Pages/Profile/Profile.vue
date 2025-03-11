@@ -33,11 +33,12 @@ const user = usePage().props.auth.user;
                 <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                     Profil
                 </h2>
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                <div class="space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <NavLink :href="route('profile.edit')" :active="route().current('profile.edit')">
                         Modifier
                     </NavLink>
                 </div>
+
             </div>
         </template>
 
@@ -49,17 +50,20 @@ const user = usePage().props.auth.user;
                             <ProfileCard :name="user.firstname + ' ' + user.lastname" status="Statut"
                                 birthday="12/05/1985" :mobileNumbers="[user.phone, user.phone_secondary]" />
                         </div>
-                        <p>DEBUG: {{ user }}</p>
                         <div class="mt-8">
-                            <ProfileInformationDisplay title="Email" :labels="['Perso', 'Pro']" labelWidth="17%"
-                                :data="[user.email, '']" />
+                            <ProfileInformationDisplay title="Email" :labels="['Email Perso.', 'Email Pro.']"
+                                labelWidth="25%" :data="[user.email, user.email_pro]" />
                             <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
                             <ProfileInformationDisplay title="Domicile" :labels="['Adresse', 'Ville', 'Pays']"
-                                labelWidth="17%" :data="[]" />
+                                labelWidth="25%" :data="[
+                                    `${user.home_address?.house_number ?? ''} ${user.home_address?.street_name ?? '-'}`,
+                                    `${user.home_address?.city ?? '-'} ${user.home_address?.postal_code ? ',' : ''} ${user.home_address?.postal_code ?? ''}`,
+                                    `${user.home_address?.country ?? ''}`
+                                ]" />
                             <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
 
                             <ProfileInformationDisplay title="Naissance" :labels="['Date', 'Ville', 'Pays']"
-                                labelWidth="17%" :data="[]" />
+                                labelWidth="25%" :data="[]" />
 
                         </div>
 

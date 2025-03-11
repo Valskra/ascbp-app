@@ -15,8 +15,10 @@ return new class extends Migration
             $table->string('street_name', 255)->nullable();
             $table->string('postal_code', 10)->nullable();
             $table->string('city', 100)->nullable();
+            $table->string('country', 100)->nullable();
             $table->text('additional_info')->nullable();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

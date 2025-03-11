@@ -4,13 +4,31 @@ import { Head, usePage } from '@inertiajs/vue3';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import ProfileUpdateForm from './Partials/ProfileUpdateForm.vue';
+import DeleteUserForm from './Partials/DeleteUserForm.vue';
+import ProfileContact from './Partials/ProfileContact.vue';
+import ProfileInformationDisplay from './Partials/ProfileInformationDisplay.vue';
+import ProfileCard from './Partials/ProfileCard.vue';
+import NavLink from '@/Components/NavLink.vue';
+import UpdateEmailForm from './Partials/UpdateEmailForm.vue';
+import UpdateAddressForm from './Partials/UpdateAddressForm.vue';
+import UpdateBirthForm from './Partials/UpdateBirthForm.vue';
 
 const user = usePage().props.auth.user;
+
+defineProps({
+    mustVerifyEmail: {
+        type: Boolean,
+    },
+    status: {
+        type: String,
+    },
+});
+
 </script>
 
 <template>
 
-    <Head title="Modifier le Profil" />
+    <Head title="Édition de Profil" />
 
     <AuthenticatedLayout>
         <template #header>
@@ -25,8 +43,60 @@ const user = usePage().props.auth.user;
             </div>
         </template>
 
+        <div class="py-8 ">
+            <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-2">
+                <div class="space-y-6">
+                    <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
+                        <div class="space-y-6">
+                            <ProfileCard :name="user.firstname + ' ' + user.lastname" status="Statut"
+                                birthday="12/05/1985" :mobileNumbers="[user.phone, user.phone_secondary]" />
+                        </div>
+                        <div class="mt-8">
+                            <UpdateEmailForm :user="user" :must-verify-email="mustVerifyEmail" :status="status"
+                                labelWidth="25%" />
+                            <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
+
+                            <UpdateAddressForm :user="user" labelWidth="25%" />
+                            <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
+
+                            <UpdateBirthForm :user="user" :birthAddress="user.birthAddress" labelWidth="32%" />
+                        </div>
+                        <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
+
+                        <div class="mt-8">
+                            <ProfileUpdateForm title="Téléphone" :fields="['phone', 'phone_secondary']"
+                                :labels="['Tél Perso', 'Tél Pro']" :data="[user.phone, user.phone_secondary]"
+                                labelWidth="25%" />
+                            <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
+
+                        </div>
+                    </div>
+                </div>
+                <!-- Partie gauche : Contenu existant -->
+
+                <!-- Partie droite -->
+                <div class="space-y-6">
+                    <div class="space-y-4 rounded-lg bg-white p-4 shadow sm:p-8 dark:bg-gray-800">
+                        <header>
+                            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                Contacts
+                            </h2>
+
+                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                Update your emergency contact information
+                            </p>
+                        </header>
+
+                        <ProfileContact />
+                        <ProfileContact />
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="py-8">
             <div class="mx-auto max-w-7xl grid grid-cols-1 gap-8 lg:grid-cols-2">
+                <!-- Partie droite : Formulaires pour chaque catégorie -->
+
                 <!-- Partie gauche : Formulaires de mise à jour -->
                 <div class="space-y-6">
                     <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
@@ -38,21 +108,6 @@ const user = usePage().props.auth.user;
                     </div>
                 </div>
 
-                <!-- Partie droite : Formulaires pour chaque catégorie -->
-                <div class="space-y-6">
-                    <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
-                        <ProfileUpdateForm title="Email" :fields="['email', 'email_pro']"
-                            :labels="['Email Perso', 'Email Pro']" :values="[user.email, user.email_pro]" />
-                    </div>
-                    <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
-                        <ProfileUpdateForm title="Téléphone" :fields="['phone', 'phone_secondary']"
-                            :labels="['Tél Perso', 'Tél Pro']" :values="[user.phone, user.phone_secondary]" />
-                    </div>
-                    <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
-                        <ProfileUpdateForm title="Naissance" :fields="['birth_date']" :labels="['Date de Naissance']"
-                            :values="[user.birth_date]" />
-                    </div>
-                </div>
             </div>
         </div>
     </AuthenticatedLayout>

@@ -20,6 +20,7 @@ class User extends Authenticatable
     protected $fillable = [
         'firstname',
         'lastname',
+        'birth_date',
         'phone',
         'phone_secondary',
         'email',
@@ -47,7 +48,18 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'birth_date' => 'date',
             'password' => 'hashed',
         ];
+    }
+
+    public function homeAddress()
+    {
+        return $this->hasOne(Address::class)->where('label', 'home');
+    }
+
+    public function birthAddress()
+    {
+        return $this->hasOne(Address::class)->where('label', 'birth');
     }
 }

@@ -28,5 +28,10 @@
         "vite-plugin-static-copy": "^2.2.0",
         "vue": "^3.4.0",
         "vue-tsc": "^2.2.0"
+    },
+    "dependencies": {
+        "@coreui/coreui": "^5.2.0",
+        "@coreui/vue": "^5.4.1",
+        "@vuepic/vue-datepicker": "^11.0.1"
     }
 }

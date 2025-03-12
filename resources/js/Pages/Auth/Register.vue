@@ -23,39 +23,24 @@ const submit = () => {
 
 <template>
     <GuestLayout>
+
         <Head title="Register" />
 
         <form @submit.prevent="submit">
-            <div
-                class="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0"
-            >
+            <div class="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
                 <div class="flex-1">
                     <InputLabel for="firstname" value="First Name" />
 
-                    <TextInput
-                        id="firstname"
-                        type="text"
-                        class="mt-1 block w-full"
-                        v-model="form.firstname"
-                        required
-                        autofocus
-                        autocomplete="firstname"
-                    />
+                    <TextInput id="firstname" type="text" class="mt-1 block w-full" v-model="form.firstname" required
+                        autofocus autocomplete="firstname" />
 
                     <InputError class="mt-2" :message="form.errors.firstname" />
                 </div>
                 <div class="flex-1">
                     <InputLabel for="lastname" value="Last Name" />
 
-                    <TextInput
-                        id="lastname"
-                        type="text"
-                        class="mt-1 block w-full"
-                        v-model="form.lastname"
-                        required
-                        autofocus
-                        autocomplete="lastname"
-                    />
+                    <TextInput id="lastname" type="text" class="mt-1 block w-full" v-model="form.lastname"
+                        autocomplete="name" required />
 
                     <InputError class="mt-2" :message="form.errors.lastname" />
                 </div>
@@ -64,14 +49,8 @@ const submit = () => {
             <div class="mt-4">
                 <InputLabel for="email" value="Email" />
 
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autocomplete="username"
-                />
+                <TextInput id="email" type="email" class="mt-1 block w-full" v-model="form.email" required
+                    autocomplete="username" />
 
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
@@ -79,52 +58,28 @@ const submit = () => {
             <div class="mt-4">
                 <InputLabel for="password" value="Password" />
 
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="new-password"
-                />
+                <TextInput id="password" type="password" class="mt-1 block w-full" v-model="form.password" required
+                    autocomplete="new-password" />
 
                 <InputError class="mt-2" :message="form.errors.password" />
             </div>
 
             <div class="mt-4">
-                <InputLabel
-                    for="password_confirmation"
-                    value="Confirm Password"
-                />
+                <InputLabel for="password_confirmation" value="Confirm Password" />
 
-                <TextInput
-                    id="password_confirmation"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password_confirmation"
-                    required
-                    autocomplete="new-password"
-                />
+                <TextInput id="password_confirmation" type="password" class="mt-1 block w-full"
+                    v-model="form.password_confirmation" required autocomplete="new-password" />
 
-                <InputError
-                    class="mt-2"
-                    :message="form.errors.password_confirmation"
-                />
+                <InputError class="mt-2" :message="form.errors.password_confirmation" />
             </div>
 
             <div class="mt-4 flex items-center justify-end">
-                <Link
-                    :href="route('login')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
-                >
-                    Already registered?
+                <Link :href="route('login')"
+                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800">
+                Already registered?
                 </Link>
 
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
+                <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
                     Register
                 </PrimaryButton>
             </div>

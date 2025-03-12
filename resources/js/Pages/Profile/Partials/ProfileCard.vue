@@ -1,3 +1,35 @@
+<script>
+import ProfileInformationDisplay from "./ProfileInformationDisplay.vue";
+
+export default {
+    components: {
+        ProfileInformationDisplay
+    },
+    props: {
+        name: {
+            type: String,
+            required: true,
+            default: "Prénom NOM"
+
+        },
+        status: {
+            type: String,
+            required: true
+        },
+        birthday: {
+            type: String,
+            default: "__/__/____"
+        },
+        mobileNumbers: {
+            type: Array,
+            required: true
+        }
+    }
+};
+</script>
+
+<style scoped></style>
+
 <template>
     <div class="flex flex-row items-start ">
         <!-- Image de profil -->
@@ -31,35 +63,3 @@
         <ProfileInformationDisplay v-else :labels="['Perso']" labelWidth="30%" :data="mobileNumbers" />
     </div>
 </template>
-
-<script>
-import ProfileInformationDisplay from "./ProfileInformationDisplay.vue";
-
-export default {
-    components: {
-        ProfileInformationDisplay
-    },
-    props: {
-        name: {
-            type: String,
-            required: true,
-            default: "Prénom NOM"
-
-        },
-        status: {
-            type: String,
-            required: true
-        },
-        birthday: {
-            type: String,
-            default: "__/__/____"
-        },
-        mobileNumbers: {
-            type: Array,
-            required: true
-        }
-    }
-};
-</script>
-
-<style scoped></style>

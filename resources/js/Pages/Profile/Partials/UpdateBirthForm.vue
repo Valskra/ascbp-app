@@ -44,7 +44,6 @@ const form = useForm({
                 Modifiez votre date, ville et pays de naissance.
             </p>
         </header>
-
         <form @submit.prevent="form.patch(route('profile.updateAddress'))" class="mt-6 space-y-3">
             <div class="overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
                 <table class="w-full border-collapse">

@@ -12,6 +12,7 @@ import NavLink from '@/Components/NavLink.vue';
 import UpdateEmailForm from './Partials/UpdateEmailForm.vue';
 import UpdateAddressForm from './Partials/UpdateAddressForm.vue';
 import UpdateBirthForm from './Partials/UpdateBirthForm.vue';
+import UpdatePhoneForm from './Partials/UpdatePhoneForm.vue';
 
 const user = usePage().props.auth.user;
 
@@ -49,7 +50,8 @@ defineProps({
                     <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
                         <div class="space-y-6">
                             <ProfileCard :name="user.firstname + ' ' + user.lastname" status="Statut"
-                                birthday="12/05/1985" :mobileNumbers="[user.phone, user.phone_secondary]" />
+                                :birthday="String(user.birth_date).replaceAll('-', '/')"
+                                :mobileNumbers="[String(user.phone).replaceAll(' ', '.'), String(user.phone_secondary).replaceAll(' ', '.')]" />
                         </div>
                         <div class="mt-8">
                             <UpdateEmailForm :user="user" :must-verify-email="mustVerifyEmail" :status="status"
@@ -60,15 +62,8 @@ defineProps({
                             <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
 
                             <UpdateBirthForm :user="user" labelWidth="32%" />
-                        </div>
-                        <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
-
-                        <div class="mt-8">
-                            <ProfileUpdateForm title="Téléphone" :fields="['phone', 'phone_secondary']"
-                                :labels="['Tél Perso', 'Tél Pro']" :data="[user.phone, user.phone_secondary]"
-                                labelWidth="25%" />
                             <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
-
+                            <UpdatePhoneForm :user="user" labelWidth="32%" />
                         </div>
                     </div>
                 </div>

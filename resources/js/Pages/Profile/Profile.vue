@@ -8,6 +8,7 @@ import UpdateProfileInformationForm from './Partials/UpdateProfileInformationFor
 import ProfileInformationDisplay from './Partials/ProfileInformationDisplay.vue';
 import ProfileCard from './Partials/ProfileCard.vue';
 import NavLink from '@/Components/NavLink.vue';
+import { useDateFormat } from '@vueuse/core'
 
 defineProps({
     mustVerifyEmail: {
@@ -48,7 +49,8 @@ const user = usePage().props.auth.user;
                     <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
                         <div class="space-y-6">
                             <ProfileCard :name="user.firstname + ' ' + user.lastname" status="Statut"
-                                birthday="12/05/1985" :mobileNumbers="[user.phone, user.phone_secondary]" />
+                                :birthday="useDateFormat(user.birth_date, 'DD/MM/YYYY')"
+                                :mobileNumbers="[String(user.phone).replaceAll(' ', '.'), String(user.phone_secondary).replaceAll(' ', '.')]" />
                         </div>
                         <div class="mt-8">
                             <ProfileInformationDisplay title="Email" :labels="['Email Perso.', 'Email Pro.']"
@@ -63,7 +65,8 @@ const user = usePage().props.auth.user;
                             <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
 
                             <ProfileInformationDisplay title="Naissance" :labels="['Date', 'Ville', 'Pays']"
-                                labelWidth="25%" :data="[]" />
+                                labelWidth="25%" :data="[useDateFormat(user.birth_date, 'DD/MM/YYYY'), user.birth_address?.city
+                                    ?? '', user.birth_address?.country ?? '']" />
 
                         </div>
 

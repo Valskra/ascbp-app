@@ -148,6 +148,25 @@ class ProfileController extends Controller
 
         return Redirect::route('profile.edit');
     }
+
+    public function updatePhone(Request $request)
+    {
+        $validated = $request->validate([
+            'phone' => 'required|string|max:100',
+            'phone_secondary' => 'nullable|string|max:100',
+        ]);
+
+        $user = $request->user();
+
+        $user->phone = $validated['phone'];
+        $user->phone_secondary = $validated['phone_secondary'] ?? null;
+
+        $user->save();
+
+        return Redirect::route('profile.edit');
+    }
+
+
     public function updateBirth(Request $request)
     {
         $validated = $request->validate([

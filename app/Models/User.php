@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Casts\PhoneCast;
 
 class User extends Authenticatable
 {
@@ -48,8 +49,10 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'birth_date' => 'date',
+            'birth_date' => 'date:Y-m-d',
             'password' => 'hashed',
+            'phone' => PhoneCast::class,
+            'phone_secondary' => PhoneCast::class,
         ];
     }
 

@@ -85,25 +85,26 @@ defineProps({
                         <ProfileContact />
                         <ProfileContact />
                     </div>
+                    <div class="mx-auto max-w-7xl">
+                        <!-- Partie droite : Formulaires pour chaque catégorie -->
+
+                        <!-- Partie gauche : Formulaires de mise à jour -->
+                        <div class="space-y-6">
+                            <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
+                                <UpdateProfileInformationForm :must-verify-email="mustVerifyEmail" :status="status"
+                                    class="max-w-xl" />
+                            </div>
+                            <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
+                                <UpdatePasswordForm class="max-w-xl" />
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
+
             </div>
         </div>
-        <div class="py-8">
-            <div class="mx-auto max-w-7xl grid grid-cols-1 gap-8 lg:grid-cols-2">
-                <!-- Partie droite : Formulaires pour chaque catégorie -->
 
-                <!-- Partie gauche : Formulaires de mise à jour -->
-                <div class="space-y-6">
-                    <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
-                        <UpdateProfileInformationForm :must-verify-email="mustVerifyEmail" :status="status"
-                            class="max-w-xl" />
-                    </div>
-                    <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
-                        <UpdatePasswordForm class="max-w-xl" />
-                    </div>
-                </div>
-
-            </div>
-        </div>
     </AuthenticatedLayout>
 </template>

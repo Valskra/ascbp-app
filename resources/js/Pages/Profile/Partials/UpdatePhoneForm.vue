@@ -13,6 +13,10 @@ const props = defineProps({
         type: String,
         default: '30%'
     },
+    labels: {
+        type: Array,
+        default: ["Num. Perso", "Num. Pro"]
+    },
 });
 
 const form = useForm({
@@ -36,24 +40,21 @@ const form = useForm({
     <section>
         <header>
             <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Modifier les Numéros de mobile
+                Téléphone
             </h2>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Modifiez vos Numéros de téléphone
-            </p>
         </header>
 
-        <form @submit.prevent="form.patch(route('profile.updatePhone'))" class="mt-6 space-y-3">
+        <form @submit.prevent="form.patch(route('profile.updatePhone'))" class="mt-2 space-y-3">
             <div class="overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
                 <table class="w-full border-collapse">
                     <tbody>
                         <tr class="border-b border-gray-300 dark:border-gray-600">
                             <td
                                 class="px-4 py-3 font-semibold bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white label">
-                                Num Perso
+                                {{ labels[0] }}
                             </td>
                             <td class="text-gray-700 dark:text-gray-300 value">
-                                <input type="tel" id="phone" v-model="form.phone"
+                                <input type="tel" v-model="form.phone"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
 
                             </td>
@@ -62,10 +63,11 @@ const form = useForm({
                         <tr class="border-b border-gray-300 dark:border-gray-600">
                             <td
                                 class="px-4 py-3 font-semibold bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white label">
-                                Num. Pro
+                                {{ labels[1] }}
+
                             </td>
                             <td class="text-gray-700 dark:text-gray-300 value">
-                                <input type="tel" id="phone_secondary" v-model="form.phone_secondary"
+                                <input type="tel" v-model="form.phone_secondary"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
 
                             </td>

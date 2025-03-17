@@ -48,9 +48,7 @@ const user = usePage().props.auth.user;
                 <div class="space-y-6">
                     <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
                         <div class="space-y-6">
-                            <ProfileCard :name="user.firstname + ' ' + user.lastname" status="Statut"
-                                :birthday="useDateFormat(user.birth_date, 'DD/MM/YYYY')"
-                                :mobileNumbers="[String(user.phone).replaceAll(' ', '.'), String(user.phone_secondary).replaceAll(' ', '.')]" />
+                            <ProfileCard :user="user" />
                         </div>
                         <div class="mt-8">
                             <ProfileInformationDisplay title="Email" :labels="['Email Perso.', 'Email Pro.']"

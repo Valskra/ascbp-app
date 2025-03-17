@@ -66,7 +66,7 @@ const form = useForm({
                                 Ville de naissance
                             </td>
                             <td class="text-gray-700 dark:text-gray-300 value">
-                                <input id="city" type="text" v-model="form.city"
+                                <input id="birth_city" type="text" v-model="form.city"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
                             </td>
                         </tr>
@@ -76,7 +76,7 @@ const form = useForm({
                                 Code Postal
                             </td>
                             <td class="text-gray-700 dark:text-gray-300 value">
-                                <input id="postal_code" type="text" v-model="form.postal_code"
+                                <input id="birth_postal_code" type="text" v-model="form.postal_code"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
                             </td>
                         </tr>
@@ -86,7 +86,7 @@ const form = useForm({
                                 Pays de naissance
                             </td>
                             <td class="text-gray-700 dark:text-gray-300 value">
-                                <input id="country" type="text" v-model="form.country"
+                                <input id="birth_country" type="text" v-model="form.country"
                                     class="w-full border-0 bg-transparent py-2 px-3 text-gray-700 dark:text-gray-200 focus:ring-0" />
                             </td>
                         </tr>

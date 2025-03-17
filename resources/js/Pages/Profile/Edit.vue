@@ -7,7 +7,7 @@ import ProfileUpdateForm from './Partials/ProfileUpdateForm.vue';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
 import ProfileContact from './Partials/ProfileContact.vue';
 import ProfileInformationDisplay from './Partials/ProfileInformationDisplay.vue';
-import ProfileCard from './Partials/ProfileCard.vue';
+import UpdateProfileCard from './Partials/UpdateProfileCard.vue';
 import NavLink from '@/Components/NavLink.vue';
 import UpdateEmailForm from './Partials/UpdateEmailForm.vue';
 import UpdateAddressForm from './Partials/UpdateAddressForm.vue';
@@ -49,9 +49,7 @@ defineProps({
                 <div class="space-y-6">
                     <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
                         <div class="space-y-6">
-                            <ProfileCard :name="user.firstname + ' ' + user.lastname" status="Statut"
-                                :birthday="String(user.birth_date).replaceAll('-', '/')"
-                                :mobileNumbers="[String(user.phone).replaceAll(' ', '.'), String(user.phone_secondary).replaceAll(' ', '.')]" />
+                            <UpdateProfileCard :user="user" />
                         </div>
                         <div class="mt-8">
                             <UpdateEmailForm :user="user" :must-verify-email="mustVerifyEmail" :status="status"
@@ -62,8 +60,6 @@ defineProps({
                             <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
 
                             <UpdateBirthForm :user="user" labelWidth="32%" />
-                            <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
-                            <UpdatePhoneForm :user="user" labelWidth="32%" />
                         </div>
                     </div>
                 </div>
@@ -90,10 +86,7 @@ defineProps({
 
                         <!-- Partie gauche : Formulaires de mise à jour -->
                         <div class="space-y-6">
-                            <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
-                                <UpdateProfileInformationForm :must-verify-email="mustVerifyEmail" :status="status"
-                                    class="max-w-xl" />
-                            </div>
+
                             <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
                                 <UpdatePasswordForm class="max-w-xl" />
                             </div>

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('relation', 50)->nullable();
             $table->integer('priority')->default(0);
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

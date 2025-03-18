@@ -16,6 +16,7 @@ return new class extends Migration
             $table->boolean('manage_members')->default(false);
             $table->boolean('manage_articles')->default(false);
             $table->boolean('create_articles')->default(false);
+            $table->timestamps();
         });
     }
 

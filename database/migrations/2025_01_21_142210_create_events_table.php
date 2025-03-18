@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('referent_name', 100)->nullable();
             $table->text('description')->nullable();
             $table->foreignId('file_id')->nullable()->constrained('files')->onDelete('set null');
+            $table->timestamps();
         });
     }
 

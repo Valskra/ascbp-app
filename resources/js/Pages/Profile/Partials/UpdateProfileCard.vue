@@ -1,16 +1,19 @@
 <script setup>
-import { computed } from 'vue'
-import { useDateFormat } from '@vueuse/core'
-import ProfileInformationDisplay from './ProfileInformationDisplay.vue'
-import UpdatePhoneForm from './UpdatePhoneForm.vue'
+import { computed, ref } from 'vue'
+import { useForm } from '@inertiajs/vue3'
 
-// Définition des props en mode script setup
+import { useDateFormat } from '@vueuse/core'
+import UpdatePhoneForm from './UpdatePhoneForm.vue'
+import UpdateName from './UpdateName.vue';
+
 const props = defineProps({
     user: {
         type: Object,
         required: true
     }
+
 })
+
 
 // Calcul de la date de naissance formatée
 const birthDateFormatted = computed(() => {
@@ -30,16 +33,8 @@ const birthDateFormatted = computed(() => {
 
         <!-- Informations du profil -->
         <div class="flex flex-col space-y-2">
-            <div>
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-                    {{ props.user.firstname }} {{ props.user.lastname }}
-                </h2>
-            </div>
+            <UpdateName :user="user" class="mt-2 mb-4" />
 
-            <!-- Affichage de la date de naissance formatée -->
-            <p class="text-gray-600 dark:text-gray-300 text-sm">
-                Anniversaire : {{ birthDateFormatted }}
-            </p>
 
             <!-- Section Mobile : Desktop -->
             <div class="hidden md:block">
@@ -50,7 +45,7 @@ const birthDateFormatted = computed(() => {
 
     <!-- Section Mobile : Mobile -->
     <div class="flex flex-col md:hidden">
-        <UpdatePhoneForm :user="props.user" :labels="['Perso', 'Pro']" labelWidth="30%" />
+        <UpdatePhoneForm :user="props.user" :labels="['Perso', 'Pro']" labelWidth="25%" />
     </div>
 </template>
 

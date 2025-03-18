@@ -69,4 +69,10 @@ class User extends Authenticatable
             'country' => '',
         ]);
     }
+
+    // Dans User.php
+    public function contacts()
+    {
+        return $this->hasMany(Contact::class);
+    }
 }

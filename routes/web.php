@@ -29,6 +29,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile/birth', [ProfileController::class, 'updateBirth'])->name('profile.updateBirth');
     Route::patch('/profile/phone', [ProfileController::class, 'updatePhone'])->name('profile.updatePhone');
     Route::patch('/profile/email', [ProfileController::class, 'updateEmail'])->name('profile.updateEmail');
+    Route::patch('/profile/name', [ProfileController::class, 'updateName'])->name('profile.updateName');
 });
 
 

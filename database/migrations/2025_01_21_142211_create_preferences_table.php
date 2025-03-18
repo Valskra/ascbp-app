@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('time_zone', 50)->default('UTC');
             $table->text('additional_info')->nullable();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

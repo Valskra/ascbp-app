@@ -52,7 +52,7 @@ const birthDateFormatted = computed(() => {
     <div class="flex flex-col md:hidden">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white md:hidden">Mobile</h2>
         <ProfileInformationDisplay title="" v-if="props.user.phone_secondary" :labels="['Perso', 'Pro']"
-            labelWidth="30%" :data="[props.user.phone, props.user.phone_secondary]" />
-        <ProfileInformationDisplay title="" v-else :labels="['Perso']" labelWidth="30%" :data="[props.user.phone]" />
+            labelWidth="25%" :data="[props.user.phone, props.user.phone_secondary]" />
+        <ProfileInformationDisplay title="" v-else :labels="['Perso']" labelWidth="20%" :data="[props.user.phone]" />
     </div>
 </template>

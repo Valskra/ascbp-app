@@ -76,17 +76,16 @@ const user = usePage().props.auth.user;
                 <div class="space-y-6">
                     <div class="space-y-4 rounded-lg bg-white p-4 shadow sm:p-8 dark:bg-gray-800">
                         <header>
-                            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                            <h1 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">
                                 Contacts
-                            </h2>
+                            </h1>
 
                             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                Update your emergency contact information
+                                Contacts à contacter en cas de besoin
                             </p>
                         </header>
+                        <ProfileContact :contacts="user.contacts" />
 
-                        <ProfileContact />
-                        <ProfileContact />
                     </div>
                 </div>
             </div>

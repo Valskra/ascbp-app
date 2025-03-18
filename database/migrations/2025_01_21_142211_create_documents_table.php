@@ -15,6 +15,7 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->foreignId('file_id')->constrained('files')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

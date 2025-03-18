@@ -14,6 +14,7 @@ return new class extends Migration
             $table->dateTime('action_date');
             $table->json('data')->nullable();
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->timestamps();
         });
     }
 

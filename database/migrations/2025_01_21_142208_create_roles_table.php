@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 50);
             $table->foreignId('permissions_id')->constrained('permissions')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

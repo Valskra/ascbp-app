@@ -5,14 +5,11 @@ import UpdateProfileInformationForm from './Partials/UpdateProfileInformationFor
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import ProfileUpdateForm from './Partials/ProfileUpdateForm.vue';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
-import ProfileContact from './Partials/ProfileContact.vue';
-import ProfileInformationDisplay from './Partials/ProfileInformationDisplay.vue';
+import UpdateContactsForm from './Partials/UpdateContactsForm.vue';
 import UpdateProfileCard from './Partials/UpdateProfileCard.vue';
-import NavLink from '@/Components/NavLink.vue';
 import UpdateEmailForm from './Partials/UpdateEmailForm.vue';
 import UpdateAddressForm from './Partials/UpdateAddressForm.vue';
 import UpdateBirthForm from './Partials/UpdateBirthForm.vue';
-import UpdatePhoneForm from './Partials/UpdatePhoneForm.vue';
 
 const user = usePage().props.auth.user;
 
@@ -50,6 +47,7 @@ defineProps({
                     <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
                         <div class="space-y-6">
                             <UpdateProfileCard :user="user" />
+
                         </div>
                         <div class="mt-8">
                             <UpdateEmailForm :user="user" :must-verify-email="mustVerifyEmail" :status="status"
@@ -63,23 +61,13 @@ defineProps({
                         </div>
                     </div>
                 </div>
+
                 <!-- Partie gauche : Contenu existant -->
 
                 <!-- Partie droite -->
                 <div class="space-y-6">
                     <div class="space-y-4 rounded-lg bg-white p-4 shadow sm:p-8 dark:bg-gray-800">
-                        <header>
-                            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                Contacts
-                            </h2>
-
-                            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                Update your emergency contact information
-                            </p>
-                        </header>
-
-                        <ProfileContact />
-                        <ProfileContact />
+                        <UpdateContactsForm :contacts="user.contacts" />
                     </div>
                     <div class="mx-auto max-w-7xl">
                         <!-- Partie droite : Formulaires pour chaque catégorie -->
@@ -90,7 +78,9 @@ defineProps({
                             <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
                                 <UpdatePasswordForm class="max-w-xl" />
                             </div>
-
+                            <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">
+                                <DeleteUserForm />
+                            </div>
                         </div>
                     </div>
 

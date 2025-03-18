@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\JsonResponse;
 
 class ProfileController extends Controller
 {
@@ -21,7 +22,7 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
-            'user' => $request->user()->load('homeAddress', 'birthAddress'),
+            'user' => $request->user()->load('homeAddress', 'birthAddress', 'contacts'),
         ]);
     }
 
@@ -30,7 +31,7 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
-            'user' => $request->user()->load('homeAddress', 'birthAddress'),
+            'user' => $request->user()->load('homeAddress', 'birthAddress', 'contacts'),
 
         ]);
     }
@@ -50,6 +51,19 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit');
     }
 
+    public function updateName(Request $request)
+    {
+        $validated = $request->validate([
+            'firstname' => 'required|string|max:50',
+            'lastname'  => 'required|string|max:50',
+        ]);
+
+        $user = $request->user();
+        $user->update($validated);
+
+        return Redirect::route('profile.edit')->with('status', 'name-updated');
+    }
+
     // Mise à jour des contacts d'urgence
     public function updateContacts(Request $request)
     {
@@ -65,11 +79,13 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        // Nettoyage et mise à jour optimisée
+        // Stratégie : on supprime d’abord tous les contacts existants
         $user->contacts()->delete();
+
+        // Puis on insère les nouveaux
         $user->contacts()->createMany($validated['contacts']);
 
-        return Redirect::route('profile.edit')->with('status', 'contacts-updated');
+        return back()->with('status', 'contacts-updated');
     }
 
     public function updateAddress(Request $request)

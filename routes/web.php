@@ -5,6 +5,12 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+use App\Http\Controllers\FileTestController;
+
+Route::get('/file-test', [FileTestController::class, 'index'])->name('file-test.index');
+Route::post('/file-test', [FileTestController::class, 'store'])->name('file-test.store');
+
+
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -30,6 +36,9 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile/phone', [ProfileController::class, 'updatePhone'])->name('profile.updatePhone');
     Route::patch('/profile/email', [ProfileController::class, 'updateEmail'])->name('profile.updateEmail');
     Route::patch('/profile/name', [ProfileController::class, 'updateName'])->name('profile.updateName');
+    Route::put('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.updatePhoto');
+    Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto'])->name('profile.destroyPhoto');
+    Route::get('/profile/photo', [ProfileController::class, 'showPhoto'])->name('profile.showPhoto');
 });
 
 

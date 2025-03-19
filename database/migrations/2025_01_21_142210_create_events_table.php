@@ -21,7 +21,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->nullable();
             $table->string('referent_name', 100)->nullable();
             $table->text('description')->nullable();
-            $table->foreignId('file_id')->nullable()->constrained('files')->onDelete('set null');
+            //$table->foreignId('file_id')->nullable()->constrained('files')->onDelete('set null');
             $table->timestamps();
         });
     }

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -22,7 +22,7 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
-            'user' => $request->user()->load('homeAddress', 'birthAddress', 'contacts'),
+            'user' => $request->user()->load('homeAddress', 'birthAddress', 'contacts', 'profilePicture'),
         ]);
     }
 
@@ -212,7 +212,51 @@ class ProfileController extends Controller
     }
 
 
+    public function updatePhoto(Request $request)
+    {
+        $user = $request->user();
 
+        // 1) Valider le champ "photo" (qui correspond à "form.photo" côté Vue)
+        $request->validate([
+            'photo' => 'required|file|mimes:jpg,jpeg,png,gif,svg|max:2048',
+        ]);
+
+        // 2) Récupérer le fichier
+        //    IMPORTANT : doit correspondre au 'photo' du form
+        $uploadedFile = $request->file('photo');
+
+        // 3) Supprimer l'ancienne photo si elle existe
+        if ($user->profilePicture) {
+            // Supprimer l'ancien fichier du disque
+            Storage::disk($user->profilePicture->disk)->delete($user->profilePicture->path);
+            // Supprimer l'ancien record en DB
+            $user->profilePicture->delete();
+        }
+
+        // 4) Construire le nouveau nom de fichier
+        $extension = $uploadedFile->getClientOriginalExtension();
+        $filename  = "{$user->id}.{$extension}";
+
+        // 5) Stocker dans "user_profile_pictures" sur le disque 'public'
+        $path = $uploadedFile->storeAs(
+            'user_profile_pictures',
+            $filename,
+            'public'
+        );
+
+        // 6) Enregistrer dans la table "files" via la relation morphique
+        $user->profilePicture()->create([
+            'name'      => "profile_picture_{$user->id}",
+            'extension' => $extension,
+            'mimetype'  => $uploadedFile->getMimeType(),
+            'size'      => $uploadedFile->getSize(),
+            'path'      => $path,
+            'disk'      => 'public',
+        ]);
+
+        // 7) Redirection avec message flash
+        return redirect()->back()->with('success', 'Photo de profil mise à jour !');
+    }
     /**
      * Delete the user's account.
      */

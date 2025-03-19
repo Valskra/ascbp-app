@@ -30,6 +30,9 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->string('password');
 
+            // $table->string('profile_photo')->nullable(); // supprime ou commente
+
+
             $table->rememberToken();
             $table->timestamps();
         });

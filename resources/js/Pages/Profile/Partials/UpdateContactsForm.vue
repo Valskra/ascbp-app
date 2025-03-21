@@ -3,6 +3,7 @@ import { useForm } from '@inertiajs/vue3';
 import InputLabel from '@/Components/InputLabel.vue';
 import TextInput from '@/Components/TextInput.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import TrashIcon from '@/Components/svg/trashIcon.vue';
 
 const props = defineProps({
     contacts: { type: Array, required: true }
@@ -47,12 +48,13 @@ const saveContacts = () => {
                         {{ contact.firstname || 'Nouveau contact' }} {{ contact.lastname || '' }} </h4>
                     <button type="button" @click="removeContact(index)" class="text-red-500 hover:text-red-700"
                         v-if="form.contacts.length > 1">
-                        <svg class="w-5 stroke-black dark:stroke-white hover:stroke-red-500 " viewBox="0 0 24 24"
+                        <TrashIcon class="w-5 stroke-black dark:stroke-white hover:stroke-red-500" />
+                        <!-- <svg class="w-5 stroke-black dark:stroke-white hover:stroke-red-500 " viewBox="0 0 24 24"
                             fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path
                                 d="M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M18 6V16.2C18 17.8802 18 18.7202 17.673 19.362C17.3854 19.9265 16.9265 20.3854 16.362 20.673C15.7202 21 14.8802 21 13.2 21H10.8C9.11984 21 8.27976 21 7.63803 20.673C7.07354 20.3854 6.6146 19.9265 6.32698 19.362C6 18.7202 6 17.8802 6 16.2V6M14 10V17M10 10V17"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
+                        </svg> -->
                     </button>
                 </div>
 
@@ -90,12 +92,6 @@ const saveContacts = () => {
                 </div>
             </div>
 
-            <button type="button" @click="addContact"
-                class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
-                v-if="form.contacts.length < 2">
-                + Ajouter un contact
-            </button>
-
             <div class="flex items-center gap-4 mt-4">
                 <PrimaryButton :disabled="form.processing">Enregistrer</PrimaryButton>
                 <Transition enter-active-class="transition ease-in-out" enter-from-class="opacity-0"
@@ -105,6 +101,12 @@ const saveContacts = () => {
                     </p>
                 </Transition>
             </div>
+            <button type="button" @click="addContact"
+                class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
+                v-if="form.contacts.length < 2">
+                + Ajouter un contact
+            </button>
+
         </form>
     </section>
 </template>

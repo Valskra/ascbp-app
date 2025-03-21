@@ -24,8 +24,11 @@ const birthDateFormatted = computed(() => {
 <template>
     <div class="flex flex-row items-start ">
         <!-- Image de profil -->
-        <img src="https://placehold.co/100" alt="Profil"
-            class="rounded-full border border-gray-300 dark:border-gray-600 mr-8 min-h-[220px]" />
+        <img v-if="user.profile_picture?.url" :src="user.profile_picture.url" alt="Photo de profil"
+            class="rounded-full border border-gray-300 dark:border-gray-600 mr-8 h-[220px] w-[220px]" />
+
+        <img v-else src="https://placehold.co/100" alt="Profil"
+            class="rounded-full border border-gray-300 dark:border-gray-600 mr-8 h-[220px] w-[220px]" />
 
         <!-- Informations du profil -->
         <div class="flex flex-col space-y-2">

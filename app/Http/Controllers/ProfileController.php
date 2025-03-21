@@ -31,7 +31,7 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
-            'user' => $request->user()->load('homeAddress', 'birthAddress', 'contacts'),
+            'user' => $request->user()->load('homeAddress', 'birthAddress', 'contacts', 'profilePicture'),
 
         ]);
     }
@@ -212,51 +212,51 @@ class ProfileController extends Controller
     }
 
 
+
     public function updatePhoto(Request $request)
     {
         $user = $request->user();
 
-        // 1) Valider le champ "photo" (qui correspond à "form.photo" côté Vue)
+        // 1) Vérifier si le fichier arrive bien
+        if (!$request->hasFile('photo')) {
+            return back()->withErrors(['photo' => 'Aucun fichier reçu']);
+        }
+
+        // 2) Validation
         $request->validate([
             'photo' => 'required|file|mimes:jpg,jpeg,png,gif,svg|max:2048',
         ]);
 
-        // 2) Récupérer le fichier
-        //    IMPORTANT : doit correspondre au 'photo' du form
         $uploadedFile = $request->file('photo');
 
-        // 3) Supprimer l'ancienne photo si elle existe
+        // 3) Supprimer l'ancienne photo si elle existe sur OVH S3
         if ($user->profilePicture) {
-            // Supprimer l'ancien fichier du disque
-            Storage::disk($user->profilePicture->disk)->delete($user->profilePicture->path);
-            // Supprimer l'ancien record en DB
+            Storage::disk('s3')->delete($user->profilePicture->path);
             $user->profilePicture->delete();
         }
 
-        // 4) Construire le nouveau nom de fichier
-        $extension = $uploadedFile->getClientOriginalExtension();
-        $filename  = "{$user->id}.{$extension}";
+        // 4) Stocker sur OVH S3 avec un nom unique
+        $path = "user_profile_pictures/{$user->id}." . $uploadedFile->getClientOriginalExtension();
+        Storage::disk('s3')->put($path, file_get_contents($uploadedFile), 'public');
 
-        // 5) Stocker dans "user_profile_pictures" sur le disque 'public'
-        $path = $uploadedFile->storeAs(
-            'user_profile_pictures',
-            $filename,
-            'public'
-        );
-
-        // 6) Enregistrer dans la table "files" via la relation morphique
+        // 5) Enregistrer dans la base de données
         $user->profilePicture()->create([
             'name'      => "profile_picture_{$user->id}",
-            'extension' => $extension,
+            'extension' => $uploadedFile->getClientOriginalExtension(),
             'mimetype'  => $uploadedFile->getMimeType(),
             'size'      => $uploadedFile->getSize(),
             'path'      => $path,
-            'disk'      => 'public',
+            'disk'      => 's3',
         ]);
 
-        // 7) Redirection avec message flash
-        return redirect()->back()->with('success', 'Photo de profil mise à jour !');
+        return redirect()->route('files.store.user.profile-picture', [
+            // S’il faut passer un paramètre (ex: user_id), le mettre ici
+        ]);
     }
+
+
+
+
     /**
      * Delete the user's account.
      */

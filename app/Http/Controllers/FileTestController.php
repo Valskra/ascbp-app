@@ -33,7 +33,7 @@ class FileTestController extends Controller
 
         // Stockage sur le disque public, dans un dossier "test" (modifiable).
         // => physical path: storage/app/public/test/xx
-        $path = $uploadedFile->store('test', 'public');
+        $path = $uploadedFile->store('test', 's3');
 
         // On crée l’enregistrement dans la table "files".
         // (On ne lie pas ce fichier à un "fileable" particulier, donc fileable_id = null).
@@ -46,7 +46,7 @@ class FileTestController extends Controller
             'mimetype'      => $uploadedFile->getMimeType(),
             'size'          => $uploadedFile->getSize(),
             'path'          => $path,
-            'disk'          => 'public',
+            'disk'          => 's3',
         ]);
 
         // Rediriger vers la page d’index pour afficher la liste des fichiers

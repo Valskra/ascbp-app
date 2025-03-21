@@ -33,6 +33,7 @@
         "@coreui/coreui": "^5.2.0",
         "@coreui/vue": "^5.4.1",
         "@vuepic/vue-datepicker": "^11.0.1",
-        "@vueuse/core": "^13.0.0"
+        "@vueuse/core": "^13.0.0",
+        "vue-advanced-cropper": "^2.8.9"
     }
 }

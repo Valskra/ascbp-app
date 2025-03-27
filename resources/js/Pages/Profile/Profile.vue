@@ -10,6 +10,8 @@ import ProfileCard from './Partials/ProfileCard.vue';
 import NavLink from '@/Components/NavLink.vue';
 import { useDateFormat } from '@vueuse/core'
 
+const user = usePage().props.auth.user;
+
 defineProps({
     mustVerifyEmail: {
         type: Boolean,
@@ -19,8 +21,8 @@ defineProps({
     },
 });
 
-const user = usePage().props.auth.user;
-
+// user.birth_date = user.birth_date ? useDateFormat(user.birth_date, 'DD/MM/YYYY') : "__/__/____";
+user.birth_date = "2004-08-09"
 
 </script>
 
@@ -61,10 +63,11 @@ const user = usePage().props.auth.user;
                                     `${user.home_address?.country ?? ''}`
                                 ]" />
                             <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
-
+                            {{ user }}
+                            {{ user.birth_date ? "true" : "false" }}
                             <ProfileInformationDisplay title="Naissance" :labels="['Date', 'Ville', 'Pays']"
-                                labelWidth="25%" :data="[useDateFormat(user.birth_date, 'DD/MM/YYYY'), user.birth_address?.city
-                                    ?? '', user.birth_address?.country ?? '']" />
+                                labelWidth="25%" :data="[user.birth_date,
+                                user.birth_address?.city ?? '', user.birth_address?.country ?? '']" />
 
                         </div>
 

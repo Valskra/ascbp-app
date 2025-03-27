@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
             $table->boolean('manage_admin')->default(false);
+            $table->boolean('admin_access')->default(false);
             $table->boolean('manage_events')->default(false);
             $table->boolean('create_events')->default(false);
             $table->boolean('manage_members')->default(false);

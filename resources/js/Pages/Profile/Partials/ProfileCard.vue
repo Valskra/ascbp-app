@@ -10,12 +10,8 @@ const props = defineProps({
     }
 })
 
-const birthDateFormatted = computed(() => {
-    if (!props.user.birth_date) {
-        return '__/__/____'
-    }
-    // useDateFormat renvoie un Ref, on ajoute .value
-    return useDateFormat(props.user.birth_date, 'DD/MM/YYYY').value
+props.user.birth_date = computed(() => {
+    props.user.birth_date ? useDateFormat(user.birth_date, 'DD/MM/YYYY') : "__/__/____";
 })
 </script>
 

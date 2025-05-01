@@ -1,31 +1,40 @@
-<!-- components/ProfileLayout.vue -->
 <script setup>
-defineProps({
-    editUrl: String,
-    documentsUrl: String,
-})
+import NavLink from '@/Components/NavLink.vue';
+import { computed } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 
-function handleDownloadPDF() {
-    console.log('Téléchargement PDF...')
-}
+const routeTitles = {
+    'profile.profile': 'Profil',
+    'profile.edit': 'Édition',
+    'documents': 'Documents',
+};
+
+const title = computed(() => {
+    return Object.entries(routeTitles).find(([name]) => route().current(name))?.[1] || 'Tableau de bord';
+});
 </script>
 
 <template>
-    <div class="flex justify-between items-center">
+    <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-            Profil
+            {{ title }}
         </h2>
+
         <div class="space-x-8 sm:-my-px sm:ms-10 sm:flex">
-            <a :href="editUrl" class="text-sm font-medium text-blue-600 hover:underline">
-                Modifier
-            </a>
-            <a :href="documentsUrl" class="text-sm font-medium text-blue-600 hover:underline">
+            <NavLink :href="route('profile.profile')" :active="route().current('profile.profile')">
+                Profil
+            </NavLink>
+            <NavLink :href="route('profile.edit')" :active="route().current('profile.edit')">
+                Édition
+            </NavLink>
+            <NavLink>
                 Documents
-            </a>
-            <button @click="handleDownloadPDF"
-                class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded">
-                Télécharger PDF
-            </button>
+            </NavLink>
+            <!--
+                <NavLink :href=" route('documents')" :active="route().current('documents')">
+                Documents
+            </NavLink>
+            -->
         </div>
     </div>
 </template>

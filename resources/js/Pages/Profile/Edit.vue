@@ -8,6 +8,7 @@ import UpdateProfileCard from './Partials/UpdateProfileCard.vue';
 import UpdateEmailForm from './Partials/UpdateEmailForm.vue';
 import UpdateAddressForm from './Partials/UpdateAddressForm.vue';
 import UpdateBirthForm from './Partials/UpdateBirthForm.vue';
+import ProfileLayout from './Partials/ProfileLayout.vue';
 
 defineProps({
     mustVerifyEmail: {
@@ -29,15 +30,8 @@ defineProps({
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                    Édition du profil
-                </h2>
-                <a href="/profile"
-                    class="px-4 py-2 bg-gray-600 text-white text-sm font-semibold rounded-lg shadow hover:bg-gray-700 transition">
-                    Terminé
-                </a>
-            </div>
+            <ProfileLayout>
+            </ProfileLayout>
         </template>
 
         <div class="py-8 ">

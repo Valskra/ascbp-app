@@ -1,15 +1,10 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
-import DeleteUserForm from './Partials/DeleteUserForm.vue';
-import ProfileLayout from './Partials/ProfileLayout.vue';
-
 import ProfileContact from './Partials/ProfileContact.vue';
-import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
-import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
 import ProfileInformationDisplay from './Partials/ProfileInformationDisplay.vue';
 import ProfileCard from './Partials/ProfileCard.vue';
-import NavLink from '@/Components/NavLink.vue';
+import ProfileLayout from './Partials/ProfileLayout.vue';
 import { useDateFormat } from '@vueuse/core';
 import { computed } from 'vue';
 
@@ -38,17 +33,8 @@ const birthDateFormatted = computed(() => {
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Profil
-                </h2>
-                <div class="space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <NavLink :href="route('profile.edit')" :active="route().current('profile.edit')">
-                        Modifier
-                    </NavLink>
-                </div>
-
-            </div>
+            <ProfileLayout>
+            </ProfileLayout>
         </template>
 
         <div class="py-8 ">
@@ -66,13 +52,14 @@ const birthDateFormatted = computed(() => {
                             <ProfileInformationDisplay title="Domicile" :labels="['Adresse', 'Ville', 'Pays']"
                                 labelWidth="25%" :data="[
                                     `${user.home_address?.house_number ?? ''} ${user.home_address?.street_name ?? '-'}`,
-                                    `${user.home_address?.city ?? '-'} ${user.home_address?.postal_code ? ',' : ''} ${user.home_address?.postal_code ?? ''}`,
+                                    `${user.home_address?.city ?? '-'}${user.home_address?.postal_code ? ',' : ''} ${user.home_address?.postal_code ?? ''}`,
                                     `${user.home_address?.country ?? ''}`
                                 ]" />
                             <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
                             <ProfileInformationDisplay title="Naissance" :labels="['Date', 'Ville', 'Pays']"
                                 labelWidth="25%" :data="[birthDateFormatted,
-                                    user.birth_address?.city ?? '', user.birth_address?.country ?? '']" />
+                                    `${user.birth_address?.city ?? '-'}${user.birth_address?.postal_code ? ',' : ''} ${user.birth_address?.postal_code ?? ''}`,
+                                    user.birth_address?.country ?? '']" />
 
                         </div>
 

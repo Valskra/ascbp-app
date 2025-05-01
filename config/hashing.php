@@ -58,7 +58,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Setting this option to true will tell Laravel to automatically rehash
-    | the user's password during login if the configured work factor for
+    | the user's password during login the configured work factor for
     | the algorithm has changed, allowing graceful upgrades of hashes.
     |
     */

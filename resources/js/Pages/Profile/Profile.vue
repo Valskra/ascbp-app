@@ -2,28 +2,34 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
+import ProfileLayout from './Partials/ProfileLayout.vue';
+
 import ProfileContact from './Partials/ProfileContact.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
 import ProfileInformationDisplay from './Partials/ProfileInformationDisplay.vue';
 import ProfileCard from './Partials/ProfileCard.vue';
 import NavLink from '@/Components/NavLink.vue';
-import { useDateFormat } from '@vueuse/core'
+import { useDateFormat } from '@vueuse/core';
+import { computed } from 'vue';
 
-const user = usePage().props.auth.user;
-
-defineProps({
+const props = defineProps({
     mustVerifyEmail: {
         type: Boolean,
     },
     status: {
         type: String,
     },
+    user: {
+        type: Object,
+    },
 });
 
-// user.birth_date = user.birth_date ? useDateFormat(user.birth_date, 'DD/MM/YYYY') : "__/__/____";
-user.birth_date = "2004-08-09"
-
+const birthDateFormatted = computed(() => {
+    return props.user.birth_date
+        ? useDateFormat(props.user.birth_date, 'DD/MM/YYYY').value
+        : "__/__/____";
+});
 </script>
 
 <template>
@@ -53,6 +59,7 @@ user.birth_date = "2004-08-09"
                             <ProfileCard :user="user" />
                         </div>
                         <div class="mt-8">
+
                             <ProfileInformationDisplay title="Email" :labels="['Email Perso.', 'Email Pro.']"
                                 labelWidth="25%" :data="[user.email, user.email_pro]" />
                             <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
@@ -63,11 +70,9 @@ user.birth_date = "2004-08-09"
                                     `${user.home_address?.country ?? ''}`
                                 ]" />
                             <hr class="my-6 mx-3 border-gray-300 dark:border-gray-600" />
-                            {{ user }}
-                            {{ user.birth_date ? "true" : "false" }}
                             <ProfileInformationDisplay title="Naissance" :labels="['Date', 'Ville', 'Pays']"
-                                labelWidth="25%" :data="[user.birth_date,
-                                user.birth_address?.city ?? '', user.birth_address?.country ?? '']" />
+                                labelWidth="25%" :data="[birthDateFormatted,
+                                    user.birth_address?.city ?? '', user.birth_address?.country ?? '']" />
 
                         </div>
 

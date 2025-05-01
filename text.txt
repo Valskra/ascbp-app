@@ -1,0 +1,138 @@
+## users
+    id ; BIG INT ; PRIMARY KEY
+    lastname ; VARCHAR(50) ;
+    firstname ; VARCHAR(50) ;
+    birth_date ; DATE ; nullable
+    phone ; VARCHAR(15) ; nullable
+    phone_secondary ; VARCHAR(15) ; nullable
+    marital_status ; ENUM('single', 'married', 'divorced', 'widowed') ; nullable
+
+    email ; VARCHAR() ; unique ;
+    email_verified_at ; TIMESTAMP ; nullable
+    email_pro ; VARCHAR() ; unique ; nullable
+    email_pro_verified_at ; TIMESTAMP ; nullable
+
+    account_status ; ENUM('account_status', ['active', 'inactive', 'deleted']) ; default('active') ;
+    iban ; VARCHAR(34) ; nullable
+    metadata ; JSON('metadata') ; nullable
+    password ; VARCHAR() ;
+
+## files
+    id ; BIG INT ; PRIMARY KEY
+    fileable_id ; UNSIGNED BIG INT ; nullable
+    fileable_type ; VARCHAR() ; nullable
+
+    name ; VARCHAR(100) ;
+    extension ; VARCHAR(5) ;
+    mimetype ; VARCHAR(50) ; nullable
+    size ; UNSIGNED BIG INT ; nullable
+
+    path ; VARCHAR() ;
+    disk ; VARCHAR() ; default('public') ;
+
+## permissions
+    id ; BIG INT ; PRIMARY KEY
+    manage_admin ; BOOLEAN ; default(false) ;
+    admin_access ; BOOLEAN ; default(false) ;
+    manage_events ; BOOLEAN ; default(false) ;
+    create_events ; BOOLEAN ; default(false) ;
+    manage_members ; BOOLEAN ; default(false) ;
+    manage_articles ; BOOLEAN ; default(false) ;
+    create_articles ; BOOLEAN ; default(false) ;
+
+## roles
+    id ; BIG INT ; PRIMARY KEY
+    name ; VARCHAR(50) ;
+    permissions_id ; FOREIGN KEY (permissions, id)
+
+## audit_logs
+    id ; BIG INT ; PRIMARY KEY
+    action ; VARCHAR() ;
+    action_date -> DATETIME
+    data ; JSON ; nullable
+          
+    user_id ; FOREIGN KEY (users, id)
+
+
+## memberships
+    id ; BIG INT ; PRIMARY KEY
+    year ; SMALL INT ;
+    join_date ; date ; 
+    amount ; DECIMAL(10, 2) ;
+    metadata ; JSON ; nullable
+    user_id ; FOREIGN KEY(users ,id) ;
+
+## addresses
+    id ; BIG INT ; PRIMARY KEY
+    label ; VARCHAR(100) ; nullable
+    house_number ; VARCHAR(10) ; nullable
+    street_name ; VARCHAR(255) ; nullable
+    postal_code ; VARCHAR(10) ; nullable
+    city ; VARCHAR(100) ; nullable
+    country ; VARCHAR(100) ; nullable
+    additional_info ; TEXT ; nullable
+    user_id ; FOREIGN KEY (users, id) ;
+
+## contacts
+    id ; BIG INT ; PRIMARY KEY
+    label ; VARCHAR(100) ; nullable
+    firstname ; VARCHAR(50) ;
+    lastname ; VARCHAR(50) ; nullable
+    phone ; VARCHAR(15) ;
+    email ; VARCHAR(100) ; nullable
+    relation ; VARCHAR(50) ; nullable
+    priority ; INT ; default(0) ;
+    user_id ; FOREIGN KEY (users, id) ;
+
+
+## events
+    id ; BIG INT ; PRIMARY KEY
+    title ; VARCHAR(255) ;
+    category ; VARCHAR(50) ; nullable
+    location ; VARCHAR(255) ; nullable
+    start_date -> DATETIME ;
+    end_date -> DATETIME ;
+    registration_start -> DATETIME ; nullable
+    registration_end -> DATETIME ; nullable
+    max_participants -> INT ; nullable
+    price ; DECIMAL(10, 2) ; nullable
+    referent_name ; VARCHAR(100) ; nullable
+    description ; TEXT ; nullable
+    file_id ; FOREIGN KEY(files, id) ; nullable ;
+
+## articles
+    id ; BIG INT ; PRIMARY KEY
+    publish_date -> DATETIME ;
+    content ; TEXT ;
+    file_id ; FOREIGN KEY (files, id) ; 
+    user_id ; FOREIGN KEY (users, id) ;
+
+
+## documents
+    id ; BIG INT ; PRIMARY KEY
+    title ; VARCHAR(100) ;
+    expiration_date ; DATE ; nullable
+    metadata ; JSON ; nullable
+    file_id ; FOREIGN KEY(files, id) ; nullable ;
+    user_id ; FOREIGN KEY (users, id) ;
+
+
+## preferences
+    id ; BIG INT ; PRIMARY KEY
+    notification_settings ; JSON ; nullable
+    time_zone ; VARCHAR(50) ; default('UTC') ;
+    additional_info ; TEXT ; nullable
+    user_id ; FOREIGN KEY (users, id) ;
+
+
+## registrations
+    id ; BIG INT ; PRIMARY KEY
+    registration_date ; date ; 
+    amount ; DECIMAL (10, 2) ; nullable
+    event_id ; FOREIGN KEY(events, id) ;
+    user_id ; FOREIGN KEY (users, id) ;
+
+
+## user_roles
+    role_id ; FOREIGN KEY (roles, id) ;
+    user_id ; FOREIGN KEY (users, id) ;

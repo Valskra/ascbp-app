@@ -20,7 +20,7 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
-            'user' => $request->user()->load('homeAddress', 'birthAddress', 'contacts', 'profilePicture'),
+            'user' => $request->user()
 
         ]);
     }
@@ -33,7 +33,7 @@ class ProfileController extends Controller
         return Inertia::render('Profile/Edit', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'status' => session('status'),
-            'user' => $request->user()->load('homeAddress', 'birthAddress', 'contacts', 'profilePicture'),
+            'user' => $request->user(),
         ]);
     }
 
@@ -66,7 +66,6 @@ class ProfileController extends Controller
         return Redirect::route('profile.edit')->with('status', 'name-updated');
     }
 
-    // Mise à jour des contacts d'urgence
     public function updateContacts(Request $request)
     {
         $validated = $request->validate([
@@ -81,10 +80,8 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        // Stratégie : on supprime d’abord tous les contacts existants
         $user->contacts()->delete();
 
-        // Puis on insère les nouveaux
         $user->contacts()->createMany($validated['contacts']);
 
         return back()->with('status', 'contacts-updated');
@@ -102,32 +99,25 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        // Liste des types de voies en français
         $street_types = ['rue', 'avenue', 'boulevard', 'chemin', 'impasse', 'place', 'route', 'allée', 'quai', 'cours', 'passage', 'voie', 'square', 'faubourg'];
 
-        // Diviser l'adresse en mots
         $address_parts = explode(' ', trim($validated['address']));
         $house_number = '';
         $street_name = '';
 
-        // Recherche du premier mot correspondant à un type de voie
         foreach ($address_parts as $index => $part) {
             if (in_array(strtolower($part), $street_types)) {
-                // Tout ce qui est avant le type de voie est le numéro de maison
                 $house_number = implode(' ', array_slice($address_parts, 0, $index));
-                // Tout ce qui est après est le nom de rue
                 $street_name = implode(' ', array_slice($address_parts, $index));
                 break;
             }
         }
 
-        // Si aucun type de voie trouvé, tout est considéré comme `street_name`
         if (empty($street_name)) {
             $street_name = $validated['address'];
-            $house_number = ''; // Pas de numéro détecté
+            $house_number = '';
         }
 
-        // Enregistrer dans la base de données
         $user->homeAddress()->updateOrCreate(
             ['label' => 'home'],
             [
@@ -196,11 +186,9 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        // 1️⃣ Mettre à jour la date de naissance dans `users`
         $user->birth_date = $validated['birth_date'];
         $user->save();
 
-        // 2️⃣ Mettre à jour ou créer l'adresse de naissance dans `addresses`
         $user->birthAddress()->updateOrCreate(
             ['label' => 'birth'],
             [
@@ -219,29 +207,24 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        // 1) Vérifier si le fichier arrive bien
         if (!$request->hasFile('photo')) {
             return back()->withErrors(['photo' => 'Aucun fichier reçu']);
         }
 
-        // 2) Validation
         $request->validate([
             'photo' => 'required|file|mimes:jpg,jpeg,png,gif,svg|max:2048',
         ]);
 
         $uploadedFile = $request->file('photo');
 
-        // 3) Supprimer l'ancienne photo si elle existe sur OVH S3
         if ($user->profilePicture) {
             Storage::disk('s3')->delete($user->profilePicture->path);
             $user->profilePicture->delete();
         }
 
-        // 4) Stocker sur OVH S3 avec un nom unique
         $path = "user_profile_pictures/{$user->id}." . $uploadedFile->getClientOriginalExtension();
         Storage::disk('s3')->put($path, file_get_contents($uploadedFile), 'public');
 
-        // 5) Enregistrer dans la base de données
         $user->profilePicture()->create([
             'name'      => "profile_picture_{$user->id}",
             'extension' => $uploadedFile->getClientOriginalExtension(),

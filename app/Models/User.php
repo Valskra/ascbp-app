@@ -42,6 +42,16 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+
+    protected $appends = [
+        'is_admin',
+        'membership_status',
+        'first_membership_date',
+        'membership_time_left',
+    ];
+
+
+
     /**
      * Get the attributes that should be cast.
      *
@@ -57,6 +67,8 @@ class User extends Authenticatable
             'phone_secondary' => PhoneCast::class,
         ];
     }
+
+    protected $with = ['homeAddress', 'birthAddress', 'contacts', 'profilePicture'];
 
 
     //////////
@@ -91,46 +103,104 @@ class User extends Authenticatable
     }
 
 
-    ////////////
+    ///////////
     //
     // Adhésions
     //
-    ////////////
+    ///////////
 
-
+    /**
+     * Relation avec les adhésions (memberships)
+     */
     public function memberships()
     {
         return $this->hasMany(Membership::class);
     }
 
-
     public function hasMembership(): bool
     {
-        $latest = $this->memberships()
-            ->orderByDesc('join_date')
+        return $this->membership_status === 1;
+    }
+
+    /**
+     * 1. Déterminer le statut d'adhésion de l'utilisateur
+     *
+     * @return int
+     * -1 = compte désactivé ou banni
+     *  0 = jamais adhérent ou adhésion expirée depuis +1 an
+     *  1 = adhérent actif (cotisation à jour)
+     *  2 = ancien adhérent depuis moins d'un an
+     */
+    public function getMembershipStatusAttribute(): int
+    {
+        if ($this->status === 'disabled' || $this->status === 'banned') {
+            return -1;
+        }
+
+        $latest = $this->memberships
+            ->sortByDesc('contribution_date')
             ->first();
 
-        return $latest && Carbon::parse($latest->join_date)->greaterThanOrEqualTo(now()->subYear());
+        if (!$latest) {
+            return 0;
+        }
+
+        $expirationDate = Carbon::parse($latest->contribution_date)->addYear()->subDay();
+        $now = now();
+
+        if ($expirationDate >= $now) {
+            return 1;
+        }
+
+        if ($expirationDate >= $now->subYear()) {
+            return 2;
+        }
+
+        return 0;
     }
 
-
-
-    public function timeSinceJoin(): ?int
+    /**
+     * 2. Récupérer la date de première adhésion
+     *
+     * @return Carbon|null
+     */
+    public function getFirstMembershipDateAttribute(): ?Carbon
     {
-        $first = $this->memberships()->orderBy('join_date')->first();
-        return $first ? Carbon::parse($first->join_date)->diffInDays() : null;
+        $first = $this->memberships
+            ->sortBy('contribution_date')
+            ->first();
+
+        return $first ? Carbon::parse($first->contribution_date) : null;
     }
 
-    public function timeLeft(): ?int
+    /**
+     * 3. Temps restant avant l'expiration de l'adhésion
+     *
+     * @return int|null
+     * Nombre de jours restant, ou null si pas d'adhésion
+     */
+    public function getMembershipTimeLeftAttribute(): ?int
     {
-        $latest = $this->memberships()->orderByDesc('join_date')->first();
+        $latest = $this->memberships
+            ->sortByDesc('contribution_date')
+            ->first();
 
-        if (!$latest) return null;
+        if (!$latest) {
+            return null;
+        }
 
-        $endDate = Carbon::parse($latest->join_date)->addYear()->subDay();
-        return $endDate->isPast() ? 0 : now()->diffInDays($endDate);
+        $expirationDate = Carbon::parse($latest->contribution_date)->addYear()->subDay();
+        $now = now();
+
+        return $expirationDate->isPast() ? 0 : $now->diffInDays($expirationDate);
     }
 
+    /**
+     * 4. Formater le temps restant pour l'affichage
+     *
+     * @param int|null $days
+     * @return array|null
+     */
     public function getTimeToScreen(?int $days): ?array
     {
         if (is_null($days)) return null;
@@ -144,6 +214,27 @@ class User extends Authenticatable
         }
     }
 
+    public function timeSinceJoin(): ?int
+    {
+        $first = $this->memberships
+            ->sortBy('contribution_date')
+            ->first();
+
+        return $first ? now()->diffInDays($first->contribution_date) : null;
+    }
+
+    public function timeLeft(): ?int
+    {
+        $latest = $this->memberships
+            ->sortByDesc('contribution_date')
+            ->first();
+
+        if (!$latest) return null;
+
+        $endDate = Carbon::parse($latest->contribution_date)->addYear()->subDay();
+
+        return $endDate->isPast() ? 0 : now()->diffInDays($endDate);
+    }
 
     ////////
     //
@@ -162,11 +253,10 @@ class User extends Authenticatable
         return $this->roles->contains('name', $roleName);
     }
 
-    // Vérifie s'il a une permission précise (via les rôles)
-    public function hasPermission(string $permission): bool
+    public function hasPermission(string $permissions): bool
     {
         foreach ($this->roles as $role) {
-            if ($role->permission && $role->permission->$permission === true) {
+            if ($role->permissions && $role->permissions->{$permissions} == 1) {
                 return true;
             }
         }
@@ -174,6 +264,11 @@ class User extends Authenticatable
     }
 
     public function isAdmin(): bool
+    {
+        return $this->hasPermission('admin_access');
+    }
+
+    public function getIsAdminAttribute(): bool
     {
         return $this->hasPermission('admin_access');
     }

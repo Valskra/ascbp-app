@@ -11,7 +11,7 @@ class Membership extends Model
 
     protected $fillable = [
         'year',
-        'join_date',
+        'contribution_date',
         'amount',
         'metadata',
         'user_id',
@@ -19,7 +19,7 @@ class Membership extends Model
 
     protected $casts = [
         'metadata' => 'array',
-        'join_date' => 'date',
+        'contribution_date' => 'date',
     ];
 
     public function user()

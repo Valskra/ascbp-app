@@ -15,4 +15,9 @@ class Permission extends Model
         'manage_articles',
         'create_articles',
     ];
+
+    public function roles()
+    {
+        return $this->hasMany(Role::class);
+    }
 }

@@ -99,14 +99,22 @@ function submitForm() {
 
 <template>
     <div class="flex flex-row items-start">
-        <!-- Image de profil -->
-        <img v-if="user.profile_picture?.url" :src="user.profile_picture.url" alt="Photo de profil"
-            class="rounded-full border border-gray-300 dark:border-gray-600 mr-8 h-[220px] w-[220px]"
-            @click="openModal" />
+        <div class="relative rounded-full border border-gray-300 dark:border-gray-600 mr-8 h-[220px] w-[220px] overflow-hidden cursor-pointer"
+            @click="openModal">
 
-        <img v-else src="https://placehold.co/100" alt="Profil"
-            class="rounded-full border border-gray-300 dark:border-gray-600 mr-8 min-h-[220px] max-h-[220px]"
-            @click="openModal" />
+            <img v-if="user.profile_picture?.url" :src="user.profile_picture.url" alt="Photo de profil"
+                class="h-full w-full object-cover" />
+
+            <img v-else src="https://placehold.co/100" alt="Profil" class="h-full w-full object-cover" />
+
+            <!-- Overlay apparaissant au hover -->
+            <div
+                class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                <span class="text-white font-semibold">Modifier l'image</span>
+                <!-- ou icône crayon -->
+                <!-- <i class="fas fa-pencil-alt text-white text-xl"></i> -->
+            </div>
+        </div>
 
         <!-- Modal pour choisir le fichier (showModal) -->
         <div v-if="showModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">

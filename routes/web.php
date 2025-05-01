@@ -2,10 +2,12 @@
 
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\FileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Middleware\IsAdmin;
 
 Route::post(
     '/files/user-profile-picture',
@@ -52,5 +54,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/membership', [MembershipController::class, 'store'])->name('membership.store');
 });
 
+Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/users', [AdminUserController::class, 'index'])->name('users');
+    Route::get('/users/export', [AdminUserController::class, 'export'])->name('export_users');
+});
 
 require __DIR__ . '/auth.php';

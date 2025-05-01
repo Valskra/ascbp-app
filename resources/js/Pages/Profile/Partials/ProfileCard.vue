@@ -1,18 +1,21 @@
 <script setup>
 import ProfileInformationDisplay from "./ProfileInformationDisplay.vue";
-import { computed } from 'vue'
-import { useDateFormat } from '@vueuse/core'
+import { computed } from 'vue';
+import { useDateFormat } from '@vueuse/core';
 
 const props = defineProps({
     user: {
         type: Object,
         required: true
     }
-})
+});
 
-props.user.birth_date = computed(() => {
-    props.user.birth_date ? useDateFormat(user.birth_date, 'DD/MM/YYYY') : "__/__/____";
-})
+const birthDateFormatted = computed(() => {
+    return props.user.birth_date
+        ? useDateFormat(props.user.birth_date, 'DD/MM/YYYY').value
+        : "__/__/____";
+});
+
 </script>
 
 <style scoped></style>
@@ -29,8 +32,8 @@ props.user.birth_date = computed(() => {
         <!-- Informations du profil -->
         <div class="flex flex-col space-y-2">
             <div>
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white"> {{ props.user.firstname }} {{
-                    props.user.lastname }}
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white"> {{ user.firstname }} {{
+                    user.lastname }}
                 </h2>
             </div>
             <p class="text-gray-600 dark:text-gray-300 text-sm"> Anniversaire : {{ birthDateFormatted || '__/__/____' }}
@@ -38,11 +41,11 @@ props.user.birth_date = computed(() => {
 
             <!-- Section Mobile : Desktop -->
             <div class="hidden md:block">
-                <ProfileInformationDisplay title="Mobile" v-if="props.user.phone_secondary" :labels="['Perso', 'Pro']"
-                    labelWidth="30%" :data="[props.user.phone, props.user.phone_secondary]" />
+                <ProfileInformationDisplay title="Mobile" v-if="user.phone_secondary" :labels="['Perso', 'Pro']"
+                    labelWidth="30%" :data="[user.phone, user.phone_secondary]" />
 
                 <ProfileInformationDisplay title="Mobile" v-else :labels="['Perso']" labelWidth="30%"
-                    :data="[props.user.phone]" />
+                    :data="[user.phone]" />
             </div>
 
         </div>
@@ -50,8 +53,8 @@ props.user.birth_date = computed(() => {
     <!-- Section Mobile : Mobile -->
     <div class="flex flex-col md:hidden">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white md:hidden">Mobile</h2>
-        <ProfileInformationDisplay title="" v-if="props.user.phone_secondary" :labels="['Perso', 'Pro']"
-            labelWidth="25%" :data="[props.user.phone, props.user.phone_secondary]" />
-        <ProfileInformationDisplay title="" v-else :labels="['Perso']" labelWidth="20%" :data="[props.user.phone]" />
+        <ProfileInformationDisplay title="" v-if="user.phone_secondary" :labels="['Perso', 'Pro']" labelWidth="25%"
+            :data="[user.phone, user.phone_secondary]" />
+        <ProfileInformationDisplay title="" v-else :labels="['Perso']" labelWidth="20%" :data="[user.phone]" />
     </div>
 </template>

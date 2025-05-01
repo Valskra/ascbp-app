@@ -19,8 +19,9 @@ class MembershipController extends Controller
             'user' => [
                 'id' => $user->id,
                 'firstname' => $user->firstname,
-                'membership' => $user->memberships()->latest('join_date')->first(),
+                'membership' => $user->memberships()->latest('contribution_date')->first(),
                 'has_membership' => $user->hasMembership(),
+                'membership_status' => $user->membership_status,
             ],
             'time_since_join' => $user->getTimeToScreen($user->timeSinceJoin()),
             'time_left' => $user->getTimeToScreen($user->timeLeft()),
@@ -29,12 +30,12 @@ class MembershipController extends Controller
 
 
 
+
     public function store(Request $request)
     {
         $user = $request->user();
         $year = now()->year;
 
-        // Empêche une adhésion multiple pour la même année
         $alreadyMember = $user->memberships()->where('year', $year)->exists();
 
         if ($alreadyMember) {
@@ -43,7 +44,7 @@ class MembershipController extends Controller
 
         $user->memberships()->create([
             'year' => $year,
-            'join_date' => now()->toDateString(),
+            'contribution_date' => now()->toDateString(),
             'amount' => 0, // montant temporaire (à changer plus tard)
             'metadata' => null,
         ]);

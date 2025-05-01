@@ -4,10 +4,12 @@ import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const showingNavigationDropdown = ref(false);
+const user = usePage().props.auth.user;
+
 </script>
 
 <template>
@@ -30,6 +32,11 @@ const showingNavigationDropdown = ref(false);
                             <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboard
+                                </NavLink>
+
+                                <NavLink v-if="user.is_admin" :href="route('admin.users')"
+                                    :active="route().current('admin.users')">
+                                    Utilisateurs
                                 </NavLink>
                             </div>
                         </div>
@@ -135,7 +142,8 @@ const showingNavigationDropdown = ref(false);
             </nav>
 
             <!-- Page Heading -->
-            <header class="bg-white shadow dark:bg-gray-800" v-if="$slots.header">
+            <header class="bg-white shadow dark:bg-gray-800 border-b-2 border-[#00adef] dark:border-[#027daf]"
+                v-if="$slots.header">
                 <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                     <slot name="header" />
                 </div>
@@ -147,4 +155,5 @@ const showingNavigationDropdown = ref(false);
             </main>
         </div>
     </div>
+
 </template>

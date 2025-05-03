@@ -56,6 +56,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/certificats/store', [FileController::class, 'storeCertificate'])->name('certificats.store');
     Route::delete('/certificats/delete', [FileController::class, 'deleteCertificate'])->name('certificats.delete');
     Route::delete('/certificats/delete-multiple', [FileController::class, 'deleteMultipleCertificates'])->name('certificats.delete.multiple');
+    Route::delete('/certificats/{document}', [FileController::class, 'destroyCertificate'])->name('certificats.destroy');
 });
 
 Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->group(function () {

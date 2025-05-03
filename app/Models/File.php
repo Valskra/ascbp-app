@@ -17,6 +17,7 @@ class File extends Model
         'extension',
         'mimetype',
         'size',
+        'hash',
         'path',
         'disk',
     ];

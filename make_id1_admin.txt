@@ -1,0 +1,23 @@
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
+
+
+$permission = Permission::create([
+'manage_admin' => true,
+'admin_access' => true,
+'manage_events' => true,
+'create_events' => true,
+'manage_members' => true,
+'manage_articles' => true,
+'create_articles' => true,
+]);
+
+
+$role = Role::create([
+'name' => 'owner',
+'permissions_id' => $permission->id,
+]);
+
+$user = User::find(1);
+$user->roles()->attach(1);

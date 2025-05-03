@@ -35,7 +35,6 @@ defineProps({
         </template>
 
         <div class="py-8 ">
-
             <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-2">
                 <div class="space-y-6">
                     <div class="bg-white p-4 shadow sm:rounded-lg sm:p-8 dark:bg-gray-800">

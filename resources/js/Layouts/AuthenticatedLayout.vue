@@ -1,3 +1,4 @@
+0
 <script setup>
 import ApplicationLogoLong from '@/Components/ApplicationLogoLong.vue';
 import Dropdown from '@/Components/Dropdown.vue';

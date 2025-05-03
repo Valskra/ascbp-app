@@ -5,8 +5,8 @@ import { usePage } from '@inertiajs/vue3';
 
 const routeTitles = {
     'profile.profile': 'Profil',
-    'profile.edit': 'Édition',
-    'documents': 'Documents',
+    'profile.edit': 'Édition du Profil',
+    'certificats': 'Gestion des Certificats',
 };
 
 const title = computed(() => {
@@ -27,14 +27,11 @@ const title = computed(() => {
             <NavLink :href="route('profile.edit')" :active="route().current('profile.edit')">
                 Édition
             </NavLink>
-            <NavLink>
+
+            <NavLink :href="route('certificats')" :active="route().current('certificats')">
                 Documents
             </NavLink>
-            <!--
-                <NavLink :href=" route('documents')" :active="route().current('documents')">
-                Documents
-            </NavLink>
-            -->
+
         </div>
     </div>
 </template>

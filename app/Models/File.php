@@ -25,17 +25,15 @@ class File extends Model
 
 
 
-    public function getUrlAttribute()
+    public function getUrlAttribute(): string
     {
-        // Cas S3 (OVH)
         if ($this->disk === 's3') {
-            // Construit l'URL complète : endpoint + bucket + path
-            return env('AWS_ENDPOINT') . '/' . env('AWS_BUCKET') . '/' . $this->path;
+            return rtrim(env('AWS_URL'), '/') . '/' . ltrim($this->path, '/');
         }
 
-        // Cas local
         return asset("storage/{$this->path}");
     }
+
 
 
     public function fileable()

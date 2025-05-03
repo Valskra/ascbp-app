@@ -48,6 +48,7 @@ const saveContacts = () => {
                         {{ contact.firstname || 'Nouveau contact' }} {{ contact.lastname || '' }} </h4>
                     <button type="button" @click="removeContact(index)" class="text-red-500 hover:text-red-700"
                         v-if="form.contacts.length > 1">
+
                         <TrashIcon class="w-5 stroke-black dark:stroke-white hover:stroke-red-500" />
                         <!-- <svg class="w-5 stroke-black dark:stroke-white hover:stroke-red-500 " viewBox="0 0 24 24"
                             fill="none" xmlns="http://www.w3.org/2000/svg">

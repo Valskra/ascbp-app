@@ -52,6 +52,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile/photo', [ProfileController::class, 'showPhoto'])->name('profile.showPhoto');
     Route::get('/membership', [MembershipController::class, 'create'])->name('membership.create');
     Route::post('/membership', [MembershipController::class, 'store'])->name('membership.store');
+    Route::get('/certificats', [FileController::class, 'listUserCertificates'])->name('certificats');
+    Route::post('/certificats/store', [FileController::class, 'storeCertificate'])->name('certificats.store');
+    Route::delete('/certificats/delete', [FileController::class, 'deleteCertificate'])->name('certificats.delete');
+    Route::delete('/certificats/delete-multiple', [FileController::class, 'deleteMultipleCertificates'])->name('certificats.delete.multiple');
 });
 
 Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->group(function () {

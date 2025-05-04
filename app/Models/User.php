@@ -272,4 +272,22 @@ class User extends Authenticatable
     {
         return $this->hasPermission('admin_access');
     }
+
+    ///////////
+    //
+    // Files
+    //
+    ///////////
+
+    public function uploadLinks()
+    {
+        return $this->hasMany(UploadLink::class);
+    }
+
+    public function latestUploadLink(): ?UploadLink
+    {
+        return $this->uploadLinks()
+            ->orderByDesc('created_at')
+            ->first();
+    }
 }

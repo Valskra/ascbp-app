@@ -3,6 +3,7 @@
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\UploadLinkController;
 use App\Http\Controllers\FileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -20,7 +21,10 @@ Route::put(
 )->name('profile.update.photo');
 
 
-
+Route::get("/u/{token}",     [UploadLinkController::class, 'showForm'])
+    ->name('upload-link.form');
+Route::post("/u/{token}",     [UploadLinkController::class, 'upload'])
+    ->name('upload-link.upload');
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -54,14 +58,23 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/membership', [MembershipController::class, 'store'])->name('membership.store');
     Route::get('/certificats', [FileController::class, 'listUserCertificates'])->name('certificats');
     Route::post('/certificats/store', [FileController::class, 'storeCertificate'])->name('certificats.store');
-    Route::delete('/certificats/delete', [FileController::class, 'deleteCertificate'])->name('certificats.delete');
-    Route::delete('/certificats/delete-multiple', [FileController::class, 'deleteMultipleCertificates'])->name('certificats.delete.multiple');
     Route::delete('/certificats/{document}', [FileController::class, 'destroyCertificate'])->name('certificats.destroy');
+    Route::post('/certificats/upload-link', [UploadLinkController::class, 'store'])
+        ->name('upload-link.store');
+    Route::get('/certificats/upload/{token}', [UploadLinkController::class, 'show'])
+        ->name('upload-link.show');
+    Route::get('/certificats/upload-link/latest', [
+        UploadLinkController::class,
+        'latest'
+    ])->middleware('auth')
+        ->name('upload-link.latest');
 });
 
 Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/users', [AdminUserController::class, 'index'])->name('users');
     Route::get('/users/export', [AdminUserController::class, 'export'])->name('export_users');
 });
+
+
 
 require __DIR__ . '/auth.php';

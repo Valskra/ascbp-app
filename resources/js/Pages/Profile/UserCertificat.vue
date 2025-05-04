@@ -4,11 +4,19 @@ import { Head, useForm } from '@inertiajs/vue3';
 import ErrorAlert from '@/Components/ErrorAlert.vue';
 import DocumentCard from '@/Components/DocumentCard.vue';
 import FileIcon from '@/Components/svg/fileIcon.vue';
+import ExportIcon from '@/Components/svg/exportIcon.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ProfileLayout from './Partials/ProfileLayout.vue';
+import UploadLinkModal from '@/Components/UploadLinkModal.vue'
 
+const showLinkModal = ref(false)
+const showUploadLink = ref(false)
 
-const props = defineProps({ certificates: Array });
+const props = defineProps({
+    open: Boolean,
+    certificates: Array
+})
+const emit = defineEmits(['close'])  // ← le modal émet “close” quand on le ferme
 
 /* --------- formulaire --------- */
 const form = useForm({
@@ -50,6 +58,8 @@ function submit() {
         },
     });
 }
+
+
 </script>
 
 
@@ -105,11 +115,11 @@ function submit() {
 
                         <template v-else>
                             <p class="text-2xl font-semibold text-gray-500 dark:text-gray-400 mb-2">
-                                Certificat&nbsp;Médical
+                                Certificat Médical
                             </p>
                             <p class="text-gray-500 dark:text-gray-400 text-sm">
                                 Faites glisser votre document ou cliquez ici<br>
-                                Formats&nbsp;: png, pdf, jpg, svg&nbsp;&bull;&nbsp;Taille&nbsp;maxi&nbsp;: 10 Mo
+                                Formats : png, pdf, jpg, svg - Taille maxi : 10 Mo
                             </p>
                         </template>
 
@@ -128,24 +138,44 @@ function submit() {
 
                         <div class="grid sm:grid-cols-2 gap-4">
                             <label class="text-sm text-gray-600 dark:text-gray-400 flex flex-col">
-                                Date de signature&nbsp;:
+                                Date de signature :
                                 <input v-model="form.signed_at" type="date" readonly class="border p-2 rounded bg-gray-100 dark:bg-gray-700
                                 text-gray-700 dark:text-gray-200" />
                             </label>
                             <label class="text-sm text-gray-600 dark:text-gray-400 flex flex-col">
-                                Date d’expiration&nbsp;:
+                                Date d’expiration :
                                 <input v-model="form.expires_at" type="date" readonly class="border p-2 rounded bg-gray-100 dark:bg-gray-700
                                 text-gray-700 dark:text-gray-200" />
                             </label>
                         </div>
 
-                        <button @click="submit" :disabled="form.processing || !form.file" class="w-full py-2 rounded bg-blue-600 text-white hover:bg-blue-700
-                       disabled:opacity-50 disabled:cursor-not-allowed">
-                            {{ form.processing ? 'Envoi…' : 'Uploader le certificat' }}
-                        </button>
+
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <!-- Bouton Upload -->
+                            <button @click="submit" :disabled="form.processing || !form.file"
+                                class="w-full py-2 rounded bg-blue-600 text-white hover:bg-blue-700
+                                                                                                disabled:opacity-50 disabled:cursor-not-allowed">
+                                {{ form.processing ? 'Envoi…' : 'Uploader le certificat' }}
+                            </button>
+
+                            <!-- Bouton Générer le lien -->
+                            <button @click="showUploadLink = true" class="flex items-center gap-2        
+               sm:w-auto px-4 py-2 rounded
+               bg-green-600 text-white hover:bg-green-700">
+
+                                <ExportIcon class="w-5 h-5 stroke-white" />
+                                <span class="sm:hidden inline">
+                                    Générer un lien d’envoi
+                                </span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        <!--CreateUploadLinkModal :open="showLinkModal" @close="showLinkModal = false" /-->
     </AuthenticatedLayout>
+
+
+    <UploadLinkModal :open="showUploadLink" @close="showUploadLink = false" />
 </template>

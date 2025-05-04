@@ -43,7 +43,6 @@ function destroy() {           // ← appelée par le bouton “OK” du modal
         <!-- bouton poubelle -->
         <button @click.stop="askDestroy" class="absolute top-2 right-2 z-10 w-7 h-7 rounded bg-gray-800/80
                    flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-            <!-- l’icône change de teinte sur hover du bouton -->
             <TrashIcon class="w-5 stroke-white hover:stroke-red-500" />
         </button>
 
@@ -58,7 +57,7 @@ function destroy() {           // ← appelée par le bouton “OK” du modal
 
         <!-- pied -->
         <div class="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800">
-            <FileIcon :ext="ext" class="w-4 h-4 shrink-0 text-blue-600 dark:text-blue-400" />
+            <FileIcon :ext="ext" class="w-6 h-6 shrink-0" />
             <span class="truncate text-sm font-medium text-gray-800 dark:text-gray-200">
                 {{ label(doc.title, doc.extension) }}
             </span>

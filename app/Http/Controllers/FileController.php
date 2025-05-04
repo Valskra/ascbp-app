@@ -168,63 +168,20 @@ class FileController extends Controller
     }
 
 
-
-    // FileController.php
     public function destroyCertificate(Request $request, Document $document)
     {
-        // ✅ bonne vérification d’auteur
         abort_unless($document->user_id === $request->user()->id, 403);
 
-        // supprime le fichier S3 si besoin
         if ($document->file && $document->file->disk === 's3') {
             Storage::disk('s3')->delete($document->file->path);
         }
 
-        $document->delete();              // (FK ON DELETE CASCADE → File auto)
+        $document->file()->delete();
+        $document->delete();
 
         return back()->with('success', 'Document supprimé.');
     }
 
-
-    /**
-     * Delete one certificate file
-     */
-    public function deleteCertificate(Request $request)
-    {
-        $request->validate([
-            'path' => 'required|string'
-        ]);
-
-        $userId = Auth::id();
-        $path = $request->input('path');
-
-        if (Str::startsWith($path, "certificate/{$userId}/")) {
-            Storage::disk('s3')->delete($path);
-            return response()->json(['success' => 'Certificat supprimé']);
-        }
-
-        return response()->json(['error' => 'Non autorisé'], 403);
-    }
-
-    /**
-     * Delete multiple certificate files
-     */
-    public function deleteMultipleCertificates(Request $request)
-    {
-        $request->validate([
-            'paths' => 'required|array'
-        ]);
-
-        $userId = Auth::id();
-
-        foreach ($request->input('paths') as $path) {
-            if (Str::startsWith($path, "certificate/{$userId}/")) {
-                Storage::disk('s3')->delete($path);
-            }
-        }
-
-        return response()->json(['success' => 'Certificats supprimés']);
-    }
 
     public function storeUserProfilePicture(Request $request)
     {

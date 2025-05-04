@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { router, Head } from '@inertiajs/vue3';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { useDateFormat } from '@vueuse/core'
-import ExportIcon from '@/Components/svg/exportIcon.vue';
+import DownloadFileIcon from '@/Components/svg/downloadFileIcon.vue';
 
 const props = defineProps({
     users: Object,
@@ -81,7 +81,7 @@ function statusColor(user) {
                         <button @click="exportCSV"
                             class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 h-10 flex items-center gap-2">
                             <!-- Icône -->
-                            <ExportIcon class="w-5 stroke-white" />
+                            <DownloadFileIcon class="w-5 stroke-white" />
                             Exporter CSV
                         </button>
 

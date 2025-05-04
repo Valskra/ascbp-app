@@ -19,11 +19,11 @@ const kind = computed(() => {
 const colorClass = computed(() => {
     switch (kind.value) {
         case 'pdf': return 'text-[#ef463b] dark:text-[#ef463b]'
-        case 'doc': return 'text-[#0080ff] dark:text-[#0080ff]'
-        case 'jpg': return 'text-[#ffd900] dark:text-[#ffd900]'
+        case 'doc': return ' text-blue-600 dark:text-blue-400'
+        case 'jpg': return 'text-[#ffc000] dark:text-[#ffd900]'
         case 'png': return 'text-[#ff757a] dark:text-[#ff757a]'
-        case 'gif': return 'text-[#8bc746] dark:text-[#8bc746]'
-        case 'svg': return 'text-[#48b2dc] dark:text-[#48b2dc]'
+        case 'gif': return 'text-[#7bd746] dark:text-[#7bd746]'
+        case 'svg': return 'text-[#41d3eb] dark:text-[#41d3eb]'
         default: return 'text-[#0080ff] dark:text-[#0080ff]'
     }
 })

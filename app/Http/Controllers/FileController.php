@@ -22,8 +22,11 @@ class FileController extends Controller
      */
     public function listUserCertificates(Request $request)
     {
+
+        $user = $request->user();
+
         $certificates = Document::with('file')
-            ->where('user_id', $request->user()->id)
+            ->where('user_id', $user->id)
             ->latest()
             ->get()
             ->map(fn($doc) => [
@@ -32,10 +35,16 @@ class FileController extends Controller
                 'extension' => $doc->file->extension,
                 'url'       => $doc->file->url,
             ]);
-
+        $links = $user->getAllUploadLinks()->map(fn($l) => [
+            'id'         => $l->id,
+            'title'      => $l->title,
+            'url'        => route('upload-link.show', ['token' => $l->token]),
+            'expires_at' => $l->expires_at,
+        ]);
 
         return Inertia::render('Profile/UserCertificat', [
             'certificates' => $certificates,
+            'uploadLinks'  => $links,
         ]);
     }
 

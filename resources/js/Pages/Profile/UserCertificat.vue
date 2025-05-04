@@ -5,16 +5,19 @@ import ErrorAlert from '@/Components/ErrorAlert.vue';
 import DocumentCard from '@/Components/DocumentCard.vue';
 import FileIcon from '@/Components/svg/fileIcon.vue';
 import ExportIcon from '@/Components/svg/exportIcon.vue';
+import LinkIcon from '@/Components/svg/linkIcon.vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ProfileLayout from './Partials/ProfileLayout.vue';
 import UploadLinkModal from '@/Components/UploadLinkModal.vue'
+import LinkListModal from '@/Components/LinkListModal.vue'
 
-const showLinkModal = ref(false)
 const showUploadLink = ref(false)
+const showLinkList = ref(false)
 
 const props = defineProps({
     open: Boolean,
-    certificates: Array
+    certificates: Array,
+    uploadLinks: Array
 })
 const emit = defineEmits(['close'])  // ← le modal émet “close” quand on le ferme
 
@@ -168,14 +171,24 @@ function submit() {
                                     Générer un lien d’envoi
                                 </span>
                             </button>
+
+                            <!-- A REMPLACER PAR LA LISTE DES LIENS -->
+                            <button @click="showLinkList = true" class="flex items-center gap-2        
+               sm:w-auto px-4 py-2 rounded
+               bg-green-600 text-white hover:bg-green-700">
+
+                                <LinkIcon class="w-5 h-5 stroke-white" />
+                                <span class="sm:hidden inline">
+                                    Mes liens
+                                </span>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!--CreateUploadLinkModal :open="showLinkModal" @close="showLinkModal = false" /-->
     </AuthenticatedLayout>
 
-
+    <LinkListModal :open="showLinkList" :links="uploadLinks" @close="showLinkList = false" />
     <UploadLinkModal :open="showUploadLink" @close="showUploadLink = false" />
 </template>

@@ -290,4 +290,17 @@ class User extends Authenticatable
             ->orderByDesc('created_at')
             ->first();
     }
+
+
+    /**
+     * Récupère tous les liens générés par l’utilisateur, du plus récent au plus ancien.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<UploadLink>
+     */
+    public function getAllUploadLinks()
+    {
+        return $this->uploadLinks()
+            ->orderByDesc('created_at')
+            ->get();
+    }
 }

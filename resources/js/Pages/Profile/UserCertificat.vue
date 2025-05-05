@@ -28,7 +28,8 @@ const form = useForm({
     signed_at: new Date().toISOString().slice(0, 10),
     expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
         .toISOString().slice(0, 10),
-});
+})
+
 
 /* --------- refs / état --------- */
 const dropActive = ref(false);
@@ -62,7 +63,18 @@ function submit() {
     });
 }
 
-
+const expiresAtModel = computed({
+    get: () => form.expires_at,
+    set: val => {
+        // si l’utilisateur colle/manipule une date brute, on normalise
+        const d = new Date(val)
+        if (!isNaN(d)) {
+            form.expires_at = d.toISOString().slice(0, 10)
+        } else {
+            form.expires_at = val
+        }
+    }
+})
 </script>
 
 
@@ -147,8 +159,9 @@ function submit() {
                             </label>
                             <label class="text-sm text-gray-600 dark:text-gray-400 flex flex-col">
                                 Date d’expiration :
-                                <input v-model="form.expires_at" type="date" readonly class="border p-2 rounded bg-gray-100 dark:bg-gray-700
-                                text-gray-700 dark:text-gray-200" />
+                                <input v-model="expiresAtModel" type="date" :min="new Date().toISOString().slice(0, 10)"
+                                    class="border p-2 rounded bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200" />
+
                             </label>
                         </div>
 
@@ -189,6 +202,6 @@ function submit() {
         </div>
     </AuthenticatedLayout>
 
-    <LinkListModal :open="showLinkList" :links="uploadLinks" @close="showLinkList = false" />
     <UploadLinkModal :open="showUploadLink" @close="showUploadLink = false" />
+    <LinkListModal :open="showLinkList" :links="uploadLinks" @close="showLinkList = false" />
 </template>

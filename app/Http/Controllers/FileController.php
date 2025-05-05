@@ -3,16 +3,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\File;
-use App\Models\Document;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
-use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
+use App\Models\{File, Document, UploadLink};
+
 
 class FileController extends Controller
 {
@@ -22,9 +20,23 @@ class FileController extends Controller
      */
     public function listUserCertificates(Request $request)
     {
-
         $user = $request->user();
 
+        // 1. Nettoyage des liens expirés
+        $now = Carbon::now();
+        $links = UploadLink::where('user_id', $user->id)
+            ->orderBy('expires_at') // Trie par date la plus proche
+            ->get();
+
+        foreach ($links as $link) {
+            if ($link->expires_at->isPast() || $link->used_at !== null) {
+                $link->delete();
+            } else {
+                break; // dès qu'on en trouve un encore valide, on arrête
+            }
+        }
+
+        // 2. On recharge la liste (filtrée cette fois)
         $certificates = Document::with('file')
             ->where('user_id', $user->id)
             ->latest()
@@ -35,16 +47,19 @@ class FileController extends Controller
                 'extension' => $doc->file->extension,
                 'url'       => $doc->file->url,
             ]);
-        $links = $user->getAllUploadLinks()->map(fn($l) => [
-            'id'         => $l->id,
-            'title'      => $l->title,
-            'url'        => route('upload-link.show', ['token' => $l->token]),
-            'expires_at' => $l->expires_at,
-        ]);
+
+        $uploadLinks = $user->getAllUploadLinks()
+            ->map(fn($l) => [
+                'id'         => $l->id,
+                'title'      => $l->title,
+                'url'        => route('upload-link.show', ['token' => $l->token]),
+                'expires_at' => $l->expires_at,
+                'used_at'    => $l->used_at,
+            ]);
 
         return Inertia::render('Profile/UserCertificat', [
             'certificates' => $certificates,
-            'uploadLinks'  => $links,
+            'uploadLinks'  => $uploadLinks,
         ]);
     }
 
@@ -91,6 +106,8 @@ class FileController extends Controller
         $user = $request->user();
 
         /* validation avec 10 Mo max */
+        $user = $request->user();
+
         $request->validate([
             'title' => [
                 'required',
@@ -99,9 +116,18 @@ class FileController extends Controller
                 Rule::unique('documents', 'title')
                     ->where(fn($q) => $q->where('user_id', $user->id)),
             ],
-            'file'  => 'required|file|mimes:doc,docx,dotx,odt,svg,pdf,png,jpg,jpeg,gif,bmp,webp|max:10240',
+            'file' => 'required|file|mimes:doc,docx,dotx,odt,svg,pdf,png,jpg,jpeg,gif,bmp,webp|max:10240',
+            'expires_at' => 'required|date|after_or_equal:today',
         ], [
-            /* messages personnalisés … */]);
+            'title.required' => 'Le titre est requis.',
+            'title.unique' => 'Vous avez déjà un document avec ce titre.',
+            'file.required' => 'Veuillez sélectionner un fichier.',
+            'file.mimes' => 'Format de fichier invalide.',
+            'file.max' => 'Le fichier ne doit pas dépasser 10 Mo.',
+            'expires_at.required' => 'La date d’expiration est requise.',
+            'expires_at.date' => 'La date d’expiration doit être une date valide.',
+            'expires_at.after_or_equal' => 'La date d’expiration doit être aujourd’hui ou dans le futur.',
+        ]);
 
         $uploaded = $request->file('file');
         $hash     = hash_file('sha256', $uploaded->getRealPath());
@@ -137,10 +163,11 @@ class FileController extends Controller
         /* Document */
         Document::create([
             'title'           => $request->title,
-            'expiration_date' => Carbon::now()->addDays(30),
+            'expiration_date' => Carbon::createFromFormat('Y-m-d', $request->expires_at)->endOfDay(),
             'file_id'         => $file->id,
             'user_id'         => $user->id,
         ]);
+
 
         return back()->with('success', 'Certificat enregistré avec titre.');
     }

@@ -7,8 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UploadLink extends Model
 {
-    protected $fillable = ['user_id', 'token', 'title', 'expires_at'];
-    protected $dates    = ['expires_at', 'used_at'];
+    // app/Models/UploadLink.php
+    protected $fillable = ['user_id', 'token', 'title', 'expires_at', 'used_at'];
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'used_at' => 'datetime',
+    ];
 
     public function user(): BelongsTo
     {
@@ -18,5 +22,9 @@ class UploadLink extends Model
     public function isExpired(): bool
     {
         return $this->expires_at->isPast() || $this->used_at !== null;
+    }
+    public function markAsUsed(): void
+    {
+        $this->update(['used_at' => now()]);
     }
 }

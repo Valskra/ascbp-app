@@ -11,11 +11,39 @@ use Inertia\Inertia;
 
 class UploadLinkController extends Controller
 {
+
+
+
     /* ---------- 1. Génération du lien par l’utilisateur ---------- */
     public function store(Request $request)
     {
+        $user = $request->user();
+
         $request->validate([
-            'name'     => 'nullable|string|max:100',
+            'title' => [
+                'nullable',
+                'string',
+                'max:100',
+                function ($attribute, $value, $fail) use ($user) {
+                    if (!$value) {
+                        return;
+                    }
+                    // 1) même titre déjà en tant que lien
+                    $existsLink = UploadLink::where('user_id', $user->id)
+                        ->where('title', $value)
+                        ->exists();
+
+                    // 2) même titre déjà utilisé pour un File du user
+                    $existsFile = File::where('fileable_id', $user->id)
+                        ->where('fileable_type', get_class($user))
+                        ->where('name', $value)
+                        ->exists();
+
+                    if ($existsLink || $existsFile) {
+                        $fail('Nom de fichier déjà utilisé dans un autre fichier ou lien');
+                    }
+                },
+            ],
             'duration' => 'required|integer|min:1',
         ]);
 
@@ -24,7 +52,7 @@ class UploadLinkController extends Controller
         // Génération du token / URL...
         $link = UploadLink::create([
             'user_id'    => $user->id,
-            'name'       => $request->name,
+            'title'       => $request->title,
             'token'      => Str::random(40),
             'expires_at' => $expiresAt,
         ]);
@@ -43,20 +71,26 @@ class UploadLinkController extends Controller
     {
         $link = UploadLink::where('token', $token)->firstOrFail();
 
-        abort_if($link->isExpired(), 410, 'Ce lien a expiré ou a déjà été utilisé.');
+        if ($link->expires_at->isPast()) {
+            $link->delete();
+            abort(410, 'Ce lien a expiré.');
+        }
 
         return Inertia::render('Public/UploadViaLink', [
             'token'  => $token,
-            'title'  => $link->title,       // null ↔ titre libre
+            'title'  => $link->title,
             'expire' => $link->expires_at,
+            'used'   => $link->used_at !== null,
         ]);
     }
+
+
 
     /* ---------- 3. Réception du fichier ---------- */
     public function upload(Request $request, string $token)
     {
         $link = UploadLink::where('token', $token)->firstOrFail();
-        abort_if($link->isExpired(), 410, 'Lien périmé.');
+        abort_if($link->used_at !== null, 410, 'Ce lien a déjà été utilisé.');
 
         $rules = [
             'file' => 'required|file|mimes:doc,docx,dotx,odt,svg,pdf,png,jpg,jpeg,gif,bmp,webp,heic|max:10240',
@@ -98,7 +132,7 @@ class UploadLinkController extends Controller
         ]);
 
         /* marque le lien comme utilisé */
-        $link->update(['used_at' => now()]);
+        $link->markAsUsed();
 
         return Inertia::render('Public/UploadSuccess');
     }

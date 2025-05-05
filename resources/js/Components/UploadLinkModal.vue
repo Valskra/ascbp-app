@@ -1,3 +1,4 @@
+<!-- resources/js/Components/UploadLinkModal.vue -->
 <script setup>
 import { useForm } from '@inertiajs/vue3'
 import { ref, watch } from 'vue'
@@ -7,36 +8,44 @@ const emit = defineEmits(['close'])
 
 const step = ref(0)
 const linkUrl = ref('')
+const errorMsg = ref('')
+const showError = ref(false)
 
-const form = useForm({ name: '', duration: 1 })
+const form = useForm({ title: '', duration: 1 })
 
 watch(() => props.open, isOpen => {
     if (isOpen) {
         step.value = 0
         linkUrl.value = ''
-        form.reset('name', 'duration')
+        errorMsg.value = ''
+        showError.value = false
+        form.reset('title', 'duration')
     }
 })
 
-function cancel() {
-    emit('close')
-}
-
-async function generate() {
+function generate() {
     form.post(route('upload-link.store'), {
         preserveState: true,
         preserveScroll: true,
         onSuccess: async () => {
-            try {
-                const res = await fetch(route('upload-link.latest'))
-                if (!res.ok) throw new Error('Aucun lien trouvé')
-                linkUrl.value = await res.text()
-                step.value = 1
-            } catch (e) {
-                console.error(e)
+            // après création, on récupère et on passe à l'étape 1
+            const res = await fetch(route('upload-link.latest'))
+            linkUrl.value = await res.text()
+            step.value = 1
+        },
+        onError: errors => {
+            if (errors.title) {
+                errorMsg.value = errors.title[0]
+                showError.value = true
+                // masque le toast après 5s
+                setTimeout(() => (showError.value = false), 5000)
             }
-        }
+        },
     })
+}
+
+function cancel() {
+    emit('close')
 }
 
 function copyLink() {
@@ -44,9 +53,18 @@ function copyLink() {
 }
 </script>
 
-
 <template>
     <Teleport to="body">
+        <!-- Toast d'erreur -->
+        <Transition name="fade">
+            <div v-if="showError" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[60] pointer-events-none">
+                <div class="bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg">
+                    {{ errorMsg }}
+                </div>
+            </div>
+        </Transition>
+
+        <!-- Modal -->
         <div v-if="open" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md mx-4 overflow-hidden">
                 <!-- Header -->
@@ -63,9 +81,9 @@ function copyLink() {
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Nom (optionnel)
                         </label>
-                        <input v-model="form.name" type="text" placeholder="Ex : Certificat reçu"
+                        <input v-model="form.title" type="text" placeholder="Ex : Certificat reçu"
                             class="mt-1 block w-full border rounded p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
-                        <p v-if="form.errors.name" class="text-red-500 text-sm">{{ form.errors.name }}</p>
+                        <p v-if="form.errors.title" class="text-red-500 text-sm">{{ form.errors.title[0] }}</p>
 
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                             Durée de validité
@@ -76,7 +94,7 @@ function copyLink() {
                             <option :value="7">1 semaine</option>
                             <option :value="21">3 semaines</option>
                         </select>
-                        <p v-if="form.errors.duration" class="text-red-500 text-sm">{{ form.errors.duration }}</p>
+                        <p v-if="form.errors.duration" class="text-red-500 text-sm">{{ form.errors.duration[0] }}</p>
                     </div>
 
                     <!-- Étape 1 : lien généré -->

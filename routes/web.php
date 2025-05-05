@@ -20,6 +20,8 @@ Route::put(
     [ProfileController::class, 'updatePhoto']
 )->name('profile.update.photo');
 
+Route::get('/certificats/upload/{token}', [UploadLinkController::class, 'showForm'])
+    ->name('upload-link.show');
 
 Route::get("/u/{token}",     [UploadLinkController::class, 'showForm'])
     ->name('upload-link.form');
@@ -61,8 +63,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/certificats/{document}', [FileController::class, 'destroyCertificate'])->name('certificats.destroy');
     Route::post('/certificats/upload-link', [UploadLinkController::class, 'store'])
         ->name('upload-link.store');
-    Route::get('/certificats/upload/{token}', [UploadLinkController::class, 'show'])
-        ->name('upload-link.show');
+
     Route::get('/certificats/upload-link/latest', [
         UploadLinkController::class,
         'latest'

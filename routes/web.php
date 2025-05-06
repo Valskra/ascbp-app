@@ -1,14 +1,17 @@
 <?php
 
-use App\Http\Controllers\MembershipController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\UploadLinkController;
-use App\Http\Controllers\FileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Middleware\IsAdmin;
+use App\Http\Middleware\{IsAdmin, IsAnimator};
+use App\Http\Controllers\{
+    MembershipController,
+    ProfileController,
+    AdminUserController,
+    UploadLinkController,
+    FileController,
+    EventController
+};
 
 Route::post(
     '/files/user-profile-picture',
@@ -76,6 +79,13 @@ Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->gr
     Route::get('/users/export', [AdminUserController::class, 'export'])->name('export_users');
 });
 
+Route::middleware(['auth', IsAnimator::class])->prefix('events')->group(function () {
+    Route::get('/create', [EventController::class, 'create'])->name('events.create');
+
+    // Soumission du formulaire
+    Route::post('/store', [EventController::class, 'store'])
+        ->name('events.store');
+});
 
 
 require __DIR__ . '/auth.php';

@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('title', 255);
             $table->string('category', 50)->nullable();
-            $table->string('location', 255)->nullable();
             $table->dateTime('start_date');
             $table->dateTime('end_date');
             $table->dateTime('registration_start')->nullable();
@@ -21,7 +20,8 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->nullable();
             $table->string('referent_name', 100)->nullable();
             $table->text('description')->nullable();
-            //$table->foreignId('file_id')->nullable()->constrained('files')->onDelete('set null');
+            $table->foreignId('file_id')->nullable()->constrained('files')->onDelete('set null');
+            $table->string('location', 255)->nullable();
             $table->timestamps();
         });
     }

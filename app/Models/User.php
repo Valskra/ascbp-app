@@ -3,12 +3,13 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Carbon\Carbon;
+use App\Models\File;
+use App\Casts\PhoneCast;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use App\Casts\PhoneCast;
-use App\Models\File;
-use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -50,7 +51,16 @@ class User extends Authenticatable
         'membership_time_left',
     ];
 
-
+    protected static function booted()
+    {
+        static::deleting(function (User $user) {
+            if ($user->profilePicture) {
+                Storage::disk($user->profilePicture->disk)
+                    ->delete($user->profilePicture->path);
+                $user->profilePicture->delete();
+            }
+        });
+    }
 
     /**
      * Get the attributes that should be cast.
@@ -271,6 +281,27 @@ class User extends Authenticatable
     public function getIsAdminAttribute(): bool
     {
         return $this->hasPermission('admin_access');
+    }
+
+    /**
+     * Détermine si l'utilisateur est Animateur.
+     * Condition : permission "admin_access", "manage_event" ou "create_event"
+     */
+    public function isAnimator(): bool
+    {
+        return $this->hasPermission('admin_access')
+            || $this->hasPermission('manage_event')
+            || $this->hasPermission('create_event');
+    }
+
+    /**
+     * Détermine si l'utilisateur est Super Animateur.
+     * Condition : permission "admin_access" ou "manage_event"
+     */
+    public function isSuperAnimator(): bool
+    {
+        return $this->hasPermission('admin_access')
+            || $this->hasPermission('manage_event');
     }
 
     ///////////

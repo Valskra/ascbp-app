@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 
 return new class extends Migration
 {
@@ -30,9 +31,6 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->string('password');
 
-            // $table->string('profile_photo')->nullable(); // supprime ou commente
-
-
             $table->rememberToken();
             $table->timestamps();
         });
@@ -58,6 +56,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        $profileObjects = Storage::disk('s3')->allFiles('user_profile_pictures');
+        Storage::disk('s3')->delete($profileObjects);
+
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');

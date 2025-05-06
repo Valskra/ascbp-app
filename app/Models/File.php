@@ -24,7 +24,12 @@ class File extends Model
 
     protected $appends = ['url'];
 
-
+    protected static function booted()
+    {
+        static::deleting(function (File $file) {
+            Storage::disk($file->disk)->delete($file->path);
+        });
+    }
 
     public function getUrlAttribute(): string
     {

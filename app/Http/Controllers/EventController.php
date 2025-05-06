@@ -1,0 +1,167 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Event;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Inertia\Inertia;
+use Illuminate\Http\Response;
+
+class EventController extends Controller
+{
+
+    /**
+     * Display a listing of upcoming events.
+     */
+    public function index()
+    {
+        $events = Event::where('date', '>=', now())
+            ->orderBy('date', 'asc')
+            ->get();
+
+        return response()->json($events, Response::HTTP_OK);
+    }
+
+    public function create()
+    {
+        return Inertia::render('EventCreation');
+    }
+
+    /**
+     * Store a newly created event.
+     */
+    public function store(Request $request)
+    {
+        // 1) Validation
+        $validated = $request->validate([
+            'title'              => 'required|string|max:255',
+            'category'           => 'required|string|max:100',
+            'start_date'         => 'required|date|after_or_equal:today',
+            'end_date'           => 'required|date|after_or_equal:start_date',
+            'registration_open'  => 'required|date|before_or_equal:registration_close',
+            'registration_close' => 'required|date|after_or_equal:registration_open',
+            'max_participants'   => 'nullable|integer|min:1',
+            'price'              => 'nullable|string|max:50',
+            'manager_name'       => 'nullable|string|max:255',
+            'description'        => 'nullable|string',
+            'image'              => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            // nouveaux champs adresse (tous facultatifs)
+            'address'            => 'nullable|string|max:255',
+            'city'               => 'nullable|string|max:100',
+            'postal_code'        => 'nullable|string|max:10',
+            'country'            => 'nullable|string|max:100',
+        ]);
+
+        // 2) Préparer les données de l'événement
+        $data = [
+            'title'              => $validated['title'],
+            'category'           => $validated['category'],
+            'start_date'         => Carbon::parse($validated['start_date']),
+            'end_date'           => Carbon::parse($validated['end_date']),
+            'registration_open'  => Carbon::parse($validated['registration_open']),
+            'registration_close' => Carbon::parse($validated['registration_close']),
+            'max_participants'   => $validated['max_participants'] ?? null,
+            'price'              => $validated['price'] ?? null,
+            'manager_name'       => $validated['manager_name'] ?? null,
+            'description'        => $validated['description'] ?? null,
+            'organizer_id'       => $request->user()->id,
+        ];
+
+        // 3) Upload de l’image si fournie
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('events', 'public');
+            $data['image_path'] = $path;
+        }
+
+        // 4) Création de l'événement
+        $event = Event::create($data);
+
+        // 5) Gestion de l’adresse, si renseignée
+        if (
+            !empty($validated['address'])
+            || !empty($validated['city'])
+            || !empty($validated['postal_code'])
+            || !empty($validated['country'])
+        ) {
+            // On découpe l'adresse en house_number / street_name
+            $streetTypes = ['rue', 'avenue', 'boulevard', 'chemin', 'impasse', 'place', 'route', 'allée', 'quai', 'cours', 'passage', 'voie', 'square', 'faubourg'];
+            $parts = preg_split('/\s+/', trim($validated['address']));
+            $houseNumber = '';
+            $streetName   = '';
+
+            foreach ($parts as $i => $part) {
+                if (in_array(strtolower($part), $streetTypes, true)) {
+                    // tout avant est house_number, le reste street_name
+                    $houseNumber = implode(' ', array_slice($parts, 0, $i));
+                    $streetName  = implode(' ', array_slice($parts, $i));
+                    break;
+                }
+            }
+            if ($streetName === '') {
+                // pas de type trouvé : on met tout dans street_name
+                $streetName  = $validated['address'];
+                $houseNumber = '';
+            }
+
+            // On crée ou met à jour la relation address() de l’événement
+            $event->address()->updateOrCreate(
+                ['label' => 'location'],
+                [
+                    'house_number' => trim($houseNumber),
+                    'street_name'  => trim($streetName),
+                    'city'         => $validated['city'] ?? null,
+                    'postal_code'  => $validated['postal_code'] ?? null,
+                    'country'      => $validated['country'] ?? null,
+                ]
+            );
+        }
+
+        // 6) Retour
+        return redirect()
+            ->route('events.edit', $event)
+            ->with('success', 'Événement et adresse enregistrés avec succès.');
+    }
+
+
+
+    /**
+     * Display the specified event.
+     */
+    public function show(Event $event)
+    {
+        return response()->json($event, Response::HTTP_OK);
+    }
+
+    /**
+     * Update the specified event.
+     */
+    public function update(Request $request, Event $event)
+    {
+        $event->update($request->validated());
+
+        return response()->json($event, Response::HTTP_OK);
+    }
+
+    /**
+     * Remove the specified event.
+     */
+    public function destroy(Event $event)
+    {
+        $event->delete();
+
+        return response()->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * List participants of the specified event, including medical certificates.
+     */
+    public function participants(Event $event)
+    {
+        $participants = $event->participants()
+            ->withPivot('certificate_medical')
+            ->get();
+
+        return response()->json($participants, Response::HTTP_OK);
+    }
+}

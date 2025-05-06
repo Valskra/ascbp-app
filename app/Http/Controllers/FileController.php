@@ -22,21 +22,21 @@ class FileController extends Controller
     {
         $user = $request->user();
 
-        // 1. Nettoyage des liens expirés
+
         $now = Carbon::now();
         $links = UploadLink::where('user_id', $user->id)
-            ->orderBy('expires_at') // Trie par date la plus proche
+            ->orderBy('expires_at')
             ->get();
 
         foreach ($links as $link) {
             if ($link->expires_at->isPast() || $link->used_at !== null) {
                 $link->delete();
             } else {
-                break; // dès qu'on en trouve un encore valide, on arrête
+                break;
             }
         }
 
-        // 2. On recharge la liste (filtrée cette fois)
+
         $certificates = Document::with('file')
             ->where('user_id', $user->id)
             ->latest()
@@ -95,7 +95,7 @@ class FileController extends Controller
             'size'          => $uploadedFile->getSize(),
             'path'          => $path,
             'disk'          => 's3',
-            'hash'          => $hash,          // 🟢 ajouté
+            'hash'          => $hash,
         ]);
 
         return back()->with('success', 'Fichier uploadé !');
@@ -192,7 +192,7 @@ class FileController extends Controller
                 $expirationString = explode('.', $parts[1])[0] ?? null;
 
                 if ($expirationString && Carbon::createFromFormat('Ymd', $expirationString)->isFuture()) {
-                    // File is valid
+
                     return redirect(env('AWS_URL') . '/' . $filePath);
                 }
 
@@ -258,7 +258,7 @@ class FileController extends Controller
             'size'          => $uploadedFile->getSize(),
             'path'          => $path,
             'disk'          => 's3',
-            'hash'          => $hash,            // 🟢 ajouté
+            'hash'          => $hash,
         ]);
 
         return back()->with('success', 'Photo de profil mise à jour !');

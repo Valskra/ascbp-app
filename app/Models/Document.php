@@ -17,6 +17,15 @@ class Document extends Model
         'user_id',
     ];
 
+    protected static function booted()
+    {
+        static::deleting(function (Document $document) {
+            if ($document->file) {
+                $document->file->delete();
+            }
+        });
+    }
+
     /* relations */
     public function file()
     {

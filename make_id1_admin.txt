@@ -49,5 +49,34 @@ $role = Role::create([
 'permissions_id' => $permission->id,
 ]);
 
-$user = User::find(3);
+$user = User::find(2);
 $user->roles()->attach(2);
+
+
+////////////////////////
+
+
+
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
+
+
+$permission = Permission::create([
+'manage_admin' => false,
+'admin_access' => false,
+'manage_events' => false,
+'create_events' => true,
+'manage_members' => false,
+'manage_articles' => false,
+'create_articles' => false,
+]);
+
+
+$role = Role::create([
+'name' => 'animateur',
+'permissions_id' => $permission->id,
+]);
+
+$user = User::find(3);
+$user->roles()->attach(3);

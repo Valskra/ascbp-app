@@ -101,7 +101,6 @@ class User extends Authenticatable
         ]);
     }
 
-    // Dans User.php
     public function contacts()
     {
         return $this->hasMany(Contact::class);
@@ -285,13 +284,13 @@ class User extends Authenticatable
 
     /**
      * Détermine si l'utilisateur est Animateur.
-     * Condition : permission "admin_access", "manage_event" ou "create_event"
+     * Condition : permission "admin_access", "manage_event" ou "create_events"
      */
     public function isAnimator(): bool
     {
         return $this->hasPermission('admin_access')
             || $this->hasPermission('manage_event')
-            || $this->hasPermission('create_event');
+            || $this->hasPermission('create_events');
     }
 
     /**

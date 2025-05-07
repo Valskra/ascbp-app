@@ -18,9 +18,9 @@ return new class extends Migration
             $table->dateTime('registration_end')->nullable();
             $table->integer('max_participants')->nullable();
             $table->decimal('price', 10, 2)->nullable();
-            $table->string('referent_name', 100)->nullable();
             $table->text('description')->nullable();
             $table->foreignId('file_id')->nullable()->constrained('files')->onDelete('set null');
+            $table->foreignId('organizer_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('location', 255)->nullable();
             $table->timestamps();
         });

@@ -79,13 +79,11 @@ Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->gr
     Route::get('/users/export', [AdminUserController::class, 'export'])->name('export_users');
 });
 
-Route::middleware(['auth', IsAnimator::class])->prefix('events')->group(function () {
-    Route::get('/create', [EventController::class, 'create'])->name('events.create');
+Route::middleware(['auth', IsAnimator::class])->prefix('events')->name('events.')->group(function () {
+    Route::get('/create', [EventController::class, 'create'])->name('create');
 
-    // Soumission du formulaire
     Route::post('/store', [EventController::class, 'store'])
-        ->name('events.store');
+        ->name('store');
 });
-
 
 require __DIR__ . '/auth.php';

@@ -10,22 +10,18 @@ const props = defineProps({
     }
 })
 
-// On utilise useForm pour faire un post sur la route
 const form = useForm({
     file: null,
 })
 
 function handleFileChange(e) {
-    // e.target.files est un FileList ; on prend le premier
     form.file = e.target.files[0]
 }
 
 function submitForm() {
-    // On envoie le fichier sur la route "file-test.store"
     form.post(route('file-test.store'))
 }
 
-// Petite fonction pour distinguer images et autres
 function isImage(ext) {
     return ['jpg', 'jpeg', 'png', 'gif'].includes(ext.toLowerCase())
 }

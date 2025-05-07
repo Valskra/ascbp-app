@@ -45,7 +45,7 @@ class MembershipController extends Controller
         $user->memberships()->create([
             'year' => $year,
             'contribution_date' => now()->toDateString(),
-            'amount' => 0, // montant temporaire (à changer plus tard)
+            'amount' => 0,
             'metadata' => null,
         ]);
 

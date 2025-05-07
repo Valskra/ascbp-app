@@ -2,7 +2,6 @@
 import { defineProps, ref } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 
-// On reçoit l'utilisateur en props (avec firstname / lastname)
 const props = defineProps({
     user: {
         type: Object,
@@ -10,7 +9,7 @@ const props = defineProps({
     }
 })
 
-// On crée un formulaire Inertia pour gérer firstname / lastname
+
 const form = useForm({
     firstname: props.user.firstname ?? '',
     lastname: props.user.lastname ?? ''

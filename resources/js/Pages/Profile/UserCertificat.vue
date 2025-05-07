@@ -19,7 +19,7 @@ const props = defineProps({
     certificates: Array,
     uploadLinks: Array
 })
-const emit = defineEmits(['close'])  // ← le modal émet “close” quand on le ferme
+const emit = defineEmits(['close'])
 
 /* --------- formulaire --------- */
 const form = useForm({
@@ -33,8 +33,8 @@ const form = useForm({
 
 /* --------- refs / état --------- */
 const dropActive = ref(false);
-const fileInputRef = ref(null);      // 👉 ref unique
-const fileInputKey = ref(Date.now()); // pour reset visuel
+const fileInputRef = ref(null);
+const fileInputKey = ref(Date.now());
 
 const fileName = computed(() => form.file?.name ?? null);
 
@@ -58,7 +58,7 @@ function submit() {
         preserveScroll: true,
         onSuccess: () => {
             form.reset('title', 'file');
-            fileInputKey.value = Date.now();   // recrée l’input
+            fileInputKey.value = Date.now();
         },
     });
 }
@@ -66,7 +66,7 @@ function submit() {
 const expiresAtModel = computed({
     get: () => form.expires_at,
     set: val => {
-        // si l’utilisateur colle/manipule une date brute, on normalise
+
         const d = new Date(val)
         if (!isNaN(d)) {
             form.expires_at = d.toISOString().slice(0, 10)

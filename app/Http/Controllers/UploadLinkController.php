@@ -1,5 +1,5 @@
 <?php
-// app/Http/Controllers/UploadLinkController.php
+
 namespace App\Http\Controllers;
 
 use App\Models\{UploadLink, File, Document};
@@ -28,12 +28,10 @@ class UploadLinkController extends Controller
                     if (!$value) {
                         return;
                     }
-                    // 1) même titre déjà en tant que lien
                     $existsLink = UploadLink::where('user_id', $user->id)
                         ->where('title', $value)
                         ->exists();
 
-                    // 2) même titre déjà utilisé pour un File du user
                     $existsFile = File::where('fileable_id', $user->id)
                         ->where('fileable_type', get_class($user))
                         ->where('name', $value)
@@ -49,7 +47,6 @@ class UploadLinkController extends Controller
 
         $user = $request->user();
         $expiresAt = Carbon::now()->addDays($request->duration);
-        // Génération du token / URL...
         $link = UploadLink::create([
             'user_id'    => $user->id,
             'title'       => $request->title,
@@ -57,10 +54,8 @@ class UploadLinkController extends Controller
             'expires_at' => $expiresAt,
         ]);
 
-        // construit ton URL publique
         $publicUrl = route('upload-link.show', ['token' => $link->token]);
 
-        // renvoie un redirect Inertia vers la même page avec un flash
         return back()->with([
             'link_url' => $publicUrl,
         ]);
@@ -104,7 +99,6 @@ class UploadLinkController extends Controller
         $fileUp = $request->file('file');
         $hash   = hash_file('sha256', $fileUp->getRealPath());
 
-        // si l’utilisateur avait déjà ce fichier : on autorise quand même (pas bloquant)
 
         $tokenName = Str::random(40);
         $expiresAt = Carbon::now()->addDays(30)->format('Ymd');
@@ -140,11 +134,9 @@ class UploadLinkController extends Controller
     public function latest(Request $request)
     {
         $link = $request->user()
-            ->uploadLinks()               // la relation hasMany
-            ->orderByDesc('created_at')
+            ->uploadLinks()->orderByDesc('created_at')
             ->firstOrFail();
 
-        // Renvoie directement la chaîne de l’URL publique
         $url = route('upload-link.show', ['token' => $link->token]);
 
         return response($url, 200)

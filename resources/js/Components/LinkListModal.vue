@@ -1,7 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
 
-// Props
 const props = defineProps({
     open: Boolean,
     links: {
@@ -11,18 +10,15 @@ const props = defineProps({
 })
 const emit = defineEmits(['close'])
 
-// Pagination state
 const currentPage = ref(1)
 const perPage = 15
 
-// Computed values
 const totalPages = computed(() => Math.ceil(props.links.length / perPage))
 const paginatedLinks = computed(() => {
     const start = (currentPage.value - 1) * perPage
     return props.links.slice(start, start + perPage)
 })
 
-// Helpers
 /**
  * Format remaining time:
  * - ≥7 days → weeks
@@ -107,7 +103,7 @@ function copy(text) {
                                 <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ link.title || '—' }}</td>
                                 <td class="px-4 py-3 text-gray-800 dark:text-gray-200">
                                     <span class="truncate max-w-xs break-all" :title="link.url">{{ truncate(link.url)
-                                        }}</span>
+                                    }}</span>
                                 </td>
                                 <td class="px-4 py-3  text-gray-800 dark:text-gray-200">{{
                                     formatRemaining(link.expires_at) }}</td>

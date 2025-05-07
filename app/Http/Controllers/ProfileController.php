@@ -234,9 +234,7 @@ class ProfileController extends Controller
             'disk'      => 's3',
         ]);
 
-        return redirect()->route('files.store.user.profile-picture', [
-            // S’il faut passer un paramètre (ex: user_id), le mettre ici
-        ]);
+        return redirect()->route('files.store.user.profile-picture', []);
     }
 
 

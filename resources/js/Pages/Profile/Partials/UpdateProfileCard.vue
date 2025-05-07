@@ -15,13 +15,13 @@ const props = defineProps({
 })
 
 const page = usePage()
-const showModal = ref(false)          // Modal pour choisir un fichier
-const showCropModal = ref(false)      // Modal pour recadrer
-const imagePreviewUrl = ref('')       // URL temporaire de l'image
-const cropperRef = ref(null)          // Référence du cropper
+const showModal = ref(false)
+const showCropModal = ref(false)
+const imagePreviewUrl = ref('')
+const cropperRef = ref(null)
 
 const form = useForm({
-    photo: null  // Stocke l'image recadrée avant envoi
+    photo: null
 })
 
 const birthDateFormatted = computed(() => {
@@ -31,65 +31,65 @@ const birthDateFormatted = computed(() => {
     return useDateFormat(props.user.birth_date, 'DD/MM/YYYY').value
 })
 
-// Fonction pour ouvrir la sélection de fichier
+
 function openModal() {
     showModal.value = true
 }
 
-// Fermer le modal de sélection
+
 function closeModal() {
     showModal.value = false
 }
 
-// Quand l'utilisateur sélectionne une image
+
 function handleFileChange(e) {
     const file = e.target.files[0]
     if (!file) return
 
-    // Générer un aperçu local de l'image
+
     imagePreviewUrl.value = URL.createObjectURL(file)
 
-    // Fermer le modal de sélection et ouvrir celui de recadrage
+
     showModal.value = false
     showCropModal.value = true
 }
 
-// Fonction pour valider et recadrer l’image
+
 function validateCrop() {
     if (!cropperRef.value) return
 
     const { canvas } = cropperRef.value.getResult()
 
-    // Convertir le canvas en fichier Blob
+
     canvas.toBlob((blob) => {
         if (!blob) return
 
-        // Convertir le Blob en fichier
+
         const croppedFile = new File([blob], 'cropped.png', { type: blob.type })
 
-        // Stocker l'image recadrée dans le formulaire
+
         form.photo = croppedFile
 
-        // Nettoyer l'URL temporaire
+
         URL.revokeObjectURL(imagePreviewUrl.value)
         imagePreviewUrl.value = ''
 
-        // Fermer le modal de recadrage et envoyer l'image
+
         showCropModal.value = false
         submitForm()
-    }, 'image/png', 1) // Qualité 100%
+    }, 'image/png', 1)
 }
 
-// Fonction pour envoyer l'image au serveur
+
 function submitForm() {
     form.post(route('files.store.user.profile-picture'), {
         preserveScroll: true,
         onSuccess: (response) => {
             if (response.props.user.profile_picture) {
-                // Récupérer la nouvelle URL et l'affecter à l'objet user
+
                 props.user.profile_picture.url = response.props.user.profile_picture.url + '?t=' + new Date().getTime();
             }
-            // Fermer le modal
+
             showCropModal.value = false;
         }
     });

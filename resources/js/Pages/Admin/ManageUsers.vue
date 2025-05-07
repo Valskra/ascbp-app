@@ -38,14 +38,15 @@ function exportCSV() {
     window.location.href = route('admin.export_users');
 }
 
-// Couleur selon le statut d'adhésion
+
 function statusColor(user) {
     if (user.status === 'disabled') return 'bg-gray-500';
     switch (user.membership_status) {
-        case 1: return 'bg-green-500';     // actif
-        case 2: return 'bg-orange-400';   // expiré récemment
-        case 0: return 'bg-red-500';      // expiré depuis +1 an ou jamais adhérent
-        default: return 'bg-gray-300';    // inconnu
+        case 1: return 'bg-green-500';
+        case 2: return 'bg-orange-400';
+        case 0: return 'bg-red-500';
+        default: return 'bg-gray-300';
+
     }
 }
 </script>

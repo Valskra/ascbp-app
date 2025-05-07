@@ -28,7 +28,6 @@ function generate() {
         preserveState: true,
         preserveScroll: true,
         onSuccess: async () => {
-            // après création, on récupère et on passe à l'étape 1
             const res = await fetch(route('upload-link.latest'))
             linkUrl.value = await res.text()
             step.value = 1
@@ -37,7 +36,6 @@ function generate() {
             if (errors.title) {
                 errorMsg.value = errors.title[0]
                 showError.value = true
-                // masque le toast après 5s
                 setTimeout(() => (showError.value = false), 5000)
             }
         },

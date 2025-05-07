@@ -63,7 +63,6 @@ class EventController extends Controller
             $uploaded = $request->file('image');
             $path = $uploaded->store('events', 'public');
 
-            // Crée un File lié
             $file = File::create([
                 'fileable_id'   => null,
                 'fileable_type' => null,
@@ -80,7 +79,6 @@ class EventController extends Controller
             $fileId = null;
         }
 
-        // 3) Préparer les données de l'événement
         $data = [
             'title'               => $validated['title'],
             'category'            => $validated['category'],
@@ -95,17 +93,14 @@ class EventController extends Controller
             'organizer_id'        => $request->user()->id,
         ];
 
-        // 4) Création de l'événement
         $event = Event::create($data);
 
-        // 5) Gestion de l’adresse, si renseignée
         if (
             !empty($validated['address']) ||
             !empty($validated['city']) ||
             !empty($validated['postal_code']) ||
             !empty($validated['country'])
         ) {
-            // Splitting address
             $streetTypes = ['rue', 'avenue', 'boulevard', 'chemin', 'impasse', 'place', 'route', 'allée', 'quai', 'cours', 'passage', 'voie', 'square', 'faubourg'];
             $parts = preg_split('/\s+/', trim($validated['address']));
             $houseNumber = '';

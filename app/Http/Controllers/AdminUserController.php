@@ -14,8 +14,6 @@ class AdminUserController extends Controller
 {
     public function index(Request $request)
     {
-        // Protection admin
-        // abort_unless(Gate::allows('admin_access'), 403);
 
         $query = User::query();
 
@@ -26,7 +24,6 @@ class AdminUserController extends Controller
             });
         }
 
-        // Chargement des relations utiles (memberships pour accessors dynamiques)
         $users = $query
             ->with(['memberships'])
             ->orderBy('id', 'asc')
@@ -45,7 +42,6 @@ class AdminUserController extends Controller
             ])
             ->withQueryString();
 
-        // Statistiques
         $allUsers = User::with('memberships')->get();
         $stats = [
             'active' => 0,

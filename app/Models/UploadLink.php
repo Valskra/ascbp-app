@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class UploadLink extends Model
 {
-    // app/Models/UploadLink.php
     protected $fillable = ['user_id', 'token', 'title', 'expires_at', 'used_at'];
     protected $casts = [
         'expires_at' => 'datetime',

@@ -1,7 +1,6 @@
         <script setup>
         import { defineProps, computed } from 'vue';
 
-        // Définition des props attendues
         const props = defineProps({
             contacts: {
                 type: Array,

@@ -11,7 +11,6 @@ const props = defineProps({
     weekLater: String,
 })
 
-// Définition du formulaire avec tous les champs
 const form = useForm({
     title: '',
     category: '',
@@ -29,13 +28,11 @@ const form = useForm({
 })
 
 
-// États pour le drag & drop et aperçu
 const dropActive = ref(false)
 const fileInputRef = ref(null)
 const fileInputKey = ref(Date.now())
 const previewUrl = ref(null)
 
-// États pour le recadrage d'image
 const showCropModal = ref(false)
 const imagePreviewUrl = ref('')
 const cropperRef = ref(null)
@@ -48,48 +45,38 @@ function handleFiles(files) {
     if (!files.length) return
     const file = files[0]
 
-    // Stocker l'URL temporaire pour le recadrage
     imagePreviewUrl.value = URL.createObjectURL(file)
 
-    // Ouvrir la modal de recadrage
     showCropModal.value = true
 }
 
-// Fonction pour valider et recadrer l'image
 function validateCrop() {
     if (!cropperRef.value) return
 
     const { canvas } = cropperRef.value.getResult()
 
-    // Convertir le canvas en fichier Blob
     canvas.toBlob((blob) => {
         if (!blob) return
 
-        // Convertir le Blob en fichier
         const croppedFile = new File([blob], 'cropped.png', { type: blob.type })
 
-        // Stocker l'image recadrée dans le formulaire
         form.image = croppedFile
 
-        // Mettre à jour l'aperçu avec l'image recadrée
         if (previewUrl.value) {
             URL.revokeObjectURL(previewUrl.value)
         }
         previewUrl.value = URL.createObjectURL(croppedFile)
 
-        // Fermer la modal de recadrage
         showCropModal.value = false
-    }, 'image/png', 1) // Qualité 100%
+    }, 'image/png', 1)
 }
 
 function cancelCrop() {
-    // Nettoyer l'URL temporaire
     if (imagePreviewUrl.value) {
         URL.revokeObjectURL(imagePreviewUrl.value)
         imagePreviewUrl.value = ''
     }
 
-    // Fermer la modal
     showCropModal.value = false
 }
 
@@ -128,7 +115,7 @@ const submit = () => {
                                             class="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
                                         <p v-if="form.errors.title" class="mt-1 text-red-600 text-sm">{{
                                             form.errors.title
-                                            }}</p>
+                                        }}</p>
                                     </div>
 
                                     <!-- Catégorie -->

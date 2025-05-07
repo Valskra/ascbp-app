@@ -19,7 +19,7 @@ class Event extends Model
         'registration_end',
         'max_participants',
         'price',
-        'file_id',        // référence au File
+        'file_id',
         'organizer_id',
     ];
 

@@ -46,6 +46,7 @@ class User extends Authenticatable
 
     protected $appends = [
         'is_admin',
+        'is_animator',
         'membership_status',
         'first_membership_date',
         'membership_time_left',
@@ -286,7 +287,7 @@ class User extends Authenticatable
      * Détermine si l'utilisateur est Animateur.
      * Condition : permission "admin_access", "manage_event" ou "create_events"
      */
-    public function isAnimator(): bool
+    public function getIsAnimatorAttribute(): bool
     {
         return $this->hasPermission('admin_access')
             || $this->hasPermission('manage_event')
@@ -297,7 +298,7 @@ class User extends Authenticatable
      * Détermine si l'utilisateur est Super Animateur.
      * Condition : permission "admin_access" ou "manage_event"
      */
-    public function isSuperAnimator(): bool
+    public function getIsSuperAnimatorAttribute(): bool
     {
         return $this->hasPermission('admin_access')
             || $this->hasPermission('manage_event');

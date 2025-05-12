@@ -43,7 +43,7 @@ class EventController extends Controller
     {
 
         $validated = $request->validate([
-            'title'              => 'required|string|max:255',
+            'title'              => 'required|string|max:255|unique:' . Event::class,
             'category'           => 'required|string|max:100',
             'start_date'         => 'required|date|after_or_equal:today',
             'end_date'           => 'required|date|after_or_equal:start_date',

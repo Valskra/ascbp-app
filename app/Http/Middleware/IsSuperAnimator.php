@@ -27,7 +27,7 @@ class IsAnimator
     {
         $user = $request->user();
 
-        if (! $user || ! $user->isSuperAnimator()) {
+        if (! $user || ! $user->getIsSuperAnimatorAttribute()) {
             abort(403, 'Accès réservé aux animateurs.');
         }
 

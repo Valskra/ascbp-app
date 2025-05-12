@@ -1,10 +1,10 @@
 <script setup>
 import { ref, watch } from 'vue'
-import { useForm } from '@inertiajs/vue3'
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import { Head, useForm } from '@inertiajs/vue3'
+import ManagingLayout from '@/Layouts/ManagingLayout.vue'
+
 import { Cropper } from "vue-advanced-cropper"
 import "vue-advanced-cropper/dist/style.css"
-import { router } from '@inertiajs/vue3'
 
 const props = defineProps({
     today: String,
@@ -88,7 +88,10 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthenticatedLayout>
+
+    <Head title="Création D'Événements" />
+
+    <ManagingLayout>
         <template #header>
             <h2 class="text-2xl font-semibold text-gray-800 dark:text-gray-200">
                 Création d'un événement
@@ -115,7 +118,7 @@ const submit = () => {
                                             class="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
                                         <p v-if="form.errors.title" class="mt-1 text-red-600 text-sm">{{
                                             form.errors.title
-                                        }}</p>
+                                            }}</p>
                                     </div>
 
                                     <!-- Catégorie -->
@@ -341,5 +344,5 @@ const submit = () => {
             </section>
         </form>
 
-    </AuthenticatedLayout>
+    </ManagingLayout>
 </template>

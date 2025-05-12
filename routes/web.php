@@ -77,6 +77,10 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/users', [AdminUserController::class, 'index'])->name('users');
     Route::get('/users/export', [AdminUserController::class, 'export'])->name('export_users');
+
+    Route::get('/', function () {
+        return Inertia::render('AdminDashboard');
+    })->middleware(['auth', 'verified'])->name('dashboard');
 });
 
 Route::middleware(['auth', IsAnimator::class])->prefix('events')->name('events.')->group(function () {

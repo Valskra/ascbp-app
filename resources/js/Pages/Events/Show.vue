@@ -1,447 +1,476 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { Head, useForm, usePage } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { useDateFormat } from '@vueuse/core'
+import { computed } from 'vue'
 
 const props = defineProps({
     event: {
         type: Object,
         required: true
-    },
-
-    medical_certificates: {
-        type: Array,
-        default: () => []
     }
 })
 
-const user = usePage().props.auth.user;
-// États
-const showCertificateModal = ref(false)
-const showUploadModal = ref(false)
-const selectedCertificate = ref(null)
-
-// Formulaire d'inscription
-const form = useForm({
-    firstname: user.firstname || '',
-    lastname: user.lastname || '',
-    email: user.email || '',
-    phone: user.phone || '',
-    birth_date: user.birth_date || '',
-    address: user.address ?
-        `${user.address.house_number || ''} ${user.address.street_name || ''}`.trim() : '',
-    city: user.address?.city || '',
-    postal_code: user.address?.postal_code || '',
-
-    medical_certificate_id: null,
-})
-
-// Formulaire d'upload de certificat
-const uploadForm = useForm({
-    title: '',
-    file: null,
-    expires_at: ''
-})
-
-// Computed
+// Formatage des dates
 const formatDate = (date) => {
-    return useDateFormat(date, 'DD MMMM YYYY', { locales: 'fr' }).value
+    if (!date) return ''
+    return useDateFormat(date, 'dddd DD MMMM YYYY', { locales: 'fr' }).value
+}
+
+const formatTime = (date) => {
+    if (!date) return ''
+    return useDateFormat(date, 'HH:mm').value
 }
 
 const formatDateTime = (date) => {
-    return useDateFormat(date, 'DD/MM/YYYY à HH:mm').value
+    if (!date) return ''
+    return useDateFormat(date, 'dddd DD MMMM YYYY à HH:mm', { locales: 'fr' }).value
 }
 
-const isFormValid = computed(() => {
-    const required = [
-        form.firstname, form.lastname, form.email, form.phone,
-        form.birth_date,
-    ]
-
-    const hasRequiredFields = required.every(field => field && field.trim())
-
-    if (!props.event.requires_medical_certificate) {
-        return hasRequiredFields
+// Couleurs selon la catégorie
+const getCategoryColor = (category) => {
+    const colors = {
+        'competition': 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
+        'entrainement': 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
+        'manifestation': 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800'
     }
+    return colors[category] || 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-800'
+}
 
-    return hasRequiredFields && form.medical_certificate_id
+// Icônes selon la catégorie
+const getCategoryIcon = (category) => {
+    const icons = {
+        'competition': '🏆',
+        'entrainement': '💪',
+        'manifestation': '🎉'
+    }
+    return icons[category] || '📅'
+}
+
+// Calcul du prix d'affichage
+const displayPrice = computed(() => {
+    if (!props.event.price) return 'Gratuit'
+
+    const priceMatch = props.event.price.toString().match(/\d+/)
+    const numericPrice = priceMatch ? parseInt(priceMatch[0]) : 0
+
+    return numericPrice > 0 ? `${numericPrice}€` : 'Gratuit'
 })
 
-// Méthodes
-const selectCertificate = (certificate) => {
-    selectedCertificate.value = certificate
-    form.medical_certificate_id = certificate.id
-    showCertificateModal.value = false
-}
+// Gestion de la date d'affichage
+const displayDate = computed(() => {
+    if (!props.event.start_date) return ''
 
-const handleFileUpload = (event) => {
-    uploadForm.file = event.target.files[0]
-}
+    const start = formatDate(props.event.start_date)
+    const end = props.event.end_date ? formatDate(props.event.end_date) : null
 
-const uploadCertificate = () => {
-    uploadForm.post(route('certificats.store'), {
-        onSuccess: () => {
-            showUploadModal.value = false
-            uploadForm.reset()
-            // Recharger la page pour avoir le nouveau certificat
-            window.location.reload()
-        },
-        onError: (errors) => {
-            console.error('Erreur upload:', errors)
-        }
-    })
-}
+    if (end && end !== start) {
+        return { single: false, start, end }
+    }
 
-const submitRegistration = () => {
-    form.post(route('events.register', props.event.id), {
-        onSuccess: () => {
-            console.log('Inscription réussie')
-        },
-        onError: (errors) => {
-            console.error('Erreur inscription:', errors)
-        }
-    })
-}
+    return { single: true, date: start }
+})
 
-const getCertificateStatusColor = (certificate) => {
-    if (!certificate.expiration_date) return 'text-green-600'
+// Gestion du statut d'inscription
+const registrationInfo = computed(() => {
+    if (!props.event.can_register) {
+        return { canRegister: false, message: 'Inscription fermée', color: 'gray' }
+    }
 
-    const expiry = new Date(certificate.expiration_date)
-    const now = new Date()
-    const daysUntilExpiry = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24))
+    const messages = {
+        'registration_not_open': 'Inscriptions pas encore ouvertes',
+        'registration_closed': 'Inscriptions fermées',
+        'event_started': 'Événement commencé',
+        'already_registered': 'Vous êtes déjà inscrit',
+        'event_full': 'Événement complet',
+        'members_only': 'Réservé aux adhérents',
+        'requires_medical_certificate': 'Certificat médical requis'
+    }
 
-    if (daysUntilExpiry < 30) return 'text-orange-600'
-    return 'text-green-600'
-}
+    const colors = {
+        'members_only': 'orange',
+        'event_full': 'red',
+        'registration_closed': 'gray',
+        'already_registered': 'blue',
+        'registration_not_open': 'yellow'
+    }
+
+    return {
+        canRegister: true,
+        message: null,
+        color: 'green'
+    }
+})
+
+// Progression des inscriptions
+const registrationProgress = computed(() => {
+    if (!props.event.max_participants) return null
+
+    const current = props.event.participants_count || 0
+    const max = props.event.max_participants
+    const percentage = Math.min(100, (current / max) * 100)
+
+    return { current, max, percentage }
+})
+
+// Construction de l'adresse complète
+const fullAddress = computed(() => {
+    if (!props.event.address) return null
+
+    const parts = []
+    if (props.event.address.house_number) parts.push(props.event.address.house_number)
+    if (props.event.address.street_name) parts.push(props.event.address.street_name)
+
+    const street = parts.join(' ')
+    const cityPostal = [props.event.address.city, props.event.address.postal_code].filter(Boolean).join(' ')
+
+    return {
+        street: street || null,
+        cityPostal: cityPostal || null,
+        country: props.event.address.country || null
+    }
+})
 </script>
 
 <template>
 
-    <Head :title="`Inscription - ${event.title}`" />
+    <Head :title="event.title" />
 
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center justify-between">
-                <div>
-                    <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                        Inscription à l'événement
-                    </h2>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {{ event.title }}
-                    </p>
+                <div class="flex items-center space-x-4">
+                    <Link :href="route('events.index')"
+                        class="inline-flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 transition-colors">
+                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Retour aux événements
+                    </Link>
+
+                    <div class="text-gray-300 dark:text-gray-600">•</div>
+
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border"
+                        :class="getCategoryColor(event.category)">
+                        <span class="mr-1">{{ getCategoryIcon(event.category) }}</span>
+                        <span class="capitalize">{{ event.category }}</span>
+                    </span>
                 </div>
             </div>
         </template>
 
         <div class="py-8">
-            <div class="mx-auto max-w-4xl sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
 
-                <!-- Informations de l'événement -->
-                <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 mb-8">
-                    <div class="flex items-start space-x-6">
-                        <div v-if="event.illustration" class="flex-shrink-0">
-                            <img :src="event.illustration.url" :alt="event.title"
-                                class="w-24 h-24 object-cover rounded-lg">
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                                {{ event.title }}
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <span class="font-medium text-gray-700 dark:text-gray-300">Date :</span>
-                                    {{ formatDate(event.start_date) }}
-                                    <span v-if="event.end_date && event.end_date !== event.start_date">
-                                        au {{ formatDate(event.end_date) }}
-                                    </span>
-                                </div>
-                                <div v-if="event.address">
-                                    <span class="font-medium text-gray-700 dark:text-gray-300">Lieu :</span>
-                                    {{ event.address.street_name }}, {{ event.address.city }}
-                                </div>
-                                <div>
-                                    <span class="font-medium text-gray-700 dark:text-gray-300">Catégorie :</span>
-                                    <span class="capitalize">{{ event.category }}</span>
-                                </div>
-                                <div v-if="event.price > 0">
-                                    <span class="font-medium text-gray-700 dark:text-gray-300">Prix :</span>
-                                    <span class="text-lg font-bold text-green-600">{{ event.real_price }}€</span>
-                                </div>
-                                <div v-else>
-                                    <span class="font-medium text-green-600">Gratuit</span>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Messages flash -->
+                <div v-if="$page.props.flash?.success"
+                    class="mb-6 p-4 bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-800 rounded-lg">
+                    <div class="flex">
+                        <svg class="w-5 h-5 text-green-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <p class="text-green-800 dark:text-green-200">{{ $page.props.flash.success }}</p>
                     </div>
                 </div>
 
-                <!-- Formulaire d'inscription -->
-                <form @submit.prevent="submitRegistration" class="space-y-8">
+                <div v-if="$page.props.flash?.error"
+                    class="mb-6 p-4 bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded-lg">
+                    <div class="flex">
+                        <svg class="w-5 h-5 text-red-400 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        <p class="text-red-800 dark:text-red-200">{{ $page.props.flash.error }}</p>
+                    </div>
+                </div>
 
-                    <!-- Informations personnelles -->
-                    <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-                            Informations personnelles
-                        </h3>
+                <!-- Contenu principal -->
+                <div
+                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Prénom *
-                                </label>
-                                <input v-model="form.firstname" type="text" required
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                                <p v-if="form.errors.firstname" class="mt-1 text-red-600 text-sm">{{
-                                    form.errors.firstname }}
-                                </p>
-                            </div>
+                    <!-- Image d'illustration -->
+                    <div
+                        class="relative h-64 md:h-80 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                        <img v-if="event.illustration?.url" :src="event.illustration.url" :alt="event.title"
+                            class="w-full h-full object-cover">
+                        <div v-else class="w-full h-full flex items-center justify-center text-gray-400 text-6xl">
+                            {{ getCategoryIcon(event.category) }}
+                        </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Nom *
-                                </label>
-                                <input v-model="form.lastname" type="text" required
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                                <p v-if="form.errors.lastname" class="mt-1 text-red-600 text-sm">{{ form.errors.lastname
-                                    }}</p>
-                            </div>
+                        <!-- Overlay gradient -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent">
+                        </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Email *
-                                </label>
-                                <input v-model="form.email" type="email" required
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                                <p v-if="form.errors.email" class="mt-1 text-red-600 text-sm">{{ form.errors.email }}
-                                </p>
-                            </div>
+                        <!-- Prix en overlay -->
+                        <div class="absolute top-6 right-6">
+                            <span
+                                class="inline-flex items-center px-4 py-2 rounded-full text-lg font-bold bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-white shadow-lg backdrop-blur-sm border border-white/20">
+                                {{ displayPrice }}
+                            </span>
+                        </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Téléphone *
-                                </label>
-                                <input v-model="form.phone" type="tel" required
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                                <p v-if="form.errors.phone" class="mt-1 text-red-600 text-sm">{{ form.errors.phone }}
-                                </p>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Date de naissance *
-                                </label>
-                                <input v-model="form.birth_date" type="date" required
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                                <p v-if="form.errors.birth_date" class="mt-1 text-red-600 text-sm">{{
-                                    form.errors.birth_date }}
-                                </p>
-                            </div>
-
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Adresse
-                                </label>
-                                <input v-model="form.address" type="text"
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Ville
-                                </label>
-                                <input v-model="form.city" type="text"
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Code postal
-                                </label>
-                                <input v-model="form.postal_code" type="text"
-                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                            </div>
+                        <!-- Badge inscription si inscrit -->
+                        <div v-if="event.is_registered" class="absolute bottom-6 right-6">
+                            <span
+                                class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-green-500 text-white shadow-lg">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Vous êtes inscrit
+                            </span>
                         </div>
                     </div>
 
-                    <!-- Certificat médical (si requis) -->
-                    <div v-if="event.requires_medical_certificate"
-                        class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">
-                            Certificat médical requis
-                        </h3>
+                    <!-- Contenu de l'événement -->
+                    <div class="p-6 md:p-8">
 
-                        <div v-if="selectedCertificate"
-                            class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h4 class="font-medium text-green-800 dark:text-green-200">{{
-                                        selectedCertificate.title }}
-                                    </h4>
-                                    <p class="text-sm text-green-600 dark:text-green-400">
-                                        Expire le {{ formatDate(selectedCertificate.expiration_date) }}
-                                    </p>
+                        <!-- Titre et description -->
+                        <div class="mb-8">
+                            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                                {{ event.title }}
+                            </h1>
+                            <p v-if="event.description"
+                                class="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
+                                {{ event.description }}
+                            </p>
+                        </div>
+
+                        <!-- Informations essentielles -->
+                        <div class="grid md:grid-cols-2 gap-8 mb-8">
+
+                            <!-- Colonne gauche - Informations temporelles -->
+                            <div class="space-y-6">
+                                <h2
+                                    class="text-xl font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                                    📅 Informations temporelles
+                                </h2>
+
+                                <!-- Dates de l'événement -->
+                                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                                    <h3 class="font-medium text-gray-900 dark:text-white mb-2">Date de l'événement</h3>
+                                    <div v-if="displayDate.single" class="text-gray-600 dark:text-gray-400">
+                                        {{ displayDate.date }}
+                                    </div>
+                                    <div v-else class="text-gray-600 dark:text-gray-400">
+                                        <div>Du {{ displayDate.start }}</div>
+                                        <div>au {{ displayDate.end }}</div>
+                                    </div>
                                 </div>
-                                <button type="button"
-                                    @click="selectedCertificate = null; form.medical_certificate_id = null"
-                                    class="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-200">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
+
+                                <!-- Horaires -->
+                                <div v-if="formatTime(event.start_date)"
+                                    class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                                    <h3 class="font-medium text-gray-900 dark:text-white mb-2">Horaires</h3>
+                                    <div class="text-gray-600 dark:text-gray-400">
+                                        <div>Début : {{ formatTime(event.start_date) }}</div>
+                                        <div v-if="event.end_date">Fin : {{ formatTime(event.end_date) }}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Période d'inscription -->
+                                <div v-if="event.registration_open || event.registration_close"
+                                    class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                                    <h3 class="font-medium text-gray-900 dark:text-white mb-2">Période d'inscription
+                                    </h3>
+                                    <div class="text-gray-600 dark:text-gray-400 space-y-1">
+                                        <div v-if="event.registration_open">
+                                            Ouverture : {{ formatDateTime(event.registration_open) }}
+                                        </div>
+                                        <div v-if="event.registration_close">
+                                            Fermeture : {{ formatDateTime(event.registration_close) }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Colonne droite - Informations pratiques -->
+                            <div class="space-y-6">
+                                <h2
+                                    class="text-xl font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                                    ℹ️ Informations pratiques
+                                </h2>
+
+                                <!-- Lieu -->
+                                <div v-if="fullAddress" class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                                    <h3 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                        Lieu
+                                    </h3>
+                                    <div class="text-gray-600 dark:text-gray-400 space-y-1">
+                                        <div v-if="fullAddress.street">{{ fullAddress.street }}</div>
+                                        <div v-if="fullAddress.cityPostal">{{ fullAddress.cityPostal }}</div>
+                                        <div v-if="fullAddress.country">{{ fullAddress.country }}</div>
+                                    </div>
+                                </div>
+
+                                <!-- Organisateur -->
+                                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                                    <h3 class="font-medium text-gray-900 dark:text-white mb-2 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        Organisateur
+                                    </h3>
+                                    <div class="text-gray-600 dark:text-gray-400">
+                                        {{ event.organizer.firstname }} {{ event.organizer.lastname }}
+                                    </div>
+                                </div>
+
+                                <!-- Participants -->
+                                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                                    <h3 class="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                        Participants
+                                    </h3>
+
+                                    <div class="space-y-3">
+                                        <div class="flex items-center justify-between text-sm">
+                                            <span class="text-gray-600 dark:text-gray-400">
+                                                {{ event.participants_count || 0 }} inscrit{{ (event.participants_count
+                                                || 0)
+                                                !== 1 ? 's' : '' }}
+                                            </span>
+                                            <span v-if="event.max_participants"
+                                                class="text-gray-500 dark:text-gray-500">
+                                                / {{ event.max_participants }} max
+                                            </span>
+                                        </div>
+
+                                        <!-- Barre de progression -->
+                                        <div v-if="registrationProgress" class="space-y-2">
+                                            <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                                                <div class="h-2 rounded-full transition-all duration-300"
+                                                    :class="registrationProgress.percentage >= 80 ? 'bg-orange-500' : 'bg-blue-500'"
+                                                    :style="{ width: `${registrationProgress.percentage}%` }">
+                                                </div>
+                                            </div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-500 text-center">
+                                                {{ Math.round(registrationProgress.percentage) }}% de remplissage
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div v-else class="space-y-4">
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
-                                Cet événement nécessite un certificat médical valide. Veuillez sélectionner un
-                                certificat
-                                existant ou en déposer un nouveau.
-                            </p>
+                        <!-- Conditions et badges -->
+                        <div v-if="event.members_only || event.requires_medical_certificate" class="mb-8">
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">⚠️ Conditions de
+                                participation
+                            </h2>
+                            <div class="grid gap-4 md:grid-cols-2">
 
-                            <div v-if="medical_certificates.length > 0" class="space-y-2">
-                                <button type="button" @click="showCertificateModal = true"
-                                    class="w-full flex items-center justify-center px-4 py-3 border border-blue-300 rounded-lg text-blue-600 hover:bg-blue-50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-900/20 transition-colors">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    Sélectionner un certificat existant ({{ medical_certificates.length }} disponible{{
-                                        medical_certificates.length > 1 ? 's' : '' }})
-                                </button>
+                                <div v-if="event.members_only"
+                                    class="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                                    <div class="flex items-start">
+                                        <svg class="w-6 h-6 text-purple-600 dark:text-purple-400 mr-3 mt-0.5 flex-shrink-0"
+                                            fill="currentColor" viewBox="0 0 20 20">
+                                            <path
+                                                d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                                        </svg>
+                                        <div>
+                                            <h3 class="font-medium text-purple-900 dark:text-purple-200 mb-1">Adhésion
+                                                requise
+                                            </h3>
+                                            <p class="text-sm text-purple-700 dark:text-purple-300">
+                                                Cet événement est réservé aux membres adhérents de l'association.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div v-if="event.requires_medical_certificate"
+                                    class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                    <div class="flex items-start">
+                                        <svg class="w-6 h-6 text-blue-600 dark:text-blue-400 mr-3 mt-0.5 flex-shrink-0"
+                                            fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v8a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm8 2a1 1 0 00-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2v-2z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                        <div>
+                                            <h3 class="font-medium text-blue-900 dark:text-blue-200 mb-1">Certificat
+                                                médical
+                                                obligatoire</h3>
+                                            <p class="text-sm text-blue-700 dark:text-blue-300">
+                                                Un certificat médical valide est requis pour participer à cet événement.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
 
-                            <button type="button" @click="showUploadModal = true"
-                                class="w-full flex items-center justify-center px-4 py-3 border border-green-300 rounded-lg text-green-600 hover:bg-green-50 dark:border-green-600 dark:text-green-400 dark:hover:bg-green-900/20 transition-colors">
+                        <!-- Bouton d'inscription -->
+                        <div v-if="!event.is_registered"
+                            class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 text-center">
+                            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Participer à cet
+                                événement</h2>
+
+                            <div v-if="registrationInfo.canRegister" class="space-y-4">
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Vous souhaitez participer à cet événement ? Cliquez sur le bouton ci-dessous pour
+                                    vous
+                                    inscrire.
+                                </p>
+                                <Link :href="route('events.registration', event.id)"
+                                    class="inline-flex items-center px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm hover:shadow-md">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
-                                Déposer un nouveau certificat
-                            </button>
-                        </div>
+                                S'inscrire à l'événement
+                                </Link>
+                            </div>
 
-                        <p v-if="form.errors.medical_certificate_id" class="mt-2 text-red-600 text-sm">{{
-                            form.errors.medical_certificate_id }}</p>
-                    </div>
-
-                    <!-- Bouton de soumission -->
-                    <div class="flex justify-end">
-                        <button type="submit" :disabled="!isFormValid || form.processing"
-                            class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-lg">
-                            <span v-if="form.processing">⏳ Traitement...</span>
-                            <span v-else-if="event.price > 0">💳 Passer au paiement ({{ event.real_price }}€)</span>
-                            <span v-else>✅ S'inscrire gratuitement</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Modal de sélection de certificat -->
-        <div v-if="showCertificateModal"
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                        Sélectionner un certificat médical
-                    </h3>
-                    <button @click="showCertificateModal = false"
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="space-y-3">
-                    <div v-for="certificate in medical_certificates" :key="certificate.id"
-                        @click="selectCertificate(certificate)"
-                        class="p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h4 class="font-medium text-gray-900 dark:text-white">{{ certificate.title }}</h4>
-                                <p class="text-sm mt-1" :class="getCertificateStatusColor(certificate)">
-                                    <span v-if="certificate.expiration_date">
-                                        Expire le {{ formatDate(certificate.expiration_date) }}
-                                    </span>
-                                    <span v-else>Certificat permanent</span>
+                            <div v-else class="space-y-4">
+                                <div class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium border"
+                                    :class="getStatusColor(registrationInfo.color)">
+                                    {{ registrationInfo.message }}
+                                </div>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">
+                                    Les inscriptions ne sont pas disponibles pour cet événement.
                                 </p>
                             </div>
-                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5l7 7-7 7" />
-                            </svg>
+                        </div>
+
+                        <!-- Message si déjà inscrit -->
+                        <div v-else
+                            class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 text-center">
+                            <div
+                                class="inline-flex items-center justify-center w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full mb-4">
+                                <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor"
+                                    viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <h2 class="text-xl font-semibold text-green-900 dark:text-green-200 mb-2">Inscription
+                                confirmée</h2>
+                            <p class="text-green-700 dark:text-green-300">
+                                Vous êtes inscrit à cet événement. Nous avons hâte de vous voir !
+                            </p>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Modal d'upload de certificat -->
-        <div v-if="showUploadModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                        Déposer un certificat médical
-                    </h3>
-                    <button @click="showUploadModal = false"
-                        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                <form @submit.prevent="uploadCertificate" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Titre du certificat *
-                        </label>
-                        <input v-model="uploadForm.title" type="text" required
-                            placeholder="Ex: Certificat médical tennis 2024"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                        <p v-if="uploadForm.errors.title" class="mt-1 text-red-600 text-sm">{{ uploadForm.errors.title
-                            }}</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Fichier *
-                        </label>
-                        <input type="file" @change="handleFileUpload" required accept=".pdf,.jpg,.jpeg,.png"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                        <p class="mt-1 text-xs text-gray-500">Formats acceptés : PDF, JPG, PNG (max 10 Mo)</p>
-                        <p v-if="uploadForm.errors.file" class="mt-1 text-red-600 text-sm">{{ uploadForm.errors.file }}
-                        </p>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Date d'expiration *
-                        </label>
-                        <input v-model="uploadForm.expires_at" type="date" required
-                            :min="new Date().toISOString().split('T')[0]"
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                        <p v-if="uploadForm.errors.expires_at" class="mt-1 text-red-600 text-sm">{{
-                            uploadForm.errors.expires_at
-                            }}</p>
-                    </div>
-
-                    <div class="flex justify-end space-x-3 pt-4">
-                        <button type="button" @click="showUploadModal = false"
-                            class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                            Annuler
-                        </button>
-                        <button type="submit" :disabled="uploadForm.processing"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors">
-                            {{ uploadForm.processing ? 'Upload...' : 'Déposer' }}
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     </AuthenticatedLayout>

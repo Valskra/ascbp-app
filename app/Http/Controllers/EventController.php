@@ -47,31 +47,35 @@ class EventController extends Controller
                 'title' => $event->title,
                 'category' => $event->category,
                 'description' => $event->description,
-                'start_date' => $event->start_date,
-                'end_date' => $event->end_date,
-                'registration_open' => $event->registration_open,
-                'registration_close' => $event->registration_close,
+                'start_date' => $event->start_date->toISOString(),
+                'end_date' => $event->end_date ? $event->end_date->toISOString() : null,
+                'registration_open' => $event->registration_open ? $event->registration_open->toISOString() : null,
+                'registration_close' => $event->registration_close ? $event->registration_close->toISOString() : null,
                 'max_participants' => $event->max_participants,
-                'members_only' => $event->members_only,
-                'requires_medical_certificate' => $event->requires_medical_certificate,
+                'members_only' => (bool) $event->members_only,
+                'requires_medical_certificate' => (bool) $event->requires_medical_certificate,
                 'price' => $event->price,
                 'illustration' => $event->illustration ? [
                     'url' => $event->illustration->url
                 ] : null,
                 'address' => $event->address ? [
+                    'house_number' => $event->address->house_number,
                     'street_name' => $event->address->street_name,
                     'city' => $event->address->city,
                     'postal_code' => $event->address->postal_code,
+                    'country' => $event->address->country,
                 ] : null,
                 'organizer' => [
+                    'id' => $event->organizer->id,
                     'firstname' => $event->organizer->firstname,
                     'lastname' => $event->organizer->lastname,
                 ],
                 'participants_count' => $event->participants()->count(),
                 'registration_status' => $registrationStatus,
-                'is_registered' => $event->participants->contains($user->id),
+                'is_registered' => $user ? $event->participants->contains($user->id) : false,
             ];
         });
+
         return Inertia::render('Events/Index', [
             'events' => $events,
             'filters' => [
@@ -80,7 +84,6 @@ class EventController extends Controller
             ]
         ]);
     }
-
     public function show(Request $request, Event $event)
     {
         $event->load(['illustration', 'address', 'organizer', 'participants']);
@@ -166,30 +169,6 @@ class EventController extends Controller
             ->with('success', 'Inscription réussie !');
     }
 
-
-    /**
-     * Vérifier si l'événement nécessite un certificat médical
-     */
-    private function requiresMedicalCertificate(Event $event): bool
-    {
-        return in_array($event->category, ['competition']);
-    }
-
-    /**
-     * Vérifier si l'utilisateur a un certificat médical valide
-     */
-    private function hasValidMedicalCertificate($user): bool
-    {
-        return $user->documents()
-            ->whereHas('file')
-            ->where('title', 'LIKE', '%certificat%medical%')
-            ->where(function ($query) {
-                $query->whereNull('expiration_date')
-                    ->orWhere('expiration_date', '>', now());
-            })
-            ->exists();
-    }
-
     public function unregister(Request $request, Event $event)
     {
         $user = $request->user();
@@ -203,49 +182,71 @@ class EventController extends Controller
         return back()->with('success', 'Désinscription réussie.');
     }
 
-    private function canUserRegister(Event $event, $user = null): bool
+    private function canUserRegister(Event $event, $user = null): array
     {
         $now = now();
+        $result = ['can_register' => false, 'reason' => null];
 
+        // Vérifications temporelles
         if ($event->registration_open && $now < $event->registration_open) {
-            return false;
+            $result['reason'] = 'registration_not_open';
+            return $result;
         }
 
         if ($event->registration_close && $now > $event->registration_close) {
-            return false;
+            $result['reason'] = 'registration_closed';
+            return $result;
         }
 
         if ($event->start_date < $now) {
-            return false;
+            $result['reason'] = 'event_started';
+            return $result;
         }
 
-        if ($user && $event->participants->contains($user->id)) {
-            return false;
+        // Vérification de l'utilisateur connecté
+        if (!$user) {
+            $result['reason'] = 'not_authenticated';
+            return $result;
         }
 
+        // Vérification si déjà inscrit
+        if ($event->participants->contains($user->id)) {
+            $result['reason'] = 'already_registered';
+            return $result;
+        }
+
+        // Vérification du nombre maximum de participants
         if ($event->max_participants && $event->participants()->count() >= $event->max_participants) {
-            return false;
+            $result['reason'] = 'event_full';
+            return $result;
         }
 
-        return true;
+        // Vérification si réservé aux adhérents
+        if ($event->members_only && !$user->hasMembership()) {
+            $result['reason'] = 'members_only';
+            return $result;
+        }
+
+        // Vérification du certificat médical si requis
+        if ($event->requires_medical_certificate && !$this->userHasValidMedicalCertificate($user)) {
+            $result['reason'] = 'requires_medical_certificate';
+            return $result;
+        }
+
+        $result['can_register'] = true;
+        return $result;
     }
 
-    /**
-     * Get registration amount for user
-     */
-    private function getRegistrationAmount(Event $event, $user): float
+    private function userHasValidMedicalCertificate($user): bool
     {
-
-        if (!$event->price) {
-            return 0;
-        }
-
-        if ($user->hasMembership()) {
-            return 0;
-        }
-
-        preg_match('/\d+/', $event->price, $matches);
-        return isset($matches[0]) ? (float) $matches[0] : 0;
+        return $user->documents()
+            ->whereHas('file')
+            ->where('title', 'LIKE', '%certificat%medical%')
+            ->where(function ($query) {
+                $query->whereNull('expiration_date')
+                    ->orWhere('expiration_date', '>', now());
+            })
+            ->exists();
     }
 
 

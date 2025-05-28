@@ -260,4 +260,22 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+
+
+    public function destroyPhoto(Request $request)
+    {
+        $user = $request->user();
+
+        // Vérifie si une photo existe déjà
+        if ($user->profilePicture) {
+            // Suppression du fichier sur s3
+            Storage::disk('s3')->delete($user->profilePicture->path);
+
+            // Supprime l'entrée associée (si nécessaire)
+            $user->profilePicture()->delete();
+        }
+
+        return redirect()->back()->with('success', 'Photo supprimée avec succès.');
+    }
 }

@@ -11,11 +11,76 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+/**
+ * 
+ *
+ * @property int $id
+ * @property string $lastname
+ * @property string $firstname
+ * @property \Illuminate\Support\Carbon|null $birth_date
+ * @property $phone
+ * @property $phone_secondary
+ * @property string|null $marital_status
+ * @property string $email
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property string|null $email_pro
+ * @property string|null $email_pro_verified_at
+ * @property string $account_status
+ * @property string|null $iban
+ * @property string|null $metadata
+ * @property string $password
+ * @property string|null $remember_token
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Address $birthAddress
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Contact> $contacts
+ * @property-read int|null $contacts_count
+ * @property-read \Carbon\Carbon|null $first_membership_date
+ * @property-read bool $is_admin
+ * @property-read bool $is_animator
+ * @property-read bool $is_super_animator
+ * @property-read int $membership_status
+ * @property-read int|null $membership_time_left
+ * @property-read \App\Models\Address|null $homeAddress
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Membership> $memberships
+ * @property-read int|null $memberships_count
+ * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property-read int|null $notifications_count
+ * @property-read File|null $profilePicture
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Role> $roles
+ * @property-read int|null $roles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\UploadLink> $uploadLinks
+ * @property-read int|null $upload_links_count
+ * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereAccountStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereBirthDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmailPro($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmailProVerifiedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmailVerifiedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereFirstname($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereIban($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLastname($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereMaritalStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereMetadata($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePassword($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User wherePhoneSecondary($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRememberToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    protected $with = ['homeAddress', 'birthAddress', 'contacts', 'profilePicture'];
     /**
      * The attributes that are mass assignable.
      *
@@ -79,7 +144,6 @@ class User extends Authenticatable
         ];
     }
 
-    protected $with = ['homeAddress', 'birthAddress', 'contacts', 'profilePicture'];
 
 
     //////////

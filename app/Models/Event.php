@@ -1,4 +1,5 @@
 <?php
+// app/Models/Event.php
 
 namespace App\Models;
 
@@ -10,17 +11,21 @@ class Event extends Model
         'title',
         'category',
         'description',
-        'address',
-        'city',
-        'postal_code',
         'start_date',
         'end_date',
-        'registration_start',
-        'registration_end',
+        'registration_open',
+        'registration_close',
         'max_participants',
         'price',
         'file_id',
         'organizer_id',
+    ];
+
+    protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+        'registration_open' => 'datetime',
+        'registration_close' => 'datetime',
     ];
 
     /**

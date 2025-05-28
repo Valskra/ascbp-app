@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 import { router, Head } from '@inertiajs/vue3';
-import ManagingLayout from '@/Layouts/ManagingLayout.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { useDateFormat } from '@vueuse/core'
 import DownloadFileIcon from '@/Components/svg/downloadFileIcon.vue';
 
@@ -55,7 +55,7 @@ function statusColor(user) {
 
     <Head title="Utilisateurs" />
 
-    <ManagingLayout>
+    <AuthenticatedLayout>
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
@@ -143,5 +143,5 @@ function statusColor(user) {
                 </button>
             </div>
         </div>
-    </ManagingLayout>
+    </AuthenticatedLayout>
 </template>

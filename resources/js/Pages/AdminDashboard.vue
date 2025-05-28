@@ -1,5 +1,5 @@
 <script setup>
-import ManagingLayout from '@/Layouts/ManagingLayout.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, usePage } from '@inertiajs/vue3';
 
 const user = usePage().props.auth.user;
@@ -9,7 +9,7 @@ const user = usePage().props.auth.user;
 
     <Head title="Dashboard" />
 
-    <ManagingLayout>
+    <AuthenticatedLayout>
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                 Gestion
@@ -34,5 +34,5 @@ const user = usePage().props.auth.user;
                 </div>
             </div>
         </div>
-    </ManagingLayout>
+    </AuthenticatedLayout>
 </template>

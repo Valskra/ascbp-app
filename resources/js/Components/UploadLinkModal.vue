@@ -46,8 +46,12 @@ function cancel() {
     emit('close')
 }
 
-function copyLink() {
-    navigator.clipboard.writeText(linkUrl.value)
+const copied = ref(false)
+function copyLink(text) {
+    navigator.clipboard.writeText(linkUrl.value).then(() => {
+        copied.value = true
+        setTimeout(() => (copied.value = false), 2000)
+    })
 }
 </script>
 
@@ -58,6 +62,13 @@ function copyLink() {
             <div v-if="showError" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[60] pointer-events-none">
                 <div class="bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg">
                     {{ errorMsg }}
+                </div>
+            </div>
+        </Transition>
+        <Transition name="fade">
+            <div v-if="copied" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[60] pointer-events-none">
+                <div class="bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg">
+                    Lien copié !
                 </div>
             </div>
         </Transition>

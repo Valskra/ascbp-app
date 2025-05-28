@@ -19,6 +19,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Argon Options
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify the configuration options that should be used when
+    | passwords are hashed using the Argon algorithm. These will allow you
+    | to control the amount of time it takes to hash the given password.
+    |
+    */
+
+    'argon' => [
+        'memory' => env('ARGON_MEMORY', 19456), // 19 Mb
+        'threads' => env('ARGON_THREADS', 1),
+        'time' => env('ARGON_TIME', 2),
+        'verify' => env('HASH_VERIFY', true),
+    ],
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Bcrypt Options
     |--------------------------------------------------------------------------
     |
@@ -30,24 +49,6 @@ return [
 
     'bcrypt' => [
         'rounds' => env('BCRYPT_ROUNDS', 12),
-        'verify' => env('HASH_VERIFY', true),
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Argon Options
-    |--------------------------------------------------------------------------
-    |
-    | Here you may specify the configuration options that should be used when
-    | passwords are hashed using the Argon algorithm. These will allow you
-    | to control the amount of time it takes to hash the given password.
-    |
-    */
-
-    'argon' => [
-        'memory' => env('ARGON_MEMORY', 19456), // 19 MiB
-        'threads' => env('ARGON_THREADS', 1),
-        'time' => env('ARGON_TIME', 2),
         'verify' => env('HASH_VERIFY', true),
     ],
 

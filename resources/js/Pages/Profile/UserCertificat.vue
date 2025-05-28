@@ -90,14 +90,11 @@ const expiresAtModel = computed({
 
         <div class="py-8 px-4 sm:px-8 xl:px-16 mx-auto max-w-screen-2xl">
             <div class="flex flex-col lg:flex-row lg:gap-12">
-
                 <!-- A ─── COLONNE CARTES (ordre 2 sur mobile) -->
                 <div class="order-last lg:order-1 lg:flex-grow">
                     <h2 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
                         Mes documents
                     </h2>
-
-                    <!-- C ─── grille responsive max 3 -->
                     <div class="grid gap-6
                       grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
 
@@ -205,3 +202,100 @@ const expiresAtModel = computed({
     <UploadLinkModal :open="showUploadLink" @close="showUploadLink = false" />
     <LinkListModal :open="showLinkList" :links="uploadLinks" @close="showLinkList = false" />
 </template>
+
+<script>
+import axios from 'axios'
+
+export default {
+    name: 'ArticleEditor',
+    data() {
+        return {
+            articleContent: '',
+            suggestedContent: '',
+            originalContent: '',
+            showDropdown: false,
+            isProcessing: false,
+            errorMessage: ''
+        }
+    },
+    methods: {
+        toggleDropdown() {
+            this.showDropdown = !this.showDropdown
+        },
+
+        async processContent(action) {
+            if (!this.articleContent.trim()) return
+
+            this.isProcessing = true
+            this.errorMessage = ''
+            this.showDropdown = false
+            this.originalContent = this.articleContent
+
+            try {
+                const endpoint = this.getEndpoint(action)
+                const response = await axios.post(endpoint, {
+                    content: this.articleContent
+                })
+
+                if (response.data.success) {
+                    this.suggestedContent = response.data.corrected_content || response.data.improved_content
+                } else {
+                    this.errorMessage = response.data.error || 'Une erreur est survenue'
+                }
+            } catch (error) {
+                this.errorMessage = error.response?.data?.error || 'Erreur de communication avec le serveur'
+            } finally {
+                this.isProcessing = false
+            }
+        },
+
+        getEndpoint(action) {
+            const endpoints = {
+                'correct-chatgpt': '/api/ai-assistant/correct-chatgpt',
+                'improve-chatgpt': '/api/ai-assistant/improve-chatgpt',
+                'improve-claude': '/api/ai-assistant/improve-claude'
+            }
+            return endpoints[action]
+        },
+
+        acceptSuggestion() {
+            this.articleContent = this.suggestedContent
+            this.suggestedContent = ''
+            this.originalContent = ''
+        },
+
+        rejectSuggestion() {
+            this.suggestedContent = ''
+            this.originalContent = ''
+        },
+
+        async saveArticle() {
+            try {
+                const response = await axios.post('/api/articles', {
+                    content: this.articleContent
+                })
+
+                if (response.data.success) {
+                    this.$emit('article-saved', response.data.article)
+                }
+            } catch (error) {
+                this.errorMessage = 'Erreur lors de la sauvegarde'
+            }
+        },
+
+        handleClickOutside(event) {
+            if (!this.$el.contains(event.target)) {
+                this.showDropdown = false
+            }
+        }
+    },
+
+    mounted() {
+        document.addEventListener('click', this.handleClickOutside)
+    },
+
+    beforeUnmount() {
+        document.removeEventListener('click', this.handleClickOutside)
+    }
+}
+</script>

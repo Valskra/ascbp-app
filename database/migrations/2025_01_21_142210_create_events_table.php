@@ -14,8 +14,8 @@ return new class extends Migration
             $table->string('category', 50)->nullable();
             $table->dateTime('start_date');
             $table->dateTime('end_date');
-            $table->dateTime('registration_start')->nullable();
-            $table->dateTime('registration_end')->nullable();
+            $table->dateTime('registration_open')->nullable();
+            $table->dateTime('registration_close')->nullable();
             $table->integer('max_participants')->nullable();
             $table->decimal('price', 10, 2)->nullable();
             $table->text('description')->nullable();

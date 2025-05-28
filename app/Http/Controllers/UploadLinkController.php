@@ -94,7 +94,6 @@ class UploadLinkController extends Controller
 
         $validated = $request->validate($rules);
 
-        /* --- Stockage identique à storeCertificate() --- */
         $user   = $link->user;
         $fileUp = $request->file('file');
         $hash   = hash_file('sha256', $fileUp->getRealPath());
@@ -125,7 +124,6 @@ class UploadLinkController extends Controller
             'user_id'         => $user->id,
         ]);
 
-        /* marque le lien comme utilisé */
         $link->markAsUsed();
 
         return Inertia::render('Public/UploadSuccess');

@@ -35,7 +35,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => Auth::user(),
             ],
-            'csrf_token' => csrf_token(), // <-- Ajout essentiel
+            'csrf_token' => csrf_token(),
         ]);
     }
 }

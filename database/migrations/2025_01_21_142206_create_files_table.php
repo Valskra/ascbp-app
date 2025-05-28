@@ -28,11 +28,7 @@ return new class extends Migration
     public function down(): void
     {
         $objects = Storage::disk('s3')->allFiles('certificate');
-
-        // 2. Supprime-les en bloc (Multi-Object Delete en arrière-plan) 
         Storage::disk('s3')->delete($objects);
-
-        // 3. Supprime la table
         Schema::dropIfExists('files');
     }
 };

@@ -92,8 +92,8 @@
     location ; VARCHAR(255) ; nullable
     start_date -> DATETIME ;
     end_date -> DATETIME ;
-    registration_start -> DATETIME ; nullable
-    registration_end -> DATETIME ; nullable
+    registration_open -> DATETIME ; nullable
+    registration_close -> DATETIME ; nullable
     max_participants -> INT ; nullable
     price ; DECIMAL(10, 2) ; nullable
     referent_name ; VARCHAR(100) ; nullable

@@ -103,7 +103,7 @@ function copy(text) {
                                 <td class="px-4 py-3 text-gray-800 dark:text-gray-200">{{ link.title || '—' }}</td>
                                 <td class="px-4 py-3 text-gray-800 dark:text-gray-200">
                                     <span class="truncate max-w-xs break-all" :title="link.url">{{ truncate(link.url)
-                                    }}</span>
+                                        }}</span>
                                 </td>
                                 <td class="px-4 py-3  text-gray-800 dark:text-gray-200">{{
                                     formatRemaining(link.expires_at) }}</td>

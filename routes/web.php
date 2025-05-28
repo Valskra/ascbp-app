@@ -10,7 +10,9 @@ use App\Http\Controllers\{
     AdminUserController,
     UploadLinkController,
     FileController,
-    EventController
+    EventController,
+    AIAssistantController,
+    CertificateController
 };
 
 Route::post(
@@ -74,6 +76,12 @@ Route::middleware(['auth'])->group(function () {
         ->name('upload-link.latest');
 });
 
+// Accès aux certificats
+Route::get('/certificate/{userId}/{token}', [CertificateController::class, 'showPublic'])
+    ->name('certificate.public');
+////
+
+// Gestion admin des utilisateurs
 Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/users', [AdminUserController::class, 'index'])->name('users');
     Route::get('/users/export', [AdminUserController::class, 'export'])->name('export_users');
@@ -82,12 +90,36 @@ Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->gr
         return Inertia::render('AdminDashboard');
     })->middleware(['auth', 'verified'])->name('dashboard');
 });
+////
 
+// Gestion des événements
 Route::middleware(['auth', IsAnimator::class])->prefix('events')->name('events.')->group(function () {
     Route::get('/create', [EventController::class, 'create'])->name('create');
-
-    Route::post('/store', [EventController::class, 'store'])
-        ->name('store');
+    Route::post('/store', [EventController::class, 'store'])->name('store');
+    Route::get('/manage', [EventController::class, 'manage'])->name('manage');
+    Route::get('/{event}/edit', [EventController::class, 'edit'])->name('edit');
+    Route::put('/{event}', [EventController::class, 'update'])->name('update');
+    Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
+    Route::get('/{event}/participants', [EventController::class, 'participants'])->name('participants');
 });
+
+Route::middleware('auth')->prefix('events')->name('events.')->group(function () {
+    Route::get('/', [EventController::class, 'index'])->name('index');
+    Route::get('/{event}', [EventController::class, 'show'])->name('show');
+    Route::post('/{event}/register', [EventController::class, 'register'])->name('register');
+    Route::delete('/{event}/unregister', [EventController::class, 'unregister'])->name('unregister');
+});
+
+Route::get('/api/events', [EventController::class, 'apiIndex'])->name('api.events.index');
+
+////
+
+// Utilisation de l'assistant IA
+Route::prefix('ai-assistant')->group(function () {
+    Route::post('/correct-chatgpt', [AIAssistantController::class, 'correctWithChatGPT']);
+    Route::post('/improve-chatgpt', [AIAssistantController::class, 'improveWithChatGPT']);
+    Route::post('/improve-claude', [AIAssistantController::class, 'improveWithClaude']);
+});
+//// 
 
 require __DIR__ . '/auth.php';

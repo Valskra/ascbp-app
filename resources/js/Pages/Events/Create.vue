@@ -22,6 +22,8 @@ const form = useForm({
     start_date: '',
     end_date: '',
     max_participants: null,
+    members_only: false,
+    requires_medical_certificate: false,
     price: '',
     image: null,
     description: '',
@@ -42,13 +44,20 @@ const maxDescriptionLength = 2000
 const descriptionLength = computed(() => form.description.length)
 const descriptionProgress = computed(() => (descriptionLength.value / maxDescriptionLength) * 100)
 
-// Validation par étape - CORRIGÉE
+// Validation par étape
 const step1Valid = computed(() => {
     return form.title && form.category && form.registration_open && form.registration_close
 })
 
 const step2Valid = computed(() => {
     return form.start_date && form.end_date
+})
+
+// Auto-activation du certificat médical pour les compétitions
+watch(() => form.category, (newCategory) => {
+    if (newCategory === 'competition') {
+        form.requires_medical_certificate = true
+    }
 })
 
 // Navigation entre les étapes
@@ -100,12 +109,12 @@ function cancelCrop() {
     showCropModal.value = false
 }
 
-// Auto-remplissage des dates - AMÉLIORÉ
+// Auto-remplissage des dates
 watch(() => form.registration_open, (newDate) => {
     if (newDate && !form.registration_close) {
         const regOpen = new Date(newDate)
         const regClose = new Date(regOpen)
-        regClose.setDate(regClose.getDate() + 7) // 7 jours pour s'inscrire
+        regClose.setDate(regClose.getDate() + 7)
         form.registration_close = regClose.toISOString().split('T')[0]
     }
 })
@@ -114,20 +123,20 @@ watch(() => form.registration_close, (newDate) => {
     if (newDate && !form.start_date) {
         const regClose = new Date(newDate)
         const eventStart = new Date(regClose)
-        eventStart.setDate(eventStart.getDate() + 1) // Événement commence le lendemain
+        eventStart.setDate(eventStart.getDate() + 1)
         form.start_date = eventStart.toISOString().split('T')[0]
     }
 })
 
 watch(() => form.start_date, (newDate) => {
     if (newDate && !form.end_date) {
-        form.end_date = newDate // Par défaut, même jour
+        form.end_date = newDate
     }
 })
 
 const submit = () => {
     form.post(route('events.store'), {
-        forceFormData: true, // Important pour l'upload de fichier
+        forceFormData: true,
         onSuccess: () => {
             console.log('Événement créé avec succès!')
         },
@@ -185,7 +194,7 @@ const submit = () => {
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Titre de l'événement *
                                 </label>
-                                <input v-model="form.title" type="text"
+                                <input v-model="form.title" type="text" required
                                     class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white transition-colors"
                                     placeholder="Ex: Championnat de tennis 2024" />
                                 <p v-if="form.errors.title" class="mt-1 text-red-600 text-sm">{{ form.errors.title }}
@@ -197,7 +206,7 @@ const submit = () => {
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Catégorie *
                                 </label>
-                                <select v-model="form.category"
+                                <select v-model="form.category" required
                                     class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white">
                                     <option value="" disabled>Choisir une catégorie</option>
                                     <option value="competition">🏆 Compétition</option>
@@ -205,7 +214,7 @@ const submit = () => {
                                     <option value="manifestation">🎉 Manifestation</option>
                                 </select>
                                 <p v-if="form.errors.category" class="mt-1 text-red-600 text-sm">{{ form.errors.category
-                                    }}</p>
+                                }}</p>
                             </div>
 
                             <!-- Participants max -->
@@ -232,7 +241,41 @@ const submit = () => {
                                 </p>
                             </div>
 
-                            <!-- Section Inscriptions - DÉPLACÉE ICI -->
+                            <!-- Options d'accès -->
+                            <div class="lg:col-span-2 mt-6">
+                                <h4
+                                    class="text-md font-medium text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-600">
+                                    🔐 Restrictions d'accès
+                                </h4>
+                                <div class="space-y-4 lg:flex lg:flex-row gap-6  lg:items-baseline">
+                                    <!-- Réservé aux adhérents -->
+                                    <div class="flex items-center">
+                                        <input v-model="form.members_only" type="checkbox" id="members_only"
+                                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                                        <label for="members_only"
+                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                            Réservé aux adhérents uniquement
+                                        </label>
+                                    </div>
+
+                                    <!-- Certificat médical requis -->
+                                    <div class="flex items-center">
+                                        <input v-model="form.requires_medical_certificate" type="checkbox"
+                                            id="requires_medical" :disabled="form.category === 'competition'"
+                                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50">
+                                        <label for="requires_medical"
+                                            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                                            Certificat médical requis
+                                            <span v-if="form.category === 'competition'"
+                                                class="text-orange-600 text-xs ml-1">
+                                                (obligatoire pour les compétitions)
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section Inscriptions -->
                             <div class="lg:col-span-2 mt-8">
                                 <h4
                                     class="text-md font-medium text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-600">
@@ -244,7 +287,7 @@ const submit = () => {
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                             Ouverture des inscriptions *
                                         </label>
-                                        <input v-model="form.registration_open" type="date" :min="props.today"
+                                        <input v-model="form.registration_open" type="date" :min="props.today" required
                                             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" />
                                         <p v-if="form.errors.registration_open" class="mt-1 text-red-600 text-sm">{{
                                             form.errors.registration_open }}</p>
@@ -256,7 +299,7 @@ const submit = () => {
                                             Fermeture des inscriptions *
                                         </label>
                                         <input v-model="form.registration_close" type="date"
-                                            :min="form.registration_open || props.today"
+                                            :min="form.registration_open || props.today" required
                                             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" />
                                         <p v-if="form.errors.registration_close" class="mt-1 text-red-600 text-sm">{{
                                             form.errors.registration_close }}</p>
@@ -293,7 +336,7 @@ const submit = () => {
                                             Date de début *
                                         </label>
                                         <input v-model="form.start_date" type="date"
-                                            :min="form.registration_close || props.today"
+                                            :min="form.registration_close || props.today" required
                                             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" />
                                         <p v-if="form.errors.start_date" class="mt-1 text-red-600 text-sm">{{
                                             form.errors.start_date }}</p>
@@ -305,11 +348,11 @@ const submit = () => {
                                             Date de fin *
                                         </label>
                                         <input v-model="form.end_date" type="date"
-                                            :min="form.start_date || form.registration_close || props.today"
+                                            :min="form.start_date || form.registration_close || props.today" required
                                             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" />
                                         <p v-if="form.errors.end_date" class="mt-1 text-red-600 text-sm">{{
                                             form.errors.end_date
-                                            }}</p>
+                                        }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -331,7 +374,7 @@ const submit = () => {
                                             placeholder="Ex: 123 Avenue des Sports" />
                                         <p v-if="form.errors.address" class="mt-1 text-red-600 text-sm">{{
                                             form.errors.address
-                                            }}</p>
+                                        }}</p>
                                     </div>
 
                                     <!-- Ville -->
@@ -343,7 +386,7 @@ const submit = () => {
                                             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="Ex: Paris" />
                                         <p v-if="form.errors.city" class="mt-1 text-red-600 text-sm">{{ form.errors.city
-                                            }}</p>
+                                        }}</p>
                                     </div>
 
                                     <!-- Code postal -->
@@ -448,7 +491,7 @@ const submit = () => {
                                 </div>
                                 <p v-if="form.errors.description" class="mt-2 text-red-600 text-sm">{{
                                     form.errors.description
-                                    }}</p>
+                                }}</p>
                             </div>
                         </div>
                     </div>

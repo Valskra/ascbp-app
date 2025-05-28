@@ -17,6 +17,8 @@ return new class extends Migration
             $table->dateTime('registration_open')->nullable();
             $table->dateTime('registration_close')->nullable();
             $table->integer('max_participants')->nullable();
+            $table->boolean('members_only')->default(false)->after('max_participants');
+            $table->boolean('requires_medical_certificate')->default(false)->after('members_only');
             $table->decimal('price', 10, 2)->nullable();
             $table->text('description')->nullable();
             $table->foreignId('file_id')->nullable()->constrained('files')->onDelete('set null');

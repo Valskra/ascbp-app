@@ -39,6 +39,9 @@ class EventController extends Controller
         }
 
         $events = $query->get()->map(function ($event) use ($request) {
+            $user = $request->user();
+            $registrationStatus = $this->canUserRegister($event, $user);
+
             return [
                 'id' => $event->id,
                 'title' => $event->title,
@@ -49,6 +52,8 @@ class EventController extends Controller
                 'registration_open' => $event->registration_open,
                 'registration_close' => $event->registration_close,
                 'max_participants' => $event->max_participants,
+                'members_only' => $event->members_only,
+                'requires_medical_certificate' => $event->requires_medical_certificate,
                 'price' => $event->price,
                 'illustration' => $event->illustration ? [
                     'url' => $event->illustration->url
@@ -63,11 +68,10 @@ class EventController extends Controller
                     'lastname' => $event->organizer->lastname,
                 ],
                 'participants_count' => $event->participants()->count(),
-                'can_register' => $this->canUserRegister($event),
-                'is_registered' => $event->participants->contains($request->user()->id),
+                'registration_status' => $registrationStatus,
+                'is_registered' => $event->participants->contains($user->id),
             ];
         });
-
         return Inertia::render('Events/Index', [
             'events' => $events,
             'filters' => [
@@ -126,30 +130,42 @@ class EventController extends Controller
     public function register(Request $request, Event $event)
     {
         $user = $request->user();
+        $registrationStatus = $this->canUserRegister($event, $user);
 
-        if (!$this->canUserRegister($event, $user)) {
+        if (!$registrationStatus['can_register']) {
             return back()->with('error', 'Impossible de s\'inscrire à cet événement.');
         }
 
-        if ($event->participants->contains($user->id)) {
-            return back()->with('error', 'Vous êtes déjà inscrit à cet événement.');
+        // Validation des données
+        $validationRules = [
+            'firstname' => 'required|string|max:50',
+            'lastname' => 'required|string|max:50',
+            'email' => 'required|email|max:100',
+            'phone' => 'required|string|max:15',
+            'birth_date' => 'required|date|before:today',
+            'emergency_contact_name' => 'required|string|max:100',
+            'emergency_contact_phone' => 'required|string|max:15',
+            'emergency_contact_relation' => 'required|string|max:50',
+        ];
+
+        if ($event->requires_medical_certificate) {
+            $validationRules['medical_certificate_id'] = 'required|exists:documents,id';
         }
 
-        if ($event->max_participants && $event->participants()->count() >= $event->max_participants) {
-            return back()->with('error', 'Cet événement est complet.');
+        $validated = $request->validate($validationRules);
+
+        // Si l'événement est payant, gérer le paiement avec Stripe
+        if ($event->isPaidFor($user)) {
+            return $this->handleStripePayment($event, $user, $validated);
         }
 
-        if ($this->requiresMedicalCertificate($event) && !$this->hasValidMedicalCertificate($user)) {
-            return back()->with('error', 'Un certificat médical valide est requis pour s\'inscrire à cet événement.');
-        }
+        // Inscription directe si gratuit
+        $this->createRegistration($event, $user, $validated);
 
-        $event->participants()->attach($user->id, [
-            'registration_date' => now(),
-            'amount' => $this->getRegistrationAmount($event, $user),
-        ]);
-
-        return back()->with('success', 'Inscription réussie !');
+        return redirect()->route('events.show', $event)
+            ->with('success', 'Inscription réussie !');
     }
+
 
     /**
      * Vérifier si l'événement nécessite un certificat médical
@@ -544,10 +560,10 @@ class EventController extends Controller
     /**
      * List participants of the specified event, including medical certificates.
      */
-    public function participants(Event $event)
+    public function participants(Event $event, Request $request)
     {
         // Vérifier que l'utilisateur est l'organisateur ou admin
-        if ($event->organizer_id !== auth()->id() && !auth()->user()->isAdmin()) {
+        if ($event->organizer_id !== $request->user()->id && !$request->user()->isAdmin()) {
             abort(403, 'Vous n\'êtes pas autorisé à voir les participants de cet événement.');
         }
 
@@ -581,5 +597,197 @@ class EventController extends Controller
         });
 
         return response()->json($participantsData, Response::HTTP_OK);
+    }
+
+    /**
+     * Créer l'inscription
+     */
+    private function createRegistration(Event $event, User $user, array $data, float $amount = 0)
+    {
+        $event->participants()->attach($user->id, [
+            'registration_date' => now(),
+            'amount' => $amount,
+            'metadata' => json_encode([
+                'registration_info' => [
+                    'firstname' => $data['firstname'],
+                    'lastname' => $data['lastname'],
+                    'email' => $data['email'],
+                    'phone' => $data['phone'],
+                    'birth_date' => $data['birth_date'],
+                    'emergency_contact' => [
+                        'name' => $data['emergency_contact_name'],
+                        'phone' => $data['emergency_contact_phone'],
+                        'relation' => $data['emergency_contact_relation'],
+                    ],
+                ],
+                'medical_certificate_id' => $data['medical_certificate_id'] ?? null,
+            ]),
+        ]);
+    }
+
+
+    /**
+     * Gérer le paiement Stripe
+     */
+    private function handleStripePayment(Event $event, User $user, array $registrationData)
+    {
+        try {
+            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+
+            $amount = $event->price * 100; // Stripe utilise les centimes
+
+            $session = \Stripe\Checkout\Session::create([
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => 'eur',
+                        'product_data' => [
+                            'name' => "Inscription - {$event->title}",
+                            'description' => "Événement du " . $event->start_date->format('d/m/Y'),
+                        ],
+                        'unit_amount' => $amount,
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'payment',
+                'success_url' => route('events.registration.success', [
+                    'event' => $event->id,
+                    'session_id' => '{CHECKOUT_SESSION_ID}'
+                ]),
+                'cancel_url' => route('events.registration', $event->id),
+                'metadata' => [
+                    'event_id' => $event->id,
+                    'user_id' => $user->id,
+                    'registration_data' => json_encode($registrationData),
+                ],
+            ]);
+
+            return redirect($session->url);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Erreur lors de la création du paiement : ' . $e->getMessage());
+        }
+    }
+
+
+    public function handlePaymentSuccess(Request $request, Event $event)
+    {
+        try {
+            \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
+
+            $session = \Stripe\Checkout\Session::retrieve($request->session_id);
+
+            if ($session->payment_status === 'paid') {
+                $registrationData = json_decode($session->metadata->registration_data, true);
+                $user = User::find($session->metadata->user_id);
+
+                $this->createRegistration($event, $user, $registrationData, $session->amount_total / 100);
+
+                return redirect()->route('events.show', $event)
+                    ->with('success', 'Paiement réussi ! Votre inscription a été confirmée.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('events.show', $event)
+                ->with('error', 'Erreur lors de la vérification du paiement.');
+        }
+
+        return redirect()->route('events.show', $event)
+            ->with('error', 'Le paiement n\'a pas pu être confirmé.');
+    }
+
+
+    /**
+     * Afficher la page d'inscription à un événement
+     */
+    public function showRegistration(Request $request, Event $event)
+    {
+        $user = $request->user();
+        $registrationStatus = $this->canUserRegister($event, $user);
+
+        // Si l'utilisateur ne peut pas s'inscrire, rediriger avec le message approprié
+        if (!$registrationStatus['can_register']) {
+            $errorMessages = [
+                'registration_not_open' => 'Les inscriptions ne sont pas encore ouvertes.',
+                'registration_closed' => 'Les inscriptions sont fermées.',
+                'event_started' => 'L\'événement a déjà commencé.',
+                'not_authenticated' => 'Vous devez être connecté pour vous inscrire.',
+                'already_registered' => 'Vous êtes déjà inscrit à cet événement.',
+                'event_full' => 'Cet événement est complet.',
+                'members_only' => 'Cet événement est réservé aux adhérents.',
+            ];
+
+            if ($registrationStatus['reason'] === 'members_only') {
+                return redirect()->route('membership.create')
+                    ->with('error', $errorMessages[$registrationStatus['reason']]);
+            }
+
+            return redirect()->route('events.show', $event)
+                ->with('error', $errorMessages[$registrationStatus['reason']] ?? 'Inscription impossible.');
+        }
+
+        // Charger les certificats médicaux valides de l'utilisateur
+        $medicalCertificates = [];
+        if ($event->requires_medical_certificate) {
+            $medicalCertificates = $user->documents()
+                ->with('file')
+                ->where('title', 'LIKE', '%certificat%medical%')
+                ->where(function ($query) {
+                    $query->whereNull('expiration_date')
+                        ->orWhere('expiration_date', '>', now());
+                })
+                ->get()
+                ->map(function ($doc) {
+                    return [
+                        'id' => $doc->id,
+                        'title' => $doc->title,
+                        'expiration_date' => $doc->expiration_date,
+                        'url' => $doc->file->url,
+                    ];
+                });
+        }
+
+        return Inertia::render('Events/Registration', [
+            'event' => [
+                'id' => $event->id,
+                'title' => $event->title,
+                'category' => $event->category,
+                'description' => $event->description,
+                'start_date' => $event->start_date,
+                'end_date' => $event->end_date,
+                'requires_medical_certificate' => $event->requires_medical_certificate,
+                'price' => $event->price,
+                'illustration' => $event->illustration ? ['url' => $event->illustration->url] : null,
+                'address' => $event->address ? [
+                    'house_number' => $event->address->house_number,
+                    'street_name' => $event->address->street_name,
+                    'city' => $event->address->city,
+                    'postal_code' => $event->address->postal_code,
+                    'country' => $event->address->country,
+                ] : null,
+            ],
+            'user' => [
+                'id' => $user->id,
+                'firstname' => $user->firstname,
+                'lastname' => $user->lastname,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'birth_date' => $user->birth_date,
+                'address' => $user->homeAddress ? [
+                    'house_number' => $user->homeAddress->house_number,
+                    'street_name' => $user->homeAddress->street_name,
+                    'city' => $user->homeAddress->city,
+                    'postal_code' => $user->homeAddress->postal_code,
+                    'country' => $user->homeAddress->country,
+                ] : null,
+                'emergency_contacts' => $user->contacts->map(function ($contact) {
+                    return [
+                        'firstname' => $contact->firstname,
+                        'lastname' => $contact->lastname,
+                        'phone' => $contact->phone,
+                        'relation' => $contact->relation,
+                    ];
+                }),
+            ],
+            'medical_certificates' => $medicalCertificates,
+        ]);
     }
 }

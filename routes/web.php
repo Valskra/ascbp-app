@@ -106,7 +106,11 @@ Route::middleware(['auth', IsAnimator::class])->prefix('events')->name('events.'
 Route::middleware('auth')->prefix('events')->name('events.')->group(function () {
     Route::get('/', [EventController::class, 'index'])->name('index');
     Route::get('/{event}', [EventController::class, 'show'])->name('show');
+
+    Route::get('/{event}/register', [EventController::class, 'showRegistration'])->name('registration');
     Route::post('/{event}/register', [EventController::class, 'register'])->name('register');
+    Route::get('/{event}/registration/success', [EventController::class, 'handlePaymentSuccess'])->name('registration.success');
+
     Route::delete('/{event}/unregister', [EventController::class, 'unregister'])->name('unregister');
 });
 

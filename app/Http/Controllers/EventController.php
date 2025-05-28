@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/EventController.php
 
 namespace App\Http\Controllers;
 
@@ -9,8 +8,8 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Inertia\Inertia;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 use App\Models\{User, File};
-use Illuminate\Support\Facades\Redis;
 
 class EventController extends Controller
 {
@@ -23,12 +22,10 @@ class EventController extends Controller
             ->where('start_date', '>=', now())
             ->orderBy('start_date', 'asc');
 
-        // Filtrage par catégorie si spécifié
         if ($request->has('category') && $request->category) {
             $query->where('category', $request->category);
         }
 
-        // Tri
         $sortBy = $request->get('sort', 'date');
         switch ($sortBy) {
             case 'date_desc':
@@ -41,7 +38,7 @@ class EventController extends Controller
                 $query->orderBy('start_date', 'asc');
         }
 
-        $events = $query->get()->map(function ($event, $request) {
+        $events = $query->get()->map(function ($event) use ($request) {
             return [
                 'id' => $event->id,
                 'title' => $event->title,
@@ -67,6 +64,7 @@ class EventController extends Controller
                 ],
                 'participants_count' => $event->participants()->count(),
                 'can_register' => $this->canUserRegister($event),
+                'is_registered' => $event->participants->contains($request->user()->id),
             ];
         });
 
@@ -129,28 +127,51 @@ class EventController extends Controller
     {
         $user = $request->user();
 
-        // Vérifications
         if (!$this->canUserRegister($event, $user)) {
             return back()->with('error', 'Impossible de s\'inscrire à cet événement.');
         }
 
-        // Vérifier si déjà inscrit
         if ($event->participants->contains($user->id)) {
             return back()->with('error', 'Vous êtes déjà inscrit à cet événement.');
         }
 
-        // Vérifier le nombre maximum de participants
         if ($event->max_participants && $event->participants()->count() >= $event->max_participants) {
             return back()->with('error', 'Cet événement est complet.');
         }
 
-        // Inscription
+        if ($this->requiresMedicalCertificate($event) && !$this->hasValidMedicalCertificate($user)) {
+            return back()->with('error', 'Un certificat médical valide est requis pour s\'inscrire à cet événement.');
+        }
+
         $event->participants()->attach($user->id, [
             'registration_date' => now(),
             'amount' => $this->getRegistrationAmount($event, $user),
         ]);
 
         return back()->with('success', 'Inscription réussie !');
+    }
+
+    /**
+     * Vérifier si l'événement nécessite un certificat médical
+     */
+    private function requiresMedicalCertificate(Event $event): bool
+    {
+        return in_array($event->category, ['competition']);
+    }
+
+    /**
+     * Vérifier si l'utilisateur a un certificat médical valide
+     */
+    private function hasValidMedicalCertificate($user): bool
+    {
+        return $user->documents()
+            ->whereHas('file')
+            ->where('title', 'LIKE', '%certificat%medical%')
+            ->where(function ($query) {
+                $query->whereNull('expiration_date')
+                    ->orWhere('expiration_date', '>', now());
+            })
+            ->exists();
     }
 
     public function unregister(Request $request, Event $event)
@@ -166,9 +187,10 @@ class EventController extends Controller
         return back()->with('success', 'Désinscription réussie.');
     }
 
-    private function canUserRegister(Event $event): bool
+    private function canUserRegister(Event $event, $user = null): bool
     {
         $now = now();
+
         if ($event->registration_open && $now < $event->registration_open) {
             return false;
         }
@@ -181,6 +203,14 @@ class EventController extends Controller
             return false;
         }
 
+        if ($user && $event->participants->contains($user->id)) {
+            return false;
+        }
+
+        if ($event->max_participants && $event->participants()->count() >= $event->max_participants) {
+            return false;
+        }
+
         return true;
     }
 
@@ -189,19 +219,15 @@ class EventController extends Controller
      */
     private function getRegistrationAmount(Event $event, $user): float
     {
-        // Ici vous pouvez implémenter une logique de tarification
-        // Par exemple, tarif réduit pour les membres, etc.
 
         if (!$event->price) {
             return 0;
         }
 
-        // Exemple : tarif réduit pour les membres actifs
         if ($user->hasMembership()) {
-            return 0; // Gratuit pour les membres
+            return 0;
         }
 
-        // Sinon, extraire le montant du champ price (s'il contient un nombre)
         preg_match('/\d+/', $event->price, $matches);
         return isset($matches[0]) ? (float) $matches[0] : 0;
     }
@@ -246,7 +272,6 @@ class EventController extends Controller
             'country'            => 'nullable|string|max:100',
         ]);
 
-        // Gestion de l'image
         $fileId = null;
         if ($request->hasFile('image')) {
             $uploaded = $request->file('image');
@@ -266,7 +291,6 @@ class EventController extends Controller
             $fileId = $file->id;
         }
 
-        // Création de l'événement
         $event = Event::create([
             'title'               => $validated['title'],
             'category'            => $validated['category'],
@@ -281,7 +305,6 @@ class EventController extends Controller
             'organizer_id'        => $request->user()->id,
         ]);
 
-        // Gestion de l'adresse
         if (
             !empty($validated['address']) ||
             !empty($validated['city']) ||
@@ -335,7 +358,6 @@ class EventController extends Controller
             ->orderBy('start_date', 'desc');
 
         if ($user->isAdmin()) {
-            // Les admins voient tous les événements
             $query = Event::with(['illustration', 'address', 'participants', 'organizer'])
                 ->orderBy('start_date', 'desc');
         }
@@ -365,12 +387,10 @@ class EventController extends Controller
 
     public function update(Request $request, Event $event)
     {
-        // Vérifier que l'utilisateur est l'organisateur ou admin
-        if ($event->organizer_id !== auth()->id() && !auth()->user()->isAdmin()) {
+        if ($event->organizer_id !== $request->user()->id && !$request->user()->isAdmin()) {
             abort(403, 'Vous n\'êtes pas autorisé à modifier cet événement.');
         }
 
-        // Validation (même que pour store)
         $validated = $request->validate([
             'title' => 'required|string|max:255|unique:events,title,' . $event->id,
             'category' => 'required|string|max:100',
@@ -388,16 +408,13 @@ class EventController extends Controller
             'country' => 'nullable|string|max:100',
         ]);
 
-        // Gestion de l'image
         $fileId = $event->file_id;
         if ($request->hasFile('image')) {
-            // Supprimer l'ancienne image
             if ($event->illustration) {
                 Storage::disk($event->illustration->disk)->delete($event->illustration->path);
                 $event->illustration->delete();
             }
 
-            // Upload nouvelle image
             $uploaded = $request->file('image');
             $path = $uploaded->store('events', 'public');
 
@@ -415,7 +432,6 @@ class EventController extends Controller
             $fileId = $file->id;
         }
 
-        // Mise à jour de l'événement
         $event->update([
             'title' => $validated['title'],
             'category' => $validated['category'],
@@ -429,7 +445,6 @@ class EventController extends Controller
             'file_id' => $fileId,
         ]);
 
-        // Mise à jour de l'adresse
         if (
             !empty($validated['address']) ||
             !empty($validated['city']) ||
@@ -472,7 +487,6 @@ class EventController extends Controller
 
     public function edit(Event $event, Request $request)
     {
-        // Vérifier que l'utilisateur est l'organisateur ou admin
         if ($event->organizer_id !== $request->id() && !$request->user()->isAdmin()) {
             abort(403, 'Vous n\'êtes pas autorisé à modifier cet événement.');
         }
@@ -511,14 +525,12 @@ class EventController extends Controller
     /**
      * Remove the specified event.
      */
-    public function destroy(Event $event)
+    public function destroy(Event $event, Request $request)
     {
-        // Vérifier que l'utilisateur est l'organisateur ou admin
-        if ($event->organizer_id !== auth()->id() && !$request->user()->isAdmin()) {
+        if ($event->organizer_id !== $request->user()->id && !$request->user()->isAdmin()) {
             abort(403, 'Vous n\'êtes pas autorisé à supprimer cet événement.');
         }
 
-        // Supprimer l'image si elle existe
         if ($event->illustration) {
             Storage::disk($event->illustration->disk)->delete($event->illustration->path);
             $event->illustration->delete();
@@ -534,10 +546,40 @@ class EventController extends Controller
      */
     public function participants(Event $event)
     {
+        // Vérifier que l'utilisateur est l'organisateur ou admin
+        if ($event->organizer_id !== auth()->id() && !auth()->user()->isAdmin()) {
+            abort(403, 'Vous n\'êtes pas autorisé à voir les participants de cet événement.');
+        }
+
+        // Charger les participants avec leurs certificats médicaux
         $participants = $event->participants()
-            ->withPivot('certificate_medical')
+            ->withPivot('registration_date', 'amount')
+            ->with(['documents' => function ($query) {
+                $query->whereHas('file')
+                    ->where('title', 'LIKE', '%certificat%medical%')
+                    ->where(function ($subQuery) {
+                        $subQuery->whereNull('expiration_date')
+                            ->orWhere('expiration_date', '>', now());
+                    });
+            }])
             ->get();
 
-        return response()->json($participants, Response::HTTP_OK);
+        // Transformer les données
+        $participantsData = $participants->map(function ($participant) {
+            return [
+                'id' => $participant->id,
+                'firstname' => $participant->firstname,
+                'lastname' => $participant->lastname,
+                'email' => $participant->email,
+                'pivot' => [
+                    'registration_date' => $participant->pivot->registration_date,
+                    'amount' => $participant->pivot->amount ?? 0,
+                ],
+                'has_valid_medical_certificate' => $participant->documents->isNotEmpty(),
+                'medical_certificate_expires_at' => $participant->documents->first()?->expiration_date,
+            ];
+        });
+
+        return response()->json($participantsData, Response::HTTP_OK);
     }
 }

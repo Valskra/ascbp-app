@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3'
-import AuthenticatedLayoutout from '@/Layouts/AuthenticatedLayoutout.vue'
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { useDateFormat } from '@vueuse/core'
 
 const props = defineProps({
@@ -38,13 +38,23 @@ const getAvatarColor = (firstname, lastname) => {
     }, 0)
     return colors[Math.abs(hash) % colors.length]
 }
+
+// Calculer les statistiques des certificats médicaux
+const participantsWithCertificate = computed(() => {
+    return props.participants.filter(p => p.has_valid_medical_certificate).length
+})
+
+const certificatePercentage = computed(() => {
+    if (props.participants.length === 0) return 0
+    return Math.round((participantsWithCertificate.value / props.participants.length) * 100)
+})
 </script>
 
 <template>
 
     <Head :title="`Participants - ${event.title}`" />
 
-    <AuthenticatedLayoutout>
+    <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center justify-between">
                 <div>
@@ -124,10 +134,16 @@ const getAvatarColor = (firstname, lastname) => {
                                         <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
                                             {{ participant.firstname }} {{ participant.lastname }}
                                         </p>
-                                        <p v-if="participant.pivot.registration_date"
-                                            class="text-xs text-gray-500 dark:text-gray-400">
-                                            Inscrit le {{ formatDate(participant.pivot.registration_date) }}
-                                        </p>
+                                        <div
+                                            class="flex items-center space-x-2 text-xs text-gray-500 dark:text-gray-400">
+                                            <span v-if="participant.pivot.registration_date">
+                                                Inscrit le {{ formatDate(participant.pivot.registration_date) }}
+                                            </span>
+                                            <span v-if="participant.has_valid_medical_certificate"
+                                                class="text-green-600 dark:text-green-400 font-medium">
+                                                • ✓ Certificat
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -151,9 +167,13 @@ const getAvatarColor = (firstname, lastname) => {
                                             <span v-if="participant.pivot.registration_date">
                                                 Inscrit le {{ formatDate(participant.pivot.registration_date) }}
                                             </span>
-                                            <span v-if="participant.pivot.certificate_medical"
+                                            <span v-if="participant.has_valid_medical_certificate"
                                                 class="text-green-600 dark:text-green-400">
-                                                • Certificat médical
+                                                • Certificat médical valide
+                                                <span v-if="participant.medical_certificate_expires_at">
+                                                    (expire le {{ formatDate(participant.medical_certificate_expires_at)
+                                                    }})
+                                                </span>
                                             </span>
                                         </div>
                                     </div>
@@ -190,23 +210,20 @@ const getAvatarColor = (firstname, lastname) => {
                         <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Inscriptions par jour</h4>
                         <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                             {{ Math.round(participants.length / Math.max(1, Math.ceil((new
-                                Date(event.registration_close)
-                                - new
+                                Date(event.registration_close) - new
                                     Date(event.registration_open)) / (1000 * 60 * 60 * 24)))) }}
                         </div>
                         <p class="text-xs text-gray-500 dark:text-gray-400">inscriptions/jour en moyenne</p>
                     </div>
 
                     <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Avec certificat médical
-                        </h4>
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Certificats médicaux
+                            valides</h4>
                         <div class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                            {{participants.filter(p => p.pivot.certificate_medical).length}}
+                            {{ participantsWithCertificate }}
                         </div>
                         <p class="text-xs text-gray-500 dark:text-gray-400">
-                            {{Math.round((participants.filter(p => p.pivot.certificate_medical).length /
-                                participants.length) *
-                                100)}}% des participants
+                            {{ certificatePercentage }}% des participants
                         </p>
                     </div>
 
@@ -226,5 +243,5 @@ const getAvatarColor = (firstname, lastname) => {
                 </div>
             </div>
         </div>
-    </AuthenticatedLayoutout>
+    </AuthenticatedLayout>
 </template>

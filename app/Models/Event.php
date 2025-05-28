@@ -4,6 +4,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Registration;
 
 class Event extends Model
 {
@@ -49,11 +50,16 @@ class Event extends Model
      */
     public function participants()
     {
-        return $this->belongsToMany(User::class, 'registrations')
-            ->withPivot('certificate_medical')
+        return $this->belongsToMany(User::class, 'registrations', 'event_id', 'user_id')
+            ->withPivot('registration_date', 'amount')
             ->withTimestamps();
     }
 
+    // Relation pour les inscriptions
+    public function registrations()
+    {
+        return $this->hasMany(Registration::class);
+    }
     /**
      * L'adresse détaillée de l'événement
      */

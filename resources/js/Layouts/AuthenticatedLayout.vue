@@ -139,9 +139,31 @@ function switchLayout() {
                     block: showingNavigationDropdown,
                     hidden: !showingNavigationDropdown,
                 }" class="sm:hidden">
-                    <div class="space-y-1 pb-3 pt-2">
+                    <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-600">
+                        <button v-if="user.is_admin" @click="switchLayout"
+                            class="w-full flex items-center justify-center px-3 py-2 rounded-md border text-sm font-medium leading-4 transition duration-150 ease-in-out"
+                            :class="managingLayout ? 'bg-blue-500 text-white' : 'bg-white text-gray-600 dark:bg-gray-700 dark:text-gray-300'">
+                            <KeyIcon class="w-5 h-5 mr-2" />
+                            {{ managingLayout ? 'Gestion Admin activée' : 'Activer Gestion Admin' }}
+                        </button>
+                    </div>
+                    <div v-if="!managingLayout" class="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('events.index')" :active="route().current('events.index')">
+                            Événements
+                        </ResponsiveNavLink>
+                    </div>
+
+                    <div v-if="managingLayout" class="space-y-1 pb-3 pt-2">
+                        <ResponsiveNavLink v-if="user.is_admin" :href="route('admin.users')"
+                            :active="route().current('admin.users')">
+                            Utilisateurs
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink v-if="user.is_animator" :href="route('events.create')"
+                            :active="route().current('events.create')">
+                            Création d'événement
                         </ResponsiveNavLink>
                     </div>
 
@@ -167,6 +189,7 @@ function switchLayout() {
                         </div>
                     </div>
                 </div>
+
             </nav>
 
             <!-- Page Heading -->

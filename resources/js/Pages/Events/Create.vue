@@ -137,9 +137,6 @@ watch(() => form.start_date, (newDate) => {
 const submit = () => {
     form.post(route('events.store'), {
         forceFormData: true,
-        onSuccess: () => {
-            console.log('Événement créé avec succès!')
-        },
         onError: (errors) => {
             console.error('Erreurs:', errors)
         }
@@ -213,7 +210,7 @@ const submit = () => {
                                     <option value="manifestation">🎉 Manifestation</option>
                                 </select>
                                 <p v-if="form.errors.category" class="mt-1 text-red-600 text-sm">{{ form.errors.category
-                                    }}</p>
+                                }}</p>
                             </div>
 
                             <!-- Participants max -->
@@ -351,7 +348,7 @@ const submit = () => {
                                             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white" />
                                         <p v-if="form.errors.end_date" class="mt-1 text-red-600 text-sm">{{
                                             form.errors.end_date
-                                            }}</p>
+                                        }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -373,7 +370,7 @@ const submit = () => {
                                             placeholder="Ex: 123 Avenue des Sports" />
                                         <p v-if="form.errors.address" class="mt-1 text-red-600 text-sm">{{
                                             form.errors.address
-                                            }}</p>
+                                        }}</p>
                                     </div>
 
                                     <!-- Ville -->
@@ -385,7 +382,7 @@ const submit = () => {
                                             class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                                             placeholder="Ex: Paris" />
                                         <p v-if="form.errors.city" class="mt-1 text-red-600 text-sm">{{ form.errors.city
-                                            }}</p>
+                                        }}</p>
                                     </div>
 
                                     <!-- Code postal -->
@@ -490,7 +487,7 @@ const submit = () => {
                                 </div>
                                 <p v-if="form.errors.description" class="mt-2 text-red-600 text-sm">{{
                                     form.errors.description
-                                    }}</p>
+                                }}</p>
                             </div>
                         </div>
                     </div>

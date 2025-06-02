@@ -97,6 +97,7 @@ Route::middleware(['auth', IsAnimator::class])->prefix('events')->name('events.'
     Route::get('/create', [EventController::class, 'create'])->name('create');
     Route::post('/store', [EventController::class, 'store'])->name('store');
     Route::get('/manage', [EventController::class, 'manage'])->name('manage');
+
     Route::get('/{event}/edit', [EventController::class, 'edit'])->name('edit');
     Route::put('/{event}', [EventController::class, 'update'])->name('update');
     Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');

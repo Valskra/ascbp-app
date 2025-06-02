@@ -17,6 +17,19 @@ export default {
                 scandia: ['Scandia', ...defaultTheme.fontFamily.sans],
                 garet: ['Garet', ...defaultTheme.fontFamily.sans],
             },
+            animation: {
+                'spin-reverse': 'spin-reverse .7s linear infinite',
+            },
+            keyframes: {
+                'spin-reverse': {
+                    from: {
+                        transform: 'rotate(360deg)',
+                    },
+                    to: {
+                        transform: 'rotate(0deg)',
+                    },
+                },
+            },
         },
     },
 

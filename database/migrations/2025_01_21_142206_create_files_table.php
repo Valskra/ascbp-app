@@ -17,7 +17,7 @@ return new class extends Migration
             $table->char('extension', 5);
             $table->string('mimetype', 50)->nullable();
             $table->unsignedBigInteger('size')->nullable();
-            $table->char('hash', 64)->after('size');
+            $table->char('hash', 64);
 
             $table->text('path');
             $table->string('disk')->default('public');

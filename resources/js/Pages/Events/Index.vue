@@ -2,7 +2,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import EventCard from '@/Components/EventCard.vue'
-import { ref, computed, watch } from 'vue'
+import ReloadButton from '@/Components/svg/ReloadButton.vue'
+import { ref, computed, watch, onMounted, nextTick, onUnmounted } from 'vue'
 
 const props = defineProps({
     events: {
@@ -16,10 +17,19 @@ const props = defineProps({
 })
 
 const $user = usePage().props.auth.user;
+const eventsContainer = ref(null)
+const isLayouting = ref(false)
 
 // États pour les filtres
 const selectedCategory = ref(props.filters?.category || '')
 const selectedSort = ref(props.filters?.sort || 'date')
+
+// Configuration Masonry simplifiée
+const masonryConfig = ref({
+    columnWidth: 320,
+    gutter: 24,
+    containerPadding: 0
+})
 
 // Fonction pour filtrer les événements
 const filteredEvents = computed(() => {
@@ -44,6 +54,93 @@ const filteredEvents = computed(() => {
 
     return filtered
 })
+
+// Fonction Masonry Layout optimisée
+const layoutMasonry = async () => {
+    if (!eventsContainer.value || isLayouting.value) return
+
+    isLayouting.value = true
+
+    // Attendre que le DOM soit à jour
+    await nextTick()
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    const container = eventsContainer.value
+    const items = Array.from(container.querySelectorAll('.event-card'))
+
+
+    if (items.length === 0) {
+        isLayouting.value = false
+        return
+    }
+
+    // Calculer le nombre de colonnes
+    const containerWidth = container.offsetWidth
+    const { columnWidth, gutter } = masonryConfig.value
+
+
+    // S'assurer qu'on a une largeur valide
+    if (containerWidth === 0) {
+        setTimeout(layoutMasonry, 100)
+        isLayouting.value = false
+        return
+    }
+
+    const columnCount = Math.max(1, Math.floor(containerWidth / (columnWidth + gutter)))
+    const actualColumnWidth = Math.floor((containerWidth - (gutter * (columnCount + 1))) / columnCount)
+
+
+    // Initialiser les hauteurs des colonnes
+    const columnHeights = new Array(columnCount).fill(gutter)
+
+    // Assurer que le conteneur a la bonne position
+    container.style.position = 'relative'
+    container.style.width = '100%'
+
+    // Réinitialiser toutes les cartes d'abord
+    items.forEach(item => {
+        item.style.position = 'absolute'
+        item.style.width = `${actualColumnWidth}px`
+        item.style.transition = 'all 0.3s ease'
+        item.style.visibility = 'hidden' // Cacher temporairement
+    })
+
+    // Positionner chaque élément après un court délai pour permettre le calcul des hauteurs
+    await new Promise(resolve => setTimeout(resolve, 50))
+
+    items.forEach((item, index) => {
+        // Rendre visible pour calculer la hauteur
+        item.style.visibility = 'visible'
+
+        // Forcer un reflow pour obtenir la vraie hauteur
+        item.offsetHeight
+
+        // Trouver la colonne la plus courte
+        const shortestColumnIndex = columnHeights.indexOf(Math.min(...columnHeights))
+
+        // Calculer la position
+        const x = shortestColumnIndex * (actualColumnWidth + gutter) + gutter
+        const y = columnHeights[shortestColumnIndex]
+
+
+        // Appliquer les positions
+        item.style.left = `${x}px`
+        item.style.top = `${y}px`
+
+        // Mesurer la hauteur après positionnement
+        const itemHeight = item.offsetHeight || 350 // fallback
+
+        // Mettre à jour la hauteur de la colonne
+        columnHeights[shortestColumnIndex] += itemHeight + gutter
+    })
+
+    // Ajuster la hauteur du conteneur
+    const maxHeight = Math.max(...columnHeights)
+    container.style.height = `${maxHeight}px`
+
+
+    isLayouting.value = false
+}
 
 // Fonction pour changer le filtre de catégorie
 const setCategory = (category) => {
@@ -109,6 +206,59 @@ const eventStats = computed(() => {
     })
 
     return stats
+})
+
+// Observer les changements pour relancer le layout
+watch(filteredEvents, async () => {
+    await nextTick()
+    setTimeout(layoutMasonry, 200)
+}, { flush: 'post' })
+
+// ResizeObserver pour relancer le layout lors du redimensionnement
+let resizeObserver = null
+
+onMounted(async () => {
+
+    // Attendre que le DOM soit complètement rendu
+    await nextTick()
+
+    // Lancer le layout initial avec un délai plus long
+    setTimeout(() => {
+        layoutMasonry()
+    }, 300)
+
+    // Observer les changements de taille
+    if (eventsContainer.value) {
+        resizeObserver = new ResizeObserver(() => {
+            setTimeout(layoutMasonry, 100)
+        })
+        resizeObserver.observe(eventsContainer.value)
+
+        // Écouter les événements personnalisés de mise à jour Masonry
+        eventsContainer.value.addEventListener('masonry-update', () => {
+            setTimeout(layoutMasonry, 150)
+        })
+    }
+
+    // Écouter les événements de resize globaux (fallback)
+    const handleResize = () => {
+        setTimeout(layoutMasonry, 100)
+    }
+    window.addEventListener('resize', handleResize)
+
+    // Nettoyer les listeners lors de la destruction
+    onUnmounted(() => {
+        window.removeEventListener('resize', handleResize)
+        if (resizeObserver) {
+            resizeObserver.disconnect()
+        }
+    })
+})
+
+onUnmounted(() => {
+    if (resizeObserver) {
+        resizeObserver.disconnect()
+    }
 })
 </script>
 
@@ -194,6 +344,9 @@ const eventStats = computed(() => {
                 </div>
 
                 <!-- Filtres et tri -->
+                <!-- Indicateur de layout en cours -->
+
+
                 <div
                     class="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
                     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -249,13 +402,18 @@ const eventStats = computed(() => {
                                 class="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                                 Réinitialiser
                             </button>
+                            <ReloadButton :loading="isLayouting" @click="layoutMasonry" />
                         </div>
                     </div>
                 </div>
 
-                <!-- Grille d'événements -->
-                <div v-if="filteredEvents.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <EventCard v-for="event in filteredEvents" :key="event.id" :event="event" :show-actions="true" />
+
+
+                <!-- MASONRY CONTAINER - Positionnement absolu -->
+                <div v-if="filteredEvents.length > 0" ref="eventsContainer" class="masonry-container"
+                    style="position: relative; width: 100%; min-height: 400px;">
+                    <EventCard v-for="event in filteredEvents" :key="event.id" :event="event" :show-actions="true"
+                        :data-event-id="event.id" class="event-card" />
                 </div>
 
                 <!-- Message si aucun événement -->
@@ -275,7 +433,7 @@ const eventStats = computed(() => {
                         <p class="text-gray-500 dark:text-gray-400 mb-6">
                             {{ selectedCategory
                                 ? 'Essayez de changer le filtre de catégorie ou consultez tous les événements.'
-                                : 'Aucun événement n est programmé pour le moment.'
+                                : 'Aucun événement n\'est programmé pour le moment.'
                             }}
                         </p>
 
@@ -301,3 +459,56 @@ const eventStats = computed(() => {
         </div>
     </AuthenticatedLayout>
 </template>
+
+<style scoped>
+/* Container Masonry avec positionnement relatif */
+.masonry-container {
+    min-height: 400px;
+    transition: height 0.3s ease;
+}
+
+/* Les cartes seront positionnées en absolu par le JavaScript */
+.event-card {
+    transition: all 0.3s ease;
+    transform: translateZ(0);
+}
+
+/* Animation pour l'apparition des cartes */
+.event-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation pour l'apparition du conteneur */
+.masonry-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive pour très petits écrans */
+@media (max-width: 360px) {
+    .masonry-container {
+        padding: 0 0.5rem;
+    }
+}
+</style>

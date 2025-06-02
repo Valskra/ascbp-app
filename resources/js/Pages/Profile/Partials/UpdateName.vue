@@ -16,11 +16,7 @@ const form = useForm({
 })
 
 function autoSave() {
-    form.patch(route('profile.updateName'), {
-        onSuccess: () => {
-            console.log('Mise à jour réussie !')
-        }
-    })
+    form.patch(route('profile.updateName'))
 }
 </script>
 

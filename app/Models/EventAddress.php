@@ -54,4 +54,27 @@ class EventAddress extends Model
     {
         return $this->belongsTo(Event::class);
     }
+
+    /**
+     * Obtenir l'adresse complète formatée
+     */
+    public function getFullAddressAttribute(): string
+    {
+        $parts = array_filter([
+            trim($this->house_number . ' ' . $this->street_name),
+            $this->city,
+            $this->postal_code,
+            $this->country
+        ]);
+
+        return implode(', ', $parts);
+    }
+
+    /**
+     * Obtenir l'adresse de rue complète
+     */
+    public function getStreetAddressAttribute(): string
+    {
+        return trim($this->house_number . ' ' . $this->street_name);
+    }
 }

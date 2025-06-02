@@ -1,5 +1,4 @@
 <?php
-// app/Models/Event.php
 
 namespace App\Models;
 
@@ -50,7 +49,16 @@ class Event extends Model
     }
 
     /**
-     * Les participants à l'événement
+     * L'adresse de l'événement
+     * Relation avec la table event_addresses
+     */
+    public function address()
+    {
+        return $this->hasOne(EventAddress::class);
+    }
+
+    /**
+     * Les participants à l'événement via la table registrations
      */
     public function participants()
     {
@@ -59,19 +67,16 @@ class Event extends Model
             ->withTimestamps();
     }
 
-    // Relation pour les inscriptions
+    /**
+     * Les inscriptions à l'événement
+     * Relation avec la table registrations
+     */
     public function registrations()
     {
         return $this->hasMany(Registration::class);
     }
 
-    /**
-     * L'adresse détaillée de l'événement
-     */
-    public function address()
-    {
-        return $this->hasOne(EventAddress::class);
-    }
+
 
     /**
      * Vérifie si l'utilisateur peut s'inscrire à cet événement
@@ -81,7 +86,6 @@ class Event extends Model
         $now = now();
         $result = ['can_register' => false, 'reason' => null];
 
-        // Vérifications temporelles
         if ($this->registration_open && $now < $this->registration_open) {
             $result['reason'] = 'registration_not_open';
             return $result;
@@ -97,31 +101,26 @@ class Event extends Model
             return $result;
         }
 
-        // Vérification de l'utilisateur connecté
         if (!$user) {
             $result['reason'] = 'not_authenticated';
             return $result;
         }
 
-        // Vérification si déjà inscrit
         if ($this->participants->contains($user->id)) {
             $result['reason'] = 'already_registered';
             return $result;
         }
 
-        // Vérification du nombre maximum de participants
         if ($this->max_participants && $this->participants()->count() >= $this->max_participants) {
             $result['reason'] = 'event_full';
             return $result;
         }
 
-        // Vérification si réservé aux adhérents
         if ($this->members_only && !$user->hasMembership()) {
             $result['reason'] = 'members_only';
             return $result;
         }
 
-        // Vérification du certificat médical si requis
         if ($this->requires_medical_certificate && !$this->userHasValidMedicalCertificate($user)) {
             $result['reason'] = 'requires_medical_certificate';
             return $result;
@@ -144,5 +143,162 @@ class Event extends Model
                     ->orWhere('expiration_date', '>', now());
             })
             ->exists();
+    }
+
+
+    /**
+     * Vérifier si l'événement est payant pour un utilisateur donné
+     */
+    public function isPaidFor(User $user = null): bool
+    {
+        if (empty($this->price)) {
+            return false;
+        }
+
+        $priceMatch = preg_match('/\d+/', $this->price, $matches);
+        $numericPrice = $priceMatch ? (float) $matches[0] : 0;
+
+        return $numericPrice > 0;
+    }
+
+    /**
+     * Obtenir le prix numérique
+     */
+    public function getNumericPriceAttribute(): float
+    {
+        if (empty($this->price)) {
+            return 0;
+        }
+
+        $priceMatch = preg_match('/\d+/', $this->price, $matches);
+        return $priceMatch ? (float) $matches[0] : 0;
+    }
+
+    /**
+     * Scope pour les événements à venir
+     */
+    public function scopeUpcoming($query)
+    {
+        return $query->where('start_date', '>=', now());
+    }
+
+    /**
+     * Scope pour les événements d'une catégorie
+     */
+    public function scopeOfCategory($query, $category)
+    {
+        return $query->where('category', $category);
+    }
+
+    /**
+     * Vérifier si l'événement est complet
+     */
+    public function isFull(): bool
+    {
+        if (!$this->max_participants) {
+            return false;
+        }
+
+        return $this->registrations()->count() >= $this->max_participants;
+    }
+
+    /**
+     * Vérifier si les inscriptions sont ouvertes
+     */
+    public function isRegistrationOpen(): bool
+    {
+        $now = now();
+
+        if ($this->registration_open && $now < $this->registration_open) {
+            return false;
+        }
+
+        if ($this->registration_close && $now > $this->registration_close) {
+            return false;
+        }
+
+        return $this->start_date > $now;
+    }
+
+    /**
+     * Vérifier si on peut modifier le nombre maximum de participants
+     */
+    public function canChangeMaxParticipants(int $newMax = null): bool
+    {
+        if ($newMax === null) {
+            return true; // Illimité autorisé
+        }
+
+        $currentCount = $this->registrations()->count();
+        return $newMax >= $currentCount;
+    }
+
+    /**
+     * Obtenir le nombre minimum autorisé pour max_participants
+     */
+    public function getMinAllowedParticipants(): int
+    {
+        return max(1, $this->registrations()->count());
+    }
+
+    /**
+     * Vérifier si l'événement peut être modifié sans risque
+     */
+    public function canBeSafelyModified(): array
+    {
+        $now = now();
+        $currentParticipants = $this->registrations()->count();
+
+        $restrictions = [
+            'has_participants' => $currentParticipants > 0,
+            'event_started' => $this->start_date <= $now,
+            'registration_open' => $this->isRegistrationOpen(),
+            'participants_count' => $currentParticipants,
+            'min_participants_allowed' => $this->getMinAllowedParticipants(),
+        ];
+
+        $restrictions['can_modify_safely'] = !$restrictions['event_started'];
+
+        return $restrictions;
+    }
+
+    /**
+     * Obtenir des suggestions pour la modification
+     */
+    public function getModificationSuggestions(): array
+    {
+        $info = $this->canBeSafelyModified();
+        $suggestions = [];
+
+        if ($info['has_participants']) {
+            $suggestions[] = "Cet événement a {$info['participants_count']} participant(s) inscrit(s)";
+            $suggestions[] = "Le nombre maximum ne peut pas être inférieur à {$info['min_participants_allowed']}";
+        }
+
+        if ($info['event_started']) {
+            $suggestions[] = "L'événement a déjà commencé - modifications limitées";
+        }
+
+        if ($info['registration_open']) {
+            $suggestions[] = "Les inscriptions sont ouvertes - soyez prudent avec les modifications";
+        }
+
+        return $suggestions;
+    }
+
+    /**
+     * Obtenir le nombre de participants inscrits
+     */
+    public function getParticipantsCountAttribute(): int
+    {
+        return $this->registrations()->count();
+    }
+
+    /**
+     * Vérifier si un utilisateur est inscrit
+     */
+    public function isUserRegistered(User $user): bool
+    {
+        return $this->registrations()->where('user_id', $user->id)->exists();
     }
 }

@@ -9,7 +9,7 @@ use Carbon\Carbon;
 use Inertia\Inertia;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
-use App\Models\{User, File};
+use App\Models\{User, File, Registration};
 
 class EventController extends Controller
 {
@@ -70,9 +70,9 @@ class EventController extends Controller
                     'firstname' => $event->organizer->firstname,
                     'lastname' => $event->organizer->lastname,
                 ],
-                'participants_count' => $event->participants()->count(),
+                'participants_count' => $event->registrations()->count(),
                 'registration_status' => $registrationStatus,
-                'is_registered' => $user ? $event->participants->contains($user->id) : false,
+                'is_registered' => $user ? $event->isUserRegistered($user) : false,
             ];
         });
 
@@ -84,9 +84,10 @@ class EventController extends Controller
             ]
         ]);
     }
+
     public function show(Request $request, Event $event)
     {
-        $event->load(['illustration', 'address', 'organizer', 'participants']);
+        $event->load(['illustration', 'address', 'organizer', 'registrations.user']);
 
         $eventData = [
             'id' => $event->id,
@@ -113,20 +114,114 @@ class EventController extends Controller
                 'firstname' => $event->organizer->firstname,
                 'lastname' => $event->organizer->lastname,
             ],
-            'participants' => $event->participants->map(function ($participant) {
+            'participants' => $event->registrations->map(function ($registration) {
                 return [
-                    'id' => $participant->id,
-                    'firstname' => $participant->firstname,
-                    'lastname' => $participant->lastname,
+                    'id' => $registration->user->id,
+                    'firstname' => $registration->user->firstname,
+                    'lastname' => $registration->user->lastname,
                 ];
             }),
-            'participants_count' => $event->participants()->count(),
-            'can_register' => $this->canUserRegister($event),
-            'is_registered' => $event->participants->contains($request->user()->id),
+            'participants_count' => $event->registrations()->count(),
+            'can_register' => $this->canUserRegister($event, $request->user()),
+            'is_registered' => $request->user() ? $event->isUserRegistered($request->user()) : false,
         ];
 
         return Inertia::render('Events/Show', [
             'event' => $eventData
+        ]);
+    }
+
+    /**
+     * Afficher la page d'inscription à un événement
+     */
+    public function showRegistration(Request $request, Event $event)
+    {
+        $user = $request->user();
+        $registrationStatus = $this->canUserRegister($event, $user);
+
+        if (!$registrationStatus['can_register']) {
+            $errorMessages = [
+                'registration_not_open' => 'Les inscriptions ne sont pas encore ouvertes.',
+                'registration_closed' => 'Les inscriptions sont fermées.',
+                'event_started' => 'L\'événement a déjà commencé.',
+                'not_authenticated' => 'Vous devez être connecté pour vous inscrire.',
+                'already_registered' => 'Vous êtes déjà inscrit à cet événement.',
+                'event_full' => 'Cet événement est complet.',
+                'members_only' => 'Cet événement est réservé aux adhérents.',
+            ];
+
+            if ($registrationStatus['reason'] === 'members_only') {
+                return redirect()->route('membership.create')
+                    ->with('error', $errorMessages[$registrationStatus['reason']]);
+            }
+
+            return redirect()->route('events.show', $event)
+                ->with('error', $errorMessages[$registrationStatus['reason']] ?? 'Inscription impossible.');
+        }
+
+        $medicalCertificates = [];
+        if ($event->requires_medical_certificate) {
+            $medicalCertificates = $user->documents()
+                ->with('file')
+                ->where('title', 'LIKE', '%certificat%medical%')
+                ->where(function ($query) {
+                    $query->whereNull('expiration_date')
+                        ->orWhere('expiration_date', '>', now());
+                })
+                ->get()
+                ->map(function ($doc) {
+                    return [
+                        'id' => $doc->id,
+                        'title' => $doc->title,
+                        'expiration_date' => $doc->expiration_date,
+                        'url' => $doc->file->url,
+                    ];
+                });
+        }
+
+        return Inertia::render('Events/Registration', [
+            'event' => [
+                'id' => $event->id,
+                'title' => $event->title,
+                'category' => $event->category,
+                'description' => $event->description,
+                'start_date' => $event->start_date,
+                'end_date' => $event->end_date,
+                'requires_medical_certificate' => $event->requires_medical_certificate,
+                'price' => $event->price,
+                'illustration' => $event->illustration ? ['url' => $event->illustration->url] : null,
+                'address' => $event->address ? [
+                    'house_number' => $event->address->house_number,
+                    'street_name' => $event->address->street_name,
+                    'city' => $event->address->city,
+                    'postal_code' => $event->address->postal_code,
+                    'country' => $event->address->country,
+                ] : null,
+            ],
+            'user' => [
+                'id' => $user->id,
+                'firstname' => $user->firstname,
+                'lastname' => $user->lastname,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'birth_date' => $user->birth_date,
+                'address' => $user->homeAddress ? [
+                    'house_number' => $user->homeAddress->house_number,
+                    'street_name' => $user->homeAddress->street_name,
+                    'city' => $user->homeAddress->city,
+                    'postal_code' => $user->homeAddress->postal_code,
+                    'country' => $user->homeAddress->country,
+                ] : null,
+                'emergency_contacts' => $user->contacts->map(function ($contact) {
+                    return [
+                        'firstname' => $contact->firstname,
+                        'lastname' => $contact->lastname,
+                        'phone' => $contact->phone,
+                        'relation' => $contact->relation,
+                    ];
+                }),
+            ],
+            'medical_certificates' => $medicalCertificates,
         ]);
     }
 
@@ -139,7 +234,6 @@ class EventController extends Controller
             return back()->with('error', 'Impossible de s\'inscrire à cet événement.');
         }
 
-        // Validation des données
         $validationRules = [
             'firstname' => 'required|string|max:50',
             'lastname' => 'required|string|max:50',
@@ -157,12 +251,10 @@ class EventController extends Controller
 
         $validated = $request->validate($validationRules);
 
-        // Si l'événement est payant, gérer le paiement avec Stripe
         if ($event->isPaidFor($user)) {
             return $this->handleStripePayment($event, $user, $validated);
         }
 
-        // Inscription directe si gratuit
         $this->createRegistration($event, $user, $validated);
 
         return redirect()->route('events.show', $event)
@@ -173,11 +265,13 @@ class EventController extends Controller
     {
         $user = $request->user();
 
-        if (!$event->participants->contains($user->id)) {
+        $registration = $event->registrations()->where('user_id', $user->id)->first();
+
+        if (!$registration) {
             return back()->with('error', 'Vous n\'êtes pas inscrit à cet événement.');
         }
 
-        $event->participants()->detach($user->id);
+        $registration->delete();
 
         return back()->with('success', 'Désinscription réussie.');
     }
@@ -187,7 +281,6 @@ class EventController extends Controller
         $now = now();
         $result = ['can_register' => false, 'reason' => null];
 
-        // Vérifications temporelles
         if ($event->registration_open && $now < $event->registration_open) {
             $result['reason'] = 'registration_not_open';
             return $result;
@@ -203,31 +296,26 @@ class EventController extends Controller
             return $result;
         }
 
-        // Vérification de l'utilisateur connecté
         if (!$user) {
             $result['reason'] = 'not_authenticated';
             return $result;
         }
 
-        // Vérification si déjà inscrit
-        if ($event->participants->contains($user->id)) {
+        if ($event->isUserRegistered($user)) {
             $result['reason'] = 'already_registered';
             return $result;
         }
 
-        // Vérification du nombre maximum de participants
-        if ($event->max_participants && $event->participants()->count() >= $event->max_participants) {
+        if ($event->max_participants && $event->registrations()->count() >= $event->max_participants) {
             $result['reason'] = 'event_full';
             return $result;
         }
 
-        // Vérification si réservé aux adhérents
         if ($event->members_only && !$user->hasMembership()) {
             $result['reason'] = 'members_only';
             return $result;
         }
 
-        // Vérification du certificat médical si requis
         if ($event->requires_medical_certificate && !$this->userHasValidMedicalCertificate($user)) {
             $result['reason'] = 'requires_medical_certificate';
             return $result;
@@ -280,7 +368,7 @@ class EventController extends Controller
             'registration_open'  => 'required|date|before_or_equal:registration_close',
             'registration_close' => 'required|date|after_or_equal:registration_open|before_or_equal:start_date',
             'max_participants'   => 'nullable|integer|min:1',
-            'price'              => 'nullable|string|max:50',
+            'price'              => 'nullable|integer|max:500',
             'description'        => 'nullable|string|max:2000',
             'image'              => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'address'            => 'nullable|string|max:255',
@@ -366,64 +454,89 @@ class EventController extends Controller
     /**
      * Show events for management (pour les organisateurs)
      */
-    public function manage(Request $request)
+    public function edit(Event $event, Request $request)
     {
-        $user = $request->user();
-
-        $query = Event::with(['illustration', 'address', 'participants'])
-            ->where('organizer_id', $user->id)
-            ->orderBy('start_date', 'desc');
-
-        if ($user->isAdmin()) {
-            $query = Event::with(['illustration', 'address', 'participants', 'organizer'])
-                ->orderBy('start_date', 'desc');
+        if ($event->organizer_id !== $request->user()->id && !$request->user()->isAdmin()) {
+            abort(403, 'Vous n\'êtes pas autorisé à modifier cet événement.');
         }
 
-        $events = $query->get()->map(function ($event) use ($user) {
-            return [
-                'id' => $event->id,
-                'title' => $event->title,
-                'category' => $event->category,
-                'start_date' => $event->start_date,
-                'end_date' => $event->end_date,
-                'participants_count' => $event->participants->count(),
-                'max_participants' => $event->max_participants,
-                'organizer' => $user->isAdmin() ? [
-                    'firstname' => $event->organizer->firstname,
-                    'lastname' => $event->organizer->lastname,
-                ] : null,
-                'can_edit' => $event->organizer_id === $user->id || $user->isAdmin(),
-                'can_delete' => $event->organizer_id === $user->id || $user->isAdmin(),
-            ];
-        });
+        $event->load(['illustration', 'address', 'registrations']);
 
-        return Inertia::render('Events/Manage', [
-            'events' => $events
+        $currentParticipantsCount = $event->registrations->count();
+
+        $eventData = [
+            'id' => $event->id,
+            'title' => $event->title,
+            'category' => $event->category,
+            'description' => $event->description,
+            'start_date' => $event->start_date->format('Y-m-d'),
+            'end_date' => $event->end_date->format('Y-m-d'),
+            'registration_open' => $event->registration_open?->format('Y-m-d'),
+            'registration_close' => $event->registration_close?->format('Y-m-d'),
+            'max_participants' => $event->max_participants,
+            'current_participants_count' => $currentParticipantsCount,
+            'members_only' => (bool) $event->members_only,
+            'requires_medical_certificate' => (bool) $event->requires_medical_certificate,
+            'price' => $event->price,
+            'illustration' => $event->illustration ? [
+                'url' => $event->illustration->url
+            ] : null,
+            'address' => $event->address ? [
+                'address' => trim(($event->address->house_number ?? '') . ' ' . ($event->address->street_name ?? '')),
+                'city' => $event->address->city,
+                'postal_code' => $event->address->postal_code,
+                'country' => $event->address->country,
+            ] : null,
+        ];
+
+        return Inertia::render('Events/Edit', [
+            'event' => $eventData,
+            'today' => Carbon::today()->format('Y-m-d'),
         ]);
     }
 
+    /**
+     * Update the specified event in storage.
+     */
     public function update(Request $request, Event $event)
     {
         if ($event->organizer_id !== $request->user()->id && !$request->user()->isAdmin()) {
             abort(403, 'Vous n\'êtes pas autorisé à modifier cet événement.');
         }
 
-        $validated = $request->validate([
+        $currentParticipantsCount = $event->registrations->count();
+
+        $validationRules = [
             'title' => 'required|string|max:255|unique:events,title,' . $event->id,
             'category' => 'required|string|max:100',
             'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'registration_start' => 'required|date|before_or_equal:registration_end',
-            'registration_end' => 'required|date|after_or_equal:registration_start',
-            'max_participants' => 'nullable|integer|min:1',
+            'registration_open' => 'required|date|before_or_equal:registration_close',
+            'registration_close' => 'required|date|after_or_equal:registration_open|before_or_equal:start_date',
+            'members_only' => 'boolean',
+            'requires_medical_certificate' => 'boolean',
             'price' => 'nullable|string|max:50',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string|max:2000',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:100',
             'postal_code' => 'nullable|string|max:10',
             'country' => 'nullable|string|max:100',
-        ]);
+        ];
+
+        if ($currentParticipantsCount > 0) {
+            $validationRules['max_participants'] = 'nullable|integer|min:' . $currentParticipantsCount;
+        } else {
+            $validationRules['max_participants'] = 'nullable|integer|min:1';
+        }
+
+        $customMessages = [
+            'max_participants.min' => $currentParticipantsCount > 0
+                ? "Le nombre maximum de participants ne peut pas être inférieur au nombre actuel d'inscrits ({$currentParticipantsCount})."
+                : 'Le nombre maximum de participants doit être d\'au moins 1.',
+        ];
+
+        $validated = $request->validate($validationRules, $customMessages);
 
         $fileId = $event->file_id;
         if ($request->hasFile('image')) {
@@ -454,9 +567,11 @@ class EventController extends Controller
             'category' => $validated['category'],
             'start_date' => Carbon::parse($validated['start_date']),
             'end_date' => Carbon::parse($validated['end_date']),
-            'registration_start' => Carbon::parse($validated['registration_start']),
-            'registration_end' => Carbon::parse($validated['registration_end']),
+            'registration_open' => Carbon::parse($validated['registration_open']),
+            'registration_close' => Carbon::parse($validated['registration_close']),
             'max_participants' => $validated['max_participants'] ?? null,
+            'members_only' => $validated['members_only'] ?? false,
+            'requires_medical_certificate' => $validated['requires_medical_certificate'] ?? false,
             'price' => $validated['price'] ?? null,
             'description' => $validated['description'] ?? null,
             'file_id' => $fileId,
@@ -469,24 +584,26 @@ class EventController extends Controller
             !empty($validated['country'])
         ) {
             $streetTypes = ['rue', 'avenue', 'boulevard', 'chemin', 'impasse', 'place', 'route', 'allée', 'quai', 'cours', 'passage', 'voie', 'square', 'faubourg'];
-            $parts = preg_split('/\s+/', trim($validated['address']));
+            $parts = preg_split('/\s+/', trim($validated['address'] ?? ''));
             $houseNumber = '';
             $streetName = '';
 
-            foreach ($parts as $i => $part) {
-                if (in_array(strtolower($part), $streetTypes, true)) {
-                    $houseNumber = implode(' ', array_slice($parts, 0, $i));
-                    $streetName = implode(' ', array_slice($parts, $i));
-                    break;
+            if (!empty($validated['address'])) {
+                foreach ($parts as $i => $part) {
+                    if (in_array(strtolower($part), $streetTypes, true)) {
+                        $houseNumber = implode(' ', array_slice($parts, 0, $i));
+                        $streetName = implode(' ', array_slice($parts, $i));
+                        break;
+                    }
                 }
-            }
-            if ($streetName === '') {
-                $streetName = $validated['address'];
-                $houseNumber = '';
+                if ($streetName === '') {
+                    $streetName = $validated['address'];
+                    $houseNumber = '';
+                }
             }
 
             $event->address()->updateOrCreate(
-                ['label' => 'location'],
+                [],
                 [
                     'house_number' => trim($houseNumber),
                     'street_name' => trim($streetName),
@@ -495,6 +612,8 @@ class EventController extends Controller
                     'country' => $validated['country'] ?? null,
                 ]
             );
+        } else {
+            $event->address()?->delete();
         }
 
         return redirect()
@@ -502,39 +621,46 @@ class EventController extends Controller
             ->with('success', 'Événement modifié avec succès.');
     }
 
-    public function edit(Event $event, Request $request)
+    /**
+     * Show events for management (pour les organisateurs)
+     */
+    public function manage(Request $request)
     {
-        if ($event->organizer_id !== $request->id() && !$request->user()->isAdmin()) {
-            abort(403, 'Vous n\'êtes pas autorisé à modifier cet événement.');
+        $user = $request->user();
+
+        $query = Event::with(['illustration', 'address', 'registrations'])
+            ->where('organizer_id', $user->id)
+            ->orderBy('start_date', 'desc');
+
+        if ($user->isAdmin()) {
+            $query = Event::with(['illustration', 'address', 'registrations', 'organizer'])
+                ->orderBy('start_date', 'desc');
         }
 
-        $event->load(['illustration', 'address']);
+        $events = $query->get()->map(function ($event) use ($user) {
+            $now = new \DateTime();
+            $eventStart = new \DateTime($event->start_date);
+            $hasParticipants = $event->registrations->count() > 0;
 
-        $eventData = [
-            'id' => $event->id,
-            'title' => $event->title,
-            'category' => $event->category,
-            'description' => $event->description,
-            'start_date' => $event->start_date->format('Y-m-d'),
-            'end_date' => $event->end_date->format('Y-m-d'),
-            'registration_start' => $event->registration_start?->format('Y-m-d'),
-            'registration_end' => $event->registration_end?->format('Y-m-d'),
-            'max_participants' => $event->max_participants,
-            'price' => $event->price,
-            'illustration' => $event->illustration ? [
-                'url' => $event->illustration->url
-            ] : null,
-            'address' => $event->address ? [
-                'address' => trim($event->address->house_number . ' ' . $event->address->street_name),
-                'city' => $event->address->city,
-                'postal_code' => $event->address->postal_code,
-                'country' => $event->address->country,
-            ] : null,
-        ];
+            return [
+                'id' => $event->id,
+                'title' => $event->title,
+                'category' => $event->category,
+                'start_date' => $event->start_date,
+                'end_date' => $event->end_date,
+                'participants_count' => $event->registrations->count(),
+                'max_participants' => $event->max_participants,
+                'organizer' => $user->isAdmin() ? [
+                    'firstname' => $event->organizer->firstname,
+                    'lastname' => $event->organizer->lastname,
+                ] : null,
+                'can_edit' => ($event->organizer_id === $user->id || $user->isAdmin()) && $eventStart > $now,
+                'can_delete' => ($event->organizer_id === $user->id || $user->isAdmin()) && $eventStart > $now && !$hasParticipants,
+            ];
+        });
 
-        return Inertia::render('Events/Edit', [
-            'event' => $eventData,
-            'today' => Carbon::today()->format('Y-m-d'),
+        return Inertia::render('Events/Manage', [
+            'events' => $events
         ]);
     }
 
@@ -568,10 +694,9 @@ class EventController extends Controller
             abort(403, 'Vous n\'êtes pas autorisé à voir les participants de cet événement.');
         }
 
-        // Charger les participants avec leurs certificats médicaux
-        $participants = $event->participants()
-            ->withPivot('registration_date', 'amount')
-            ->with(['documents' => function ($query) {
+        // Charger les participants avec leurs certificats médicaux via registrations
+        $registrations = $event->registrations()
+            ->with(['user.documents' => function ($query) {
                 $query->whereHas('file')
                     ->where('title', 'LIKE', '%certificat%medical%')
                     ->where(function ($subQuery) {
@@ -582,18 +707,16 @@ class EventController extends Controller
             ->get();
 
         // Transformer les données
-        $participantsData = $participants->map(function ($participant) {
+        $participantsData = $registrations->map(function ($registration) {
             return [
-                'id' => $participant->id,
-                'firstname' => $participant->firstname,
-                'lastname' => $participant->lastname,
-                'email' => $participant->email,
-                'pivot' => [
-                    'registration_date' => $participant->pivot->registration_date,
-                    'amount' => $participant->pivot->amount ?? 0,
-                ],
-                'has_valid_medical_certificate' => $participant->documents->isNotEmpty(),
-                'medical_certificate_expires_at' => $participant->documents->first()?->expiration_date,
+                'id' => $registration->user->id,
+                'firstname' => $registration->user->firstname,
+                'lastname' => $registration->user->lastname,
+                'email' => $registration->user->email,
+                'registration_date' => $registration->registration_date,
+                'amount' => $registration->amount ?? 0,
+                'has_valid_medical_certificate' => $registration->user->documents->isNotEmpty(),
+                'medical_certificate_expires_at' => $registration->user->documents->first()?->expiration_date,
             ];
         });
 
@@ -605,10 +728,12 @@ class EventController extends Controller
      */
     private function createRegistration(Event $event, User $user, array $data, float $amount = 0)
     {
-        $event->participants()->attach($user->id, [
+        Registration::create([
+            'event_id' => $event->id,
+            'user_id' => $user->id,
             'registration_date' => now(),
             'amount' => $amount,
-            'metadata' => json_encode([
+            'metadata' => [
                 'registration_info' => [
                     'firstname' => $data['firstname'],
                     'lastname' => $data['lastname'],
@@ -622,10 +747,9 @@ class EventController extends Controller
                     ],
                 ],
                 'medical_certificate_id' => $data['medical_certificate_id'] ?? null,
-            ]),
+            ]
         ]);
     }
-
 
     /**
      * Gérer le paiement Stripe
@@ -635,8 +759,7 @@ class EventController extends Controller
         try {
             \Stripe\Stripe::setApiKey(config('services.stripe.secret'));
 
-            $amount = $event->price * 100; // Stripe utilise les centimes
-
+            $amount = $event->price * 100;
             $session = \Stripe\Checkout\Session::create([
                 'payment_method_types' => ['card'],
                 'line_items' => [[
@@ -693,102 +816,5 @@ class EventController extends Controller
 
         return redirect()->route('events.show', $event)
             ->with('error', 'Le paiement n\'a pas pu être confirmé.');
-    }
-
-
-    /**
-     * Afficher la page d'inscription à un événement
-     */
-    public function showRegistration(Request $request, Event $event)
-    {
-        $user = $request->user();
-        $registrationStatus = $this->canUserRegister($event, $user);
-
-        // Si l'utilisateur ne peut pas s'inscrire, rediriger avec le message approprié
-        if (!$registrationStatus['can_register']) {
-            $errorMessages = [
-                'registration_not_open' => 'Les inscriptions ne sont pas encore ouvertes.',
-                'registration_closed' => 'Les inscriptions sont fermées.',
-                'event_started' => 'L\'événement a déjà commencé.',
-                'not_authenticated' => 'Vous devez être connecté pour vous inscrire.',
-                'already_registered' => 'Vous êtes déjà inscrit à cet événement.',
-                'event_full' => 'Cet événement est complet.',
-                'members_only' => 'Cet événement est réservé aux adhérents.',
-            ];
-
-            if ($registrationStatus['reason'] === 'members_only') {
-                return redirect()->route('membership.create')
-                    ->with('error', $errorMessages[$registrationStatus['reason']]);
-            }
-
-            return redirect()->route('events.show', $event)
-                ->with('error', $errorMessages[$registrationStatus['reason']] ?? 'Inscription impossible.');
-        }
-
-        // Charger les certificats médicaux valides de l'utilisateur
-        $medicalCertificates = [];
-        if ($event->requires_medical_certificate) {
-            $medicalCertificates = $user->documents()
-                ->with('file')
-                ->where('title', 'LIKE', '%certificat%medical%')
-                ->where(function ($query) {
-                    $query->whereNull('expiration_date')
-                        ->orWhere('expiration_date', '>', now());
-                })
-                ->get()
-                ->map(function ($doc) {
-                    return [
-                        'id' => $doc->id,
-                        'title' => $doc->title,
-                        'expiration_date' => $doc->expiration_date,
-                        'url' => $doc->file->url,
-                    ];
-                });
-        }
-
-        return Inertia::render('Events/Registration', [
-            'event' => [
-                'id' => $event->id,
-                'title' => $event->title,
-                'category' => $event->category,
-                'description' => $event->description,
-                'start_date' => $event->start_date,
-                'end_date' => $event->end_date,
-                'requires_medical_certificate' => $event->requires_medical_certificate,
-                'price' => $event->price,
-                'illustration' => $event->illustration ? ['url' => $event->illustration->url] : null,
-                'address' => $event->address ? [
-                    'house_number' => $event->address->house_number,
-                    'street_name' => $event->address->street_name,
-                    'city' => $event->address->city,
-                    'postal_code' => $event->address->postal_code,
-                    'country' => $event->address->country,
-                ] : null,
-            ],
-            'user' => [
-                'id' => $user->id,
-                'firstname' => $user->firstname,
-                'lastname' => $user->lastname,
-                'email' => $user->email,
-                'phone' => $user->phone,
-                'birth_date' => $user->birth_date,
-                'address' => $user->homeAddress ? [
-                    'house_number' => $user->homeAddress->house_number,
-                    'street_name' => $user->homeAddress->street_name,
-                    'city' => $user->homeAddress->city,
-                    'postal_code' => $user->homeAddress->postal_code,
-                    'country' => $user->homeAddress->country,
-                ] : null,
-                'emergency_contacts' => $user->contacts->map(function ($contact) {
-                    return [
-                        'firstname' => $contact->firstname,
-                        'lastname' => $contact->lastname,
-                        'phone' => $contact->phone,
-                        'relation' => $contact->relation,
-                    ];
-                }),
-            ],
-            'medical_certificates' => $medicalCertificates,
-        ]);
     }
 }

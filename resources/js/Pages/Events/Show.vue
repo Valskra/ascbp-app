@@ -102,6 +102,18 @@ const registrationInfo = computed(() => {
     }
 })
 
+const getStatusColor = (color) => {
+    const colors = {
+        'green': 'text-green-700 bg-green-100 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
+        'orange': 'text-orange-700 bg-orange-100 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800',
+        'red': 'text-red-700 bg-red-100 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
+        'blue': 'text-blue-700 bg-blue-100 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
+        'yellow': 'text-yellow-700 bg-yellow-100 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800',
+        'gray': 'text-gray-700 bg-gray-100 border-gray-200 dark:bg-gray-900/30 dark:text-gray-400 dark:border-gray-800'
+    }
+    return colors[color] || colors.gray
+}
+
 // Progression des inscriptions
 const registrationProgress = computed(() => {
     if (!props.event.max_participants) return null
@@ -192,16 +204,76 @@ const fullAddress = computed(() => {
                     class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
 
                     <!-- Image d'illustration -->
-                    <div
-                        class="relative h-64 md:h-80 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800">
+                    <div class="relative h-64 md:h-80 overflow-hidden">
+                        <!-- Image si présente -->
                         <img v-if="event.illustration?.url" :src="event.illustration.url" :alt="event.title"
                             class="w-full h-full object-cover">
-                        <div v-else class="w-full h-full flex items-center justify-center text-gray-400 text-6xl">
-                            {{ getCategoryIcon(event.category) }}
+
+                        <!-- Motif géométrique si pas d'image -->
+                        <div v-else class="w-full h-full relative" :class="{
+                            'bg-gradient-to-br from-red-200 via-red-300 to-red-500 dark:from-red-800 dark:via-red-700 dark:to-red-600': event.category === 'competition',
+                            'bg-gradient-to-br from-blue-200 via-blue-300 to-blue-500 dark:from-blue-800 dark:via-blue-700 dark:to-blue-600': event.category === 'entrainement',
+                            'bg-gradient-to-br from-green-200 via-green-300 to-green-500 dark:from-green-800 dark:via-green-700 dark:to-green-600': event.category === 'manifestation',
+                            'bg-gradient-to-br from-gray-200 via-gray-300 to-gray-500 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600': !event.category || !['competition', 'entrainement', 'manifestation'].includes(event.category)
+                        }">
+
+                            <!-- Motifs géométriques SVG adaptés pour la page de détail -->
+                            <svg class="absolute inset-0 w-full h-full opacity-25" viewBox="0 0 400 300"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <!-- Cercles concentriques plus grands -->
+                                <circle cx="80" cy="80" r="60" fill="none" stroke="currentColor" stroke-width="3"
+                                    opacity="0.6" />
+                                <circle cx="80" cy="80" r="40" fill="none" stroke="currentColor" stroke-width="2"
+                                    opacity="0.4" />
+                                <circle cx="80" cy="80" r="20" fill="none" stroke="currentColor" stroke-width="1.5"
+                                    opacity="0.3" />
+
+                                <!-- Formes géométriques plus complexes -->
+                                <polygon points="300,50 330,100 270,100" fill="currentColor" opacity="0.3" />
+                                <polygon points="320,130 340,170 300,170" fill="currentColor" opacity="0.2" />
+                                <polygon points="280,180 310,220 250,220" fill="currentColor" opacity="0.25" />
+
+                                <!-- Lignes diagonales élégantes -->
+                                <line x1="0" y1="200" x2="150" y2="300" stroke="currentColor" stroke-width="3"
+                                    opacity="0.4" />
+                                <line x1="30" y1="170" x2="180" y2="270" stroke="currentColor" stroke-width="2"
+                                    opacity="0.3" />
+                                <line x1="60" y1="140" x2="210" y2="240" stroke="currentColor" stroke-width="1.5"
+                                    opacity="0.2" />
+
+                                <!-- Hexagones et formes plus sophistiquées -->
+                                <polygon points="320,200 340,210 340,230 320,240 300,230 300,210" fill="none"
+                                    stroke="currentColor" stroke-width="2" opacity="0.4" />
+                                <polygon points="350,160 365,170 365,190 350,200 335,190 335,170" fill="currentColor"
+                                    opacity="0.3" />
+
+                                <!-- Éléments décoratifs dispersés -->
+                                <circle cx="60" cy="180" r="5" fill="currentColor" opacity="0.5" />
+                                <circle cx="140" cy="120" r="3" fill="currentColor" opacity="0.4" />
+                                <circle cx="180" cy="70" r="4" fill="currentColor" opacity="0.3" />
+                                <circle cx="240" cy="160" r="3" fill="currentColor" opacity="0.6" />
+                                <circle cx="200" cy="30" r="6" fill="currentColor" opacity="0.4" />
+
+                                <!-- Lignes de connexion subtiles -->
+                                <line x1="60" y1="180" x2="140" y2="120" stroke="currentColor" stroke-width="1"
+                                    opacity="0.2" />
+                                <line x1="180" y1="70" x2="240" y2="160" stroke="currentColor" stroke-width="1"
+                                    opacity="0.15" />
+
+                                <!-- Formes rectangulaires -->
+                                <rect x="150" y="180" width="40" height="20" fill="none" stroke="currentColor"
+                                    stroke-width="1.5" opacity="0.3" />
+                                <rect x="20" y="30" width="25" height="15" fill="currentColor" opacity="0.25" />
+                            </svg>
+
+                            <!-- Overlay pour adoucir -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent">
+                            </div>
                         </div>
 
-                        <!-- Overlay gradient -->
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent">
+                        <!-- Overlay gradient (seulement si image) -->
+                        <div v-if="event.illustration?.url"
+                            class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent">
                         </div>
 
                         <!-- Prix en overlay -->
@@ -241,14 +313,14 @@ const fullAddress = computed(() => {
                         </div>
 
                         <!-- Informations essentielles -->
-                        <div class="grid md:grid-cols-2 gap-8 mb-8">
+                        <h2
+                            class="text-xl font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                            Informations
+                        </h2>
+                        <div class="grid md:grid-cols-2 gap-8 mb-8 mt-4">
 
                             <!-- Colonne gauche - Informations temporelles -->
                             <div class="space-y-6">
-                                <h2
-                                    class="text-xl font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-                                    📅 Informations temporelles
-                                </h2>
 
                                 <!-- Dates de l'événement -->
                                 <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
@@ -290,10 +362,7 @@ const fullAddress = computed(() => {
 
                             <!-- Colonne droite - Informations pratiques -->
                             <div class="space-y-6">
-                                <h2
-                                    class="text-xl font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-                                    ℹ️ Informations pratiques
-                                </h2>
+
 
                                 <!-- Lieu -->
                                 <div v-if="fullAddress" class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
@@ -344,8 +413,8 @@ const fullAddress = computed(() => {
                                         <div class="flex items-center justify-between text-sm">
                                             <span class="text-gray-600 dark:text-gray-400">
                                                 {{ event.participants_count || 0 }} inscrit{{ (event.participants_count
-                                                || 0)
-                                                !== 1 ? 's' : '' }}
+                                                    || 0)
+                                                    !== 1 ? 's' : '' }}
                                             </span>
                                             <span v-if="event.max_participants"
                                                 class="text-gray-500 dark:text-gray-500">

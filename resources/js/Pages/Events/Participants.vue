@@ -93,7 +93,7 @@ const certificatePercentage = computed(() => {
                         <div>
                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Catégorie</h3>
                             <p class="text-lg font-semibold text-gray-900 dark:text-white capitalize">{{ event.category
-                            }}</p>
+                                }}</p>
                         </div>
                         <div>
                             <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Taux de remplissage</h3>

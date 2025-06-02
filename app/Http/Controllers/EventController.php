@@ -212,14 +212,6 @@ class EventController extends Controller
                     'postal_code' => $user->homeAddress->postal_code,
                     'country' => $user->homeAddress->country,
                 ] : null,
-                'emergency_contacts' => $user->contacts->map(function ($contact) {
-                    return [
-                        'firstname' => $contact->firstname,
-                        'lastname' => $contact->lastname,
-                        'phone' => $contact->phone,
-                        'relation' => $contact->relation,
-                    ];
-                }),
             ],
             'medical_certificates' => $medicalCertificates,
         ]);
@@ -240,9 +232,6 @@ class EventController extends Controller
             'email' => 'required|email|max:100',
             'phone' => 'required|string|max:15',
             'birth_date' => 'required|date|before:today',
-            'emergency_contact_name' => 'required|string|max:100',
-            'emergency_contact_phone' => 'required|string|max:15',
-            'emergency_contact_relation' => 'required|string|max:50',
         ];
 
         if ($event->requires_medical_certificate) {
@@ -740,11 +729,6 @@ class EventController extends Controller
                     'email' => $data['email'],
                     'phone' => $data['phone'],
                     'birth_date' => $data['birth_date'],
-                    'emergency_contact' => [
-                        'name' => $data['emergency_contact_name'],
-                        'phone' => $data['emergency_contact_phone'],
-                        'relation' => $data['emergency_contact_relation'],
-                    ],
                 ],
                 'medical_certificate_id' => $data['medical_certificate_id'] ?? null,
             ]

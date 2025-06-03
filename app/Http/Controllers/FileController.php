@@ -67,7 +67,7 @@ class FileController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|max:2048|mimes:doc,docx,dotx,odt,svg,pdf,png,jpg,jpeg,gif,bmp,webp,heic'
+            'file' => 'required|file|max:10240|mimes:doc,docx,dotx,odt,svg,pdf,png,jpg,jpeg,gif,bmp,webp,heic'
         ]);
 
         $uploadedFile = $request->file('file');
@@ -224,7 +224,7 @@ class FileController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'photo' => 'required|file|mimes:jpg,jpeg,png,gif,svg|max:2048',
+            'photo' => 'required|file|mimes:jpg,jpeg,png,gif,svg|max:10240',
         ]);
 
         $uploadedFile = $request->file('photo');

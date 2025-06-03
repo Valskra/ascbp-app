@@ -378,7 +378,7 @@ const cancelDelete = () => {
                         <div class="mt-2 px-7 py-3">
                             <p class="text-sm text-gray-500 dark:text-gray-400 text-center">
                                 Êtes-vous sûr de vouloir supprimer l'événement "<strong>{{ eventToDelete?.title
-                                    }}</strong>" ?
+                                }}</strong>" ?
                                 Cette action est irréversible.
                             </p>
                         </div>

@@ -1,4 +1,3 @@
-0
 <script setup>
 import ApplicationLogoLong from '@/Components/ApplicationLogoLong.vue';
 import Dropdown from '@/Components/Dropdown.vue';
@@ -9,10 +8,17 @@ import KeyIcon from '@/Components/svg/keyIcon.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
+const props = defineProps({
+    admin: {
+        type: Boolean,
+        default: false,
+    },
+});
+
 const showingNavigationDropdown = ref(false);
 const user = usePage().props.auth.user;
 
-const managingLayout = ref(false)
+const managingLayout = ref(props.admin)
 
 function switchLayout() {
     managingLayout.value = !managingLayout.value
@@ -47,6 +53,10 @@ function switchLayout() {
 
                             <!-- Managing Navigation Links -->
                             <div v-if="managingLayout" class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                <NavLink v-if="user.is_admin" :href="route('admin.dashboard')"
+                                    :active="route().current('admin.dashboard')">
+                                    Admin
+                                </NavLink>
                                 <NavLink v-if="user.is_admin" :href="route('admin.users')"
                                     :active="route().current('admin.users')">
                                     Utilisateurs
@@ -157,6 +167,10 @@ function switchLayout() {
                     </div>
 
                     <div v-if="managingLayout" class="space-y-1 pb-3 pt-2">
+                        <ResponsiveNavLink v-if="user.is_admin" :href="route('admin.dashboard')"
+                            :active="route().current('admin.dashboard')">
+                            Admin
+                        </ResponsiveNavLink>
                         <ResponsiveNavLink v-if="user.is_admin" :href="route('admin.users')"
                             :active="route().current('admin.users')">
                             Utilisateurs

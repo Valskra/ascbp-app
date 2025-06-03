@@ -212,7 +212,7 @@ class ProfileController extends Controller
         }
 
         $request->validate([
-            'photo' => 'required|file|mimes:jpg,jpeg,png,gif,svg|max:2048',
+            'photo' => 'required|file|mimes:jpg,jpeg,png,gif,svg|max:10240',
         ]);
 
         $uploadedFile = $request->file('photo');

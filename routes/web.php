@@ -8,6 +8,7 @@ use App\Http\Controllers\{
     MembershipController,
     ProfileController,
     AdminUserController,
+    AdminEventController,
     UploadLinkController,
     FileController,
     EventController,
@@ -85,6 +86,16 @@ Route::get('/certificate/{userId}/{token}', [CertificateController::class, 'show
 Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/users', [AdminUserController::class, 'index'])->name('users');
     Route::get('/users/export', [AdminUserController::class, 'export'])->name('export_users');
+
+    Route::get('/events', [AdminEventController::class, 'index'])->name('events');
+    Route::get('/events/export', [AdminEventController::class, 'export'])->name('events.export');
+
+    // Gestion des participants
+    Route::get('/events/{event}/participants', [AdminEventController::class, 'participants'])->name('events.participants');
+    Route::get('/events/{event}/participants/export', [AdminEventController::class, 'exportParticipants'])->name('events.participants.export');
+    Route::delete('/events/{event}/participants/{registration}', [AdminEventController::class, 'unregisterUser'])->name('events.participants.unregister');
+
+
 
     Route::get('/', function () {
         return Inertia::render('AdminDashboard');

@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3'
-import ManagingLayout from '@/Layouts/ManagingLayout.vue'
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
 import { useDateFormat } from '@vueuse/core'
 import { ref } from 'vue'
 
@@ -86,7 +86,7 @@ const cancelDelete = () => {
 
     <Head title="Gestion des événements" />
 
-    <ManagingLayout>
+    <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
@@ -378,7 +378,7 @@ const cancelDelete = () => {
                         <div class="mt-2 px-7 py-3">
                             <p class="text-sm text-gray-500 dark:text-gray-400 text-center">
                                 Êtes-vous sûr de vouloir supprimer l'événement "<strong>{{ eventToDelete?.title
-                                }}</strong>" ?
+                                    }}</strong>" ?
                                 Cette action est irréversible.
                             </p>
                         </div>
@@ -396,5 +396,5 @@ const cancelDelete = () => {
                 </div>
             </div>
         </div>
-    </ManagingLayout>
+    </AuthenticatedLayout>
 </template>

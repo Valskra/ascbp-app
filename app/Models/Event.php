@@ -301,4 +301,28 @@ class Event extends Model
     {
         return $this->registrations()->where('user_id', $user->id)->exists();
     }
+
+    /**
+     * Les articles liés à cet événement
+     */
+    public function articles()
+    {
+        return $this->hasMany(Article::class);
+    }
+
+    /**
+     * Les articles épinglés de cet événement
+     */
+    public function pinnedArticles()
+    {
+        return $this->hasMany(Article::class)->where('is_pinned', true);
+    }
+
+    /**
+     * Obtenir le nombre d'articles publiés pour cet événement
+     */
+    public function getPublishedArticlesCountAttribute(): int
+    {
+        return $this->articles()->where('status', 'published')->count();
+    }
 }

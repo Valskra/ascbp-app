@@ -2,8 +2,10 @@
 
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Http\Middleware\{IsAdmin, IsAnimator};
+use App\Models\{Article, Event, Registration};
 use App\Http\Controllers\{
     MembershipController,
     ProfileController,
@@ -13,7 +15,10 @@ use App\Http\Controllers\{
     FileController,
     EventController,
     AIAssistantController,
-    CertificateController
+    CertificateController,
+    ArticleController,
+    ArticleCommentController,
+    DashboardController,
 };
 
 Route::post(
@@ -137,5 +142,102 @@ Route::prefix('ai-assistant')->group(function () {
     Route::post('/improve-claude', [AIAssistantController::class, 'improveWithClaude']);
 });
 //// 
+
+
+// Articles publics (lecture)
+Route::prefix('articles')->name('articles.')->group(function () {
+    Route::get('/', [ArticleController::class, 'index'])->name('index');
+    Route::get('/{article}', [ArticleController::class, 'show'])->name('show');
+});
+
+// Articles des événements
+Route::prefix('events')->name('events.')->group(function () {
+    Route::get('/{event}/articles', [EventController::class, 'articles'])->name('articles');
+});
+
+// Articles - actions authentifiées
+Route::middleware('auth')->prefix('articles')->name('articles.')->group(function () {
+    Route::get('/create', [ArticleController::class, 'create'])->name('create');
+    Route::post('/', [ArticleController::class, 'store'])->name('store');
+
+    Route::get('/{article}/edit', [ArticleController::class, 'edit'])->name('edit');
+    Route::put('/{article}', [ArticleController::class, 'update'])->name('update');
+    Route::delete('/{article}', [ArticleController::class, 'destroy'])->name('destroy');
+
+    // Actions AJAX
+    Route::post('/{article}/like', [ArticleController::class, 'toggleLike'])->name('like');
+    Route::post('/{article}/pin', [ArticleController::class, 'togglePin'])->name('pin');
+
+    // Commentaires
+    Route::post('/{article}/comments', [ArticleCommentController::class, 'store'])->name('comments.store');
+    Route::put('/comments/{comment}', [ArticleCommentController::class, 'update'])->name('comments.update');
+    Route::delete('/comments/{comment}', [ArticleCommentController::class, 'destroy'])->name('comments.destroy');
+    Route::post('/comments/{comment}/like', [ArticleCommentController::class, 'toggleLike'])->name('comments.like');
+});
+
+// API pour les articles (pour le dashboard)
+Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
+    Route::get('/user/recent-articles', function (Request $request) {
+        return response()->json([
+            'articles' => $request->user()->recent_articles->map(function ($article) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'publish_date' => $article->publish_date,
+                    'views_count' => $article->views_count,
+                    'likes_count' => $article->likes()->count(),
+                    'comments_count' => $article->allComments()->count(),
+                ];
+            })
+        ]);
+    })->name('user.recent-articles');
+});
+
+Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
+    // Articles de l'utilisateur
+    Route::get('/user/recent-articles', [DashboardController::class, 'userRecentArticles'])
+        ->name('user.recent-articles');
+
+    // Événements de l'utilisateur
+    Route::get('/user/upcoming-events', [DashboardController::class, 'userUpcomingEvents'])
+        ->name('user.upcoming-events');
+
+    // Articles populaires
+    Route::get('/popular-articles', [DashboardController::class, 'popularArticles'])
+        ->name('popular-articles');
+
+    // Statistiques générales (pour admin)
+    Route::get('/stats/general', function (Request $request) {
+        if (!$request->user()->isAdmin()) {
+            abort(403);
+        }
+
+        return response()->json([
+            'total_users' => User::count(),
+            'total_events' => Event::count(),
+            'total_articles' => Article::where('status', 'published')->count(),
+            'total_registrations' => Registration::count(),
+            'recent_articles' => Article::published()
+                ->with(['author'])
+                ->orderByDesc('publish_date')
+                ->limit(5)
+                ->get()
+                ->map(function ($article) {
+                    return [
+                        'id' => $article->id,
+                        'title' => $article->title,
+                        'author' => $article->author->firstname . ' ' . $article->author->lastname,
+                        'publish_date' => $article->publish_date,
+                    ];
+                }),
+        ]);
+    })->name('stats.general');
+});
+
+// Mettre à jour la route dashboard pour utiliser le contrôleur
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
+
 
 require __DIR__ . '/auth.php';

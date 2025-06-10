@@ -44,10 +44,13 @@ function switchLayout() {
                             <!-- Navigation Links -->
                             <div v-if="!managingLayout" class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                                    Dashboard
+                                    Accueil
                                 </NavLink>
                                 <NavLink :href="route('events.index')" :active="route().current('events.index')">
                                     Événements
+                                </NavLink>
+                                <NavLink :href="route('articles.index')" :active="route().current('articles.index')">
+                                    Articles
                                 </NavLink>
                             </div>
 
@@ -64,6 +67,9 @@ function switchLayout() {
                                 <NavLink v-if="user.is_animator" :href="route('events.create')"
                                     :active="route().current('events.create')">
                                     Création d'événement
+                                </NavLink>
+                                <NavLink :href="route('articles.create')" :active="route().current('articles.create')">
+                                    Nouvel article
                                 </NavLink>
                             </div>
                         </div>
@@ -159,10 +165,13 @@ function switchLayout() {
                     </div>
                     <div v-if="!managingLayout" class="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
-                            Dashboard
+                            Accueil
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('events.index')" :active="route().current('events.index')">
                             Événements
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('articles.index')" :active="route().current('articles.index')">
+                            Articles
                         </ResponsiveNavLink>
                     </div>
 
@@ -178,6 +187,10 @@ function switchLayout() {
                         <ResponsiveNavLink v-if="user.is_animator" :href="route('events.create')"
                             :active="route().current('events.create')">
                             Création d'événement
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('articles.create')"
+                            :active="route().current('articles.create')">
+                            Nouvel article
                         </ResponsiveNavLink>
                     </div>
 

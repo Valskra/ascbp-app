@@ -89,6 +89,35 @@ class EventController extends Controller
     {
         $event->load(['illustration', 'address', 'organizer', 'registrations.user']);
 
+        // Récupérer les 3 articles les plus récents
+        $recentArticles = $event->articles()
+            ->published()
+            ->with(['author', 'featuredImage'])
+            ->withCount(['likes', 'allComments'])
+            ->orderByDesc('is_pinned')
+            ->orderByDesc('publish_date')
+            ->limit(3)
+            ->get()
+            ->map(function ($article) use ($request) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'excerpt' => $article->excerpt,
+                    'publish_date' => $article->publish_date,
+                    'is_pinned' => $article->is_pinned,
+                    'author' => [
+                        'firstname' => $article->author->firstname,
+                        'lastname' => $article->author->lastname,
+                    ],
+                    'featured_image' => $article->featuredImage ? [
+                        'url' => $article->featuredImage->url
+                    ] : null,
+                    'likes_count' => $article->likes_count,
+                    'comments_count' => $article->all_comments_count,
+                    'is_liked' => $request->user() ? $article->isLikedBy($request->user()) : false,
+                ];
+            });
+
         $eventData = [
             'id' => $event->id,
             'title' => $event->title,
@@ -124,6 +153,10 @@ class EventController extends Controller
             'participants_count' => $event->registrations()->count(),
             'can_register' => $this->canUserRegister($event, $request->user()),
             'is_registered' => $request->user() ? $event->isUserRegistered($request->user()) : false,
+            'recent_articles' => $recentArticles,
+            'articles_count' => $event->articles()->published()->count(),
+            'can_create_article' => $request->user() ?
+                ($event->isUserRegistered($request->user()) || $request->user()->isAdmin()) : false,
         ];
 
         return Inertia::render('Events/Show', [
@@ -478,11 +511,13 @@ class EventController extends Controller
             ] : null,
         ];
 
+
         return Inertia::render('Events/Edit', [
             'event' => $eventData,
             'today' => Carbon::today()->format('Y-m-d'),
         ]);
     }
+
 
     /**
      * Update the specified event in storage.
@@ -605,8 +640,9 @@ class EventController extends Controller
             $event->address()?->delete();
         }
 
+
         return redirect()
-            ->route('events.show', $event)
+            ->route('events.index', $event)
             ->with('success', 'Événement modifié avec succès.');
     }
 
@@ -800,5 +836,87 @@ class EventController extends Controller
 
         return redirect()->route('events.show', $event)
             ->with('error', 'Le paiement n\'a pas pu être confirmé.');
+    }
+
+    public function articles(Request $request, Event $event)
+    {
+        // Articles épinglés en premier
+        $pinnedArticles = $event->articles()
+            ->published()
+            ->pinned()
+            ->with(['author', 'featuredImage'])
+            ->withCount(['likes', 'allComments'])
+            ->orderByDesc('publish_date')
+            ->get();
+
+        // Articles normaux
+        $regularQuery = $event->articles()
+            ->published()
+            ->where('is_pinned', false)
+            ->with(['author', 'featuredImage'])
+            ->withCount(['likes', 'allComments'])
+            ->orderByDesc('publish_date');
+
+        $regularArticles = $regularQuery->paginate(10)->through(function ($article) use ($request) {
+            return [
+                'id' => $article->id,
+                'title' => $article->title,
+                'excerpt' => $article->excerpt,
+                'publish_date' => $article->publish_date,
+                'views_count' => $article->views_count,
+                'author' => [
+                    'id' => $article->author->id,
+                    'firstname' => $article->author->firstname,
+                    'lastname' => $article->author->lastname,
+                ],
+                'featured_image' => $article->featuredImage ? [
+                    'url' => $article->featuredImage->url
+                ] : null,
+                'likes_count' => $article->likes_count,
+                'comments_count' => $article->all_comments_count,
+                'is_liked' => $request->user() ? $article->isLikedBy($request->user()) : false,
+                'can_edit' => $request->user() ? $article->canBeEditedBy($request->user()) : false,
+                'is_pinned' => false,
+            ];
+        });
+
+        $pinnedFormatted = $pinnedArticles->map(function ($article) use ($request) {
+            return [
+                'id' => $article->id,
+                'title' => $article->title,
+                'excerpt' => $article->excerpt,
+                'publish_date' => $article->publish_date,
+                'views_count' => $article->views_count,
+                'author' => [
+                    'id' => $article->author->id,
+                    'firstname' => $article->author->firstname,
+                    'lastname' => $article->author->lastname,
+                ],
+                'featured_image' => $article->featuredImage ? [
+                    'url' => $article->featuredImage->url
+                ] : null,
+                'likes_count' => $article->likes_count,
+                'comments_count' => $article->all_comments_count,
+                'is_liked' => $request->user() ? $article->isLikedBy($request->user()) : false,
+                'can_edit' => $request->user() ? $article->canBeEditedBy($request->user()) : false,
+                'is_pinned' => true,
+            ];
+        });
+
+        return Inertia::render('Events/Articles', [
+            'event' => [
+                'id' => $event->id,
+                'title' => $event->title,
+                'description' => $event->description,
+                'start_date' => $event->start_date,
+                'end_date' => $event->end_date,
+                'category' => $event->category,
+            ],
+            'pinnedArticles' => $pinnedFormatted,
+            'articles' => $regularArticles,
+            'canCreateArticle' => $request->user() ?
+                ($event->isUserRegistered($request->user()) || $request->user()->isAdmin()) : false,
+            'canManageArticles' => $request->user() ? $request->user()->isAdmin() : false,
+        ]);
     }
 }

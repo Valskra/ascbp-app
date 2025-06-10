@@ -230,11 +230,11 @@ const toggleDescription = () => {
 
 <template>
     <article
-        class="event-card bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-300 group"
+        class="event-card bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-300 group w-full"
         :data-event-id="event.id">
 
-        <!-- Image d'illustration avec hauteur fixe -->
-        <div class="relative overflow-hidden h-48">
+        <!-- Image d'illustration avec hauteur responsive -->
+        <div class="relative overflow-hidden h-40 sm:h-48 md:h-52 lg:h-48">
             <!-- Image si présente -->
             <img v-if="event.illustration?.url" :src="event.illustration.url" :alt="event.title"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
@@ -284,101 +284,107 @@ const toggleDescription = () => {
                 class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
 
             <!-- Badge catégorie (haut gauche) -->
-            <div class="absolute top-4 left-4">
+            <div class="absolute top-2 left-2 sm:top-4 sm:left-4">
                 <span
-                    class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm"
+                    class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs font-medium border backdrop-blur-sm"
                     :class="getCategoryColor(event.category)">
-                    <span class="mr-1">{{ getCategoryIcon(event.category) }}</span>
-                    <span class="capitalize">{{ event.category }}</span>
+                    <span class="mr-1 text-xs sm:text-sm">{{ getCategoryIcon(event.category) }}</span>
+                    <span class="capitalize text-xs sm:text-xs">{{ event.category }}</span>
                 </span>
             </div>
 
             <!-- Badge inscrit ou prix (haut droite) -->
-            <div class="absolute top-4 right-4">
-                <!-- Si l'utilisateur est inscrit, afficher le badge "Inscrit" -->
+            <div class="absolute top-2 right-2 sm:top-4 sm:right-4">
+                <!-- Si l'utilisateur n'est pas inscrit, afficher le prix -->
                 <span v-if="!event.is_registered"
-                    class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-white shadow-sm border border-white/20 backdrop-blur-sm">
+                    class="inline-flex items-center px-2 py-1 sm:px-3 sm:py-1.5 rounded-full text-xs font-bold bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-white shadow-sm border border-white/20 backdrop-blur-sm">
                     {{ displayPrice }}
                 </span>
             </div>
         </div>
 
         <!-- Contenu -->
-        <div class="p-6">
-            <!-- Titre -->
-            <div class="mb-4">
+        <div class="p-4 sm:p-4 md:p-6">
+            <!-- Titre et description -->
+            <div class="mb-5">
                 <h3
-                    class="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
+                    class="text-lg sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 leading-tight">
                     {{ event.title }}
                 </h3>
 
                 <!-- Description avec expansion -->
                 <div v-if="event.description">
-                    <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed" :class="{
+                    <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-2" :class="{
                         'line-clamp-2': !showFullDescription && event.description.length <= 150,
                         'line-clamp-3': !showFullDescription && event.description.length > 150
                     }">
                         {{ event.description }}
                     </p>
                     <button v-if="event.description && event.description.length > 100" @click="toggleDescription"
-                        class="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1 block">
+                        class="text-xs text-blue-600 dark:text-blue-400 hover:underline block">
                         {{ showFullDescription ? 'Voir moins' : 'Voir plus' }}
                     </button>
                 </div>
             </div>
 
             <!-- Informations principales -->
-            <div class="space-y-3 mb-5">
+            <div class="space-y-4 mb-5">
                 <!-- Date et heure -->
-                <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                    <svg class="w-4 h-4 mr-3 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                <div class="flex items-start text-sm">
+                    <svg class="w-5 h-5 text-gray-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span class="font-medium">{{ displayDate }}</span>
-                    <span v-if="formatTime(event.start_date)" class="ml-2 text-gray-500">
-                        à {{ formatTime(event.start_date) }}
-                    </span>
+                    <div class="min-w-0 flex-1">
+                        <div class="font-semibold text-gray-900 dark:text-white text-base">{{ displayDate }}</div>
+                        <div v-if="formatTime(event.start_date)" class="text-sm text-gray-500 mt-1">
+                            {{ formatTime(event.start_date) }}
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Lieu -->
-                <div v-if="hasLocation" class="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                    <svg class="w-4 h-4 mr-3 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                <!-- Organisateur -->
+                <div class="flex items-start text-sm">
+                    <svg class="w-5 h-5 text-gray-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <div class="min-w-0 flex-1">
+                        <div class="font-medium text-gray-900 dark:text-white">
+                            {{ event.organizer.firstname }} {{ event.organizer.lastname }}
+                        </div>
+                        <div v-if="isAuthor" class="text-sm text-blue-600 dark:text-blue-400 mt-1">(vous)</div>
+                    </div>
+                </div>
+
+                <!-- Lieu (si présent) -->
+                <div v-if="hasLocation" class="flex items-start text-sm">
+                    <svg class="w-5 h-5 text-gray-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    <span>{{ displayLocation }}</span>
-                </div>
-
-                <!-- Organisateur -->
-                <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                    <svg class="w-4 h-4 mr-3 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <span>{{ event.organizer.firstname }} {{ event.organizer.lastname }}</span>
-                    <span v-if="isAuthor" class="ml-1 text-blue-600 dark:text-blue-400 font-medium">(vous)</span>
+                    <div class="min-w-0 flex-1">
+                        <div class="font-medium text-gray-900 dark:text-white">{{ displayLocation }}</div>
+                    </div>
                 </div>
 
                 <!-- Participants -->
-                <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                    <svg class="w-4 h-4 mr-3 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
+                <div class="flex items-start text-sm">
+                    <svg class="w-5 h-5 text-gray-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <span>{{ participantsText }}</span>
+                    <div class="min-w-0 flex-1">
+                        <div class="font-medium text-gray-900 dark:text-white">{{ participantsText }}</div>
+                    </div>
                 </div>
             </div>
 
             <!-- Status d'inscription -->
-            <div v-if="registrationInfo.message && registrationInfo.message != 'Déjà inscrit'" class="mb-4">
-                <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border"
+            <div v-if="registrationInfo.message && registrationInfo.message != 'Déjà inscrit'" class="mb-5">
+                <span class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium border"
                     :class="getStatusColor(registrationInfo.color)">
                     {{ registrationInfo.message }}
                 </span>
@@ -386,82 +392,87 @@ const toggleDescription = () => {
 
             <!-- Actions -->
             <div v-if="showActions" class="border-t border-gray-100 dark:border-gray-700 pt-4">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="flex flex-col gap-4">
+                    <!-- Lien "Voir les détails" -->
                     <Link :href="route('events.show', event.id)"
-                        class="inline-flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 text-sm font-medium transition-colors group w-fit">
-                    <span>Voir les détails</span>
-                    <svg class="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" fill="none"
-                        stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
+                        class="inline-flex items-center justify-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 text-base font-medium transition-colors group w-full py-2">
+                        <span>Voir les détails</span>
+                        <svg class="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
                     </Link>
 
-                    <div class="flex items-center space-x-2 flex-wrap justify-end">
+                    <!-- Boutons d'action -->
+                    <div class="flex flex-col gap-3">
                         <!-- Actions pour l'auteur -->
-                        <div v-if="isAuthor && showActions" class="flex items-center space-x-2">
+                        <div v-if="isAuthor && showActions" class="flex flex-col gap-3">
                             <!-- Bouton modifier -->
                             <Link v-if="canEdit" :href="route('events.edit', event.id)"
-                                class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors">
-                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            Modifier
+                                class="inline-flex items-center justify-center px-4 py-3 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Modifier l'événement
                             </Link>
 
                             <!-- Bouton supprimer -->
                             <button v-if="canDelete" @click="handleDelete"
-                                class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                                class="inline-flex items-center justify-center px-4 py-3 rounded-lg text-sm font-medium transition-colors"
                                 :class="showDeleteConfirm
                                     ? 'bg-red-600 text-white hover:bg-red-700'
                                     : 'bg-gray-100 text-red-600 hover:bg-red-50 dark:bg-gray-700 dark:text-red-400 dark:hover:bg-gray-600'">
-                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
-                                {{ showDeleteConfirm ? 'Confirmer' : 'Supprimer' }}
+                                {{ showDeleteConfirm ? 'Confirmer la suppression' : 'Supprimer l\'événement' }}
                             </button>
                         </div>
 
-                        <!-- Bouton d'inscription -->
-                        <button v-if="!event.is_registered && !isAuthor" @click="handleRegistration"
-                            :disabled="!registrationInfo.canRegister && registrationInfo.reason !== 'members_only'"
-                            class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex-shrink-0"
-                            :class="registrationInfo.canRegister
-                                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md'
-                                : registrationInfo.reason === 'members_only'
-                                    ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-sm hover:shadow-md'
-                                    : 'bg-gray-200 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'">
+                        <!-- Bouton d'inscription ou statut -->
+                        <div class="w-full">
+                            <!-- Bouton d'inscription -->
+                            <button v-if="!event.is_registered && !isAuthor" @click="handleRegistration"
+                                :disabled="!registrationInfo.canRegister && registrationInfo.reason !== 'members_only'"
+                                class="w-full px-4 py-3 rounded-lg text-base font-medium transition-all duration-200"
+                                :class="registrationInfo.canRegister
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md'
+                                    : registrationInfo.reason === 'members_only'
+                                        ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-sm hover:shadow-md'
+                                        : 'bg-gray-200 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'">
 
-                            <span v-if="registrationInfo.reason === 'members_only'" class="inline-flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path
-                                        d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
-                                </svg>
-                                Adhérer
-                            </span>
-                            <span v-else-if="registrationInfo.canRegister" class="inline-flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                S'inscrire
-                            </span>
-                            <span v-else class="text-xs">
-                                {{ registrationInfo.message }}
-                            </span>
-                        </button>
+                                <span v-if="registrationInfo.reason === 'members_only'" class="inline-flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                                    </svg>
+                                    Devenir adhérent
+                                </span>
+                                <span v-else-if="registrationInfo.canRegister" class="inline-flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                    </svg>
+                                    S'inscrire à l'événement
+                                </span>
+                                <span v-else class="text-sm">
+                                    {{ registrationInfo.message }}
+                                </span>
+                            </button>
 
-                        <!-- Statut inscrit -->
-                        <div v-else-if="event.is_registered && !isAuthor"
-                            class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 flex-shrink-0">
-                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            Inscrit
+                            <!-- Statut inscrit -->
+                            <div v-else-if="event.is_registered && !isAuthor"
+                                class="w-full inline-flex items-center justify-center px-4 py-3 rounded-lg text-base font-medium bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Vous êtes inscrit
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -471,7 +482,6 @@ const toggleDescription = () => {
 </template>
 
 <style scoped>
-/* Classes spéciales pour le Masonry */
 /* Classes spéciales pour le Masonry */
 .event-card {
     /* Éviter la fragmentation lors de la création des colonnes */
@@ -518,15 +528,91 @@ const toggleDescription = () => {
     }
 }
 
+/* Breakpoint personnalisé pour très petits écrans */
+@media (min-width: 475px) {
+    .xs\:flex-row {
+        flex-direction: row;
+    }
+    
+    .xs\:items-center {
+        align-items: center;
+    }
+    
+    .xs\:w-auto {
+        width: auto;
+    }
+    
+    .xs\:flex-shrink-0 {
+        flex-shrink: 0;
+    }
+    
+    .xs\:h-40 {
+        height: 10rem;
+    }
+    
+    .xs\:gap-2 {
+        gap: 0.5rem;
+    }
+    
+    .xs\:gap-3 {
+        gap: 0.75rem;
+    }
+    
+    .xs\:justify-start {
+        justify-content: flex-start;
+    }
+    
+    .xs\:col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+}
+
 /* Responsive pour mobile */
 @media (max-width: 640px) {
-    .flex-shrink-0 {
+    /* Assure que les boutons prennent toute la largeur sur mobile */
+    .event-card .flex-col button,
+    .event-card .flex-col .inline-flex {
         width: 100%;
-        flex-shrink: 1;
+        justify-content: center;
     }
+    
+    /* Espacement réduit sur mobile */
+    .space-y-2 > * + * {
+        margin-top: 0.5rem;
+    }
+    
+    /* Texte plus petit sur très petits écrans */
+    @media (max-width: 375px) {
+        .event-card h3 {
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+        }
+        
+        .event-card .text-sm {
+            font-size: 0.75rem;
+            line-height: 1rem;
+        }
+    }
+}
 
-    .space-x-2 {
-        gap: 0.5rem;
+/* Optimisations pour tablettes */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .event-card {
+        /* Ajustements spécifiques pour tablettes */
+        max-width: none;
+    }
+    
+    /* Boutons côte à côte sur tablette */
+    .md\:flex-row {
+        flex-direction: row;
+    }
+    
+    .md\:items-center {
+        align-items: center;
+    }
+    
+    .md\:justify-between {
+        justify-content: space-between;
     }
 }
 
@@ -546,5 +632,35 @@ const toggleDescription = () => {
 .event-card {
     overflow: hidden;
     contain: layout style paint;
+}
+
+/* Améliorations pour l'accessibilité */
+@media (prefers-reduced-motion: reduce) {
+    .event-card,
+    .event-card *,
+    .group-hover\:scale-105:hover {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
+/* Focus visible pour l'accessibilité clavier */
+.event-card button:focus-visible,
+.event-card a:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 0.375rem;
+}
+
+/* Amélioration du contraste en mode sombre */
+@media (prefers-color-scheme: dark) {
+    .event-card {
+        border-color: rgb(55 65 81);
+    }
+    
+    .event-card:hover {
+        border-color: rgb(75 85 99);
+    }
 }
 </style>

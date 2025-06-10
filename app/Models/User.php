@@ -334,4 +334,53 @@ class User extends Authenticatable
             ->orderByDesc('created_at')
             ->get();
     }
+
+    public function articles()
+    {
+        return $this->hasMany(Article::class);
+    }
+
+    /**
+     * Les commentaires d'articles de cet utilisateur
+     */
+    public function articleComments()
+    {
+        return $this->hasMany(ArticleComment::class);
+    }
+
+    /**
+     * Les likes d'articles de cet utilisateur
+     */
+    public function articleLikes()
+    {
+        return $this->hasMany(ArticleLike::class);
+    }
+
+    /**
+     * Les likes de commentaires de cet utilisateur
+     */
+    public function commentLikes()
+    {
+        return $this->hasMany(CommentLike::class);
+    }
+
+    /**
+     * Vérifier si l'utilisateur peut créer des articles
+     */
+    public function canCreateArticles(): bool
+    {
+        return $this->hasPermission('create_articles') || $this->hasPermission('admin_access');
+    }
+
+    /**
+     * Obtenir les articles récents de l'utilisateur pour le dashboard
+     */
+    public function getRecentArticlesAttribute()
+    {
+        return $this->articles()
+            ->where('status', 'published')
+            ->orderByDesc('publish_date')
+            ->limit(3)
+            ->get();
+    }
 }

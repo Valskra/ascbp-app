@@ -430,9 +430,6 @@ const fullAddress = computed(() => {
                                                     :style="{ width: `${registrationProgress.percentage}%` }">
                                                 </div>
                                             </div>
-                                            <div class="text-xs text-gray-500 dark:text-gray-500 text-center">
-                                                {{ Math.round(registrationProgress.percentage) }}% de remplissage
-                                            </div>
                                         </div>
                                     </div>
                                 </div>

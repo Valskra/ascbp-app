@@ -23,6 +23,7 @@ const isLayouting = ref(false)
 // États pour les filtres
 const selectedCategory = ref(props.filters?.category || '')
 const selectedSort = ref(props.filters?.sort || 'date')
+const selectedStatus = ref(props.filters?.status || 'upcoming')
 
 // Configuration Masonry simplifiée
 const masonryConfig = ref({
@@ -55,31 +56,26 @@ const filteredEvents = computed(() => {
     return filtered
 })
 
-// Fonction Masonry Layout optimisée
+// Fonction Masonry Layout optimisée (identique à l'original)
 const layoutMasonry = async () => {
     if (!eventsContainer.value || isLayouting.value) return
 
     isLayouting.value = true
 
-    // Attendre que le DOM soit à jour
     await nextTick()
     await new Promise(resolve => setTimeout(resolve, 50))
 
     const container = eventsContainer.value
     const items = Array.from(container.querySelectorAll('.event-card'))
 
-
     if (items.length === 0) {
         isLayouting.value = false
         return
     }
 
-    // Calculer le nombre de colonnes
     const containerWidth = container.offsetWidth
     const { columnWidth, gutter } = masonryConfig.value
 
-
-    // S'assurer qu'on a une largeur valide
     if (containerWidth === 0) {
         setTimeout(layoutMasonry, 100)
         isLayouting.value = false
@@ -89,57 +85,45 @@ const layoutMasonry = async () => {
     const columnCount = Math.max(1, Math.floor(containerWidth / (columnWidth + gutter)))
     const actualColumnWidth = Math.floor((containerWidth - (gutter * (columnCount + 1))) / columnCount)
 
-
-    // Initialiser les hauteurs des colonnes
     const columnHeights = new Array(columnCount).fill(gutter)
 
-    // Assurer que le conteneur a la bonne position
     container.style.position = 'relative'
     container.style.width = '100%'
 
-    // Réinitialiser toutes les cartes d'abord
     items.forEach(item => {
         item.style.position = 'absolute'
         item.style.width = `${actualColumnWidth}px`
         item.style.transition = 'all 0.3s ease'
-        item.style.visibility = 'hidden' // Cacher temporairement
+        item.style.visibility = 'hidden'
     })
 
-    // Positionner chaque élément après un court délai pour permettre le calcul des hauteurs
     await new Promise(resolve => setTimeout(resolve, 50))
 
     items.forEach((item, index) => {
-        // Rendre visible pour calculer la hauteur
         item.style.visibility = 'visible'
-
-        // Forcer un reflow pour obtenir la vraie hauteur
         item.offsetHeight
 
-        // Trouver la colonne la plus courte
         const shortestColumnIndex = columnHeights.indexOf(Math.min(...columnHeights))
-
-        // Calculer la position
         const x = shortestColumnIndex * (actualColumnWidth + gutter) + gutter
         const y = columnHeights[shortestColumnIndex]
 
-
-        // Appliquer les positions
         item.style.left = `${x}px`
         item.style.top = `${y}px`
 
-        // Mesurer la hauteur après positionnement
-        const itemHeight = item.offsetHeight || 350 // fallback
-
-        // Mettre à jour la hauteur de la colonne
+        const itemHeight = item.offsetHeight || 350
         columnHeights[shortestColumnIndex] += itemHeight + gutter
     })
 
-    // Ajuster la hauteur du conteneur
     const maxHeight = Math.max(...columnHeights)
     container.style.height = `${maxHeight}px`
 
-
     isLayouting.value = false
+}
+
+// Fonction pour changer le statut (onglet)
+const setStatus = (status) => {
+    selectedStatus.value = status
+    updateFilters()
 }
 
 // Fonction pour changer le filtre de catégorie
@@ -159,6 +143,7 @@ const updateFilters = () => {
     const params = {}
     if (selectedCategory.value) params.category = selectedCategory.value
     if (selectedSort.value !== 'date') params.sort = selectedSort.value
+    if (selectedStatus.value !== 'upcoming') params.status = selectedStatus.value
 
     router.get(route('events.index'), params, {
         preserveState: true,
@@ -170,7 +155,7 @@ const updateFilters = () => {
 const resetFilters = () => {
     selectedCategory.value = ''
     selectedSort.value = 'date'
-    router.get(route('events.index'), {}, {
+    router.get(route('events.index'), { status: selectedStatus.value }, {
         preserveState: true,
         replace: true
     })
@@ -182,31 +167,41 @@ const canCreateEvent = computed(() => {
     return user && (user.is_admin || user.is_animator)
 })
 
-// Statistiques des événements
-const eventStats = computed(() => {
-    const stats = {
-        total: props.events.length,
-        competitions: 0,
-        entrainements: 0,
-        manifestations: 0
+// Texte descriptif pour le statut sélectionné
+const statusText = computed(() => {
+    switch (selectedStatus.value) {
+        case 'upcoming':
+            return 'à venir'
+        case 'ongoing':
+            return 'en cours'
+        case 'past':
+            return 'passés'
+        default:
+            return ''
     }
-
-    props.events.forEach(event => {
-        switch (event.category) {
-            case 'competition':
-                stats.competitions++
-                break
-            case 'entrainement':
-                stats.entrainements++
-                break
-            case 'manifestation':
-                stats.manifestations++
-                break
-        }
-    })
-
-    return stats
 })
+
+// Configuration des onglets
+const tabs = [
+    {
+        key: 'upcoming',
+        label: 'À venir',
+        icon: '📅',
+        description: 'Événements programmés'
+    },
+    {
+        key: 'ongoing',
+        label: 'En cours',
+        icon: '🔴',
+        description: 'Événements actuels'
+    },
+    {
+        key: 'past',
+        label: 'Terminés',
+        icon: '✅',
+        description: 'Événements passés'
+    }
+]
 
 // Observer les changements pour relancer le layout
 watch(filteredEvents, async () => {
@@ -218,35 +213,27 @@ watch(filteredEvents, async () => {
 let resizeObserver = null
 
 onMounted(async () => {
-
-    // Attendre que le DOM soit complètement rendu
     await nextTick()
-
-    // Lancer le layout initial avec un délai plus long
     setTimeout(() => {
         layoutMasonry()
     }, 300)
 
-    // Observer les changements de taille
     if (eventsContainer.value) {
         resizeObserver = new ResizeObserver(() => {
             setTimeout(layoutMasonry, 100)
         })
         resizeObserver.observe(eventsContainer.value)
 
-        // Écouter les événements personnalisés de mise à jour Masonry
         eventsContainer.value.addEventListener('masonry-update', () => {
             setTimeout(layoutMasonry, 150)
         })
     }
 
-    // Écouter les événements de resize globaux (fallback)
     const handleResize = () => {
         setTimeout(layoutMasonry, 100)
     }
     window.addEventListener('resize', handleResize)
 
-    // Nettoyer les listeners lors de la destruction
     onUnmounted(() => {
         window.removeEventListener('resize', handleResize)
         if (resizeObserver) {
@@ -275,7 +262,8 @@ onUnmounted(() => {
                     </h2>
                     <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                         {{ filteredEvents.length }} événement{{ filteredEvents.length !== 1 ? 's' : '' }}
-                        {{ selectedCategory ? `dans la catégorie "${selectedCategory}"` : 'au total' }}
+                        {{ statusText }}
+                        {{ selectedCategory ? `dans la catégorie "${selectedCategory}"` : '' }}
                     </p>
                 </div>
 
@@ -319,79 +307,148 @@ onUnmounted(() => {
                     </div>
                 </div>
 
-                <!-- Statistiques rapides -->
-                <div v-if="eventStats.total > 0" class="mb-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div
-                        class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                        <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ eventStats.total }}</div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">Total</div>
-                    </div>
-                    <div
-                        class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                        <div class="text-2xl font-bold text-red-600">{{ eventStats.competitions }}</div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">🏆 Compétitions</div>
-                    </div>
-                    <div
-                        class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                        <div class="text-2xl font-bold text-blue-600">{{ eventStats.entrainements }}</div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">💪 Entraînements</div>
-                    </div>
-                    <div
-                        class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                        <div class="text-2xl font-bold text-green-600">{{ eventStats.manifestations }}</div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">🎉 Manifestations</div>
+                <!-- Navigation par onglets -->
+                <div class="mb-8">
+                    <div class="border-b border-gray-200 dark:border-gray-700">
+                        <nav class="-mb-px flex space-x-8">
+                            <button v-for="tab in tabs" :key="tab.key" @click="setStatus(tab.key)"
+                                class="group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200"
+                                :class="selectedStatus === tab.key
+                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'">
+                                <span class="mr-2 text-lg">{{ tab.icon }}</span>
+                                <div class="flex flex-col items-start">
+                                    <span>{{ tab.label }}</span>
+                                    <span
+                                        class="text-xs text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400">
+                                        {{ tab.description }}
+                                    </span>
+                                </div>
+                            </button>
+                        </nav>
                     </div>
                 </div>
 
-                <!-- Filtres et tri -->
-                <!-- Indicateur de layout en cours -->
+                <!-- Filtres responsive -->
+                <div class="mb-8">
+                    <!-- Mobile: Structure en 2 lignes -->
+                    <div class="flex flex-col gap-4 sm:hidden">
+                        <!-- Ligne 1: Filtres par catégorie -->
+                        <div class="flex flex-col gap-3">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Catégorie :
+                            </span>
 
+                            <!-- Container scrollable horizontal sur mobile -->
+                            <div class="overflow-x-auto">
+                                <div class="flex gap-2 pb-2 min-w-max">
+                                    <button @click="setCategory('')"
+                                        class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
+                                        :class="selectedCategory === ''
+                                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'">
+                                        Toutes
+                                    </button>
+                                    <button @click="setCategory('competition')"
+                                        class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
+                                        :class="selectedCategory === 'competition'
+                                            ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'">
+                                        Compétitions
+                                    </button>
+                                    <button @click="setCategory('entrainement')"
+                                        class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
+                                        :class="selectedCategory === 'entrainement'
+                                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'">
+                                        Entraînements
+                                    </button>
+                                    <button @click="setCategory('manifestation')"
+                                        class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
+                                        :class="selectedCategory === 'manifestation'
+                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'">
+                                        Manifestations
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
-                <div
-                    class="mb-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <!-- Filtres par catégorie -->
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Catégorie :</label>
+                        <!-- Ligne 2: Tri et actions (mobile) sur une seule ligne -->
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <label for="sort-select-mobile"
+                                    class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                                    Trier par :
+                                </label>
+                                <select id="sort-select-mobile" v-model="selectedSort" @change="setSort(selectedSort)"
+                                    class="pl-3 pr-8 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="date">Date (proche)</option>
+                                    <option value="date_desc">Date (éloigné)</option>
+                                    <option value="title">Titre (A-Z)</option>
+                                </select>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <button v-if="selectedCategory || selectedSort !== 'date'" @click="resetFilters"
+                                    class="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap">
+                                    Reset
+                                </button>
+
+                                <ReloadButton :loading="isLayouting" @click="layoutMasonry" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Desktop: Une seule ligne avec catégories à gauche, tri/actions à droite -->
+                    <div class="hidden sm:flex sm:items-center sm:justify-between gap-6">
+                        <!-- Gauche: Filtres par catégorie -->
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                                Catégorie :
+                            </span>
+
                             <div class="flex flex-wrap gap-2">
                                 <button @click="setCategory('')"
-                                    class="px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                                    class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
                                     :class="selectedCategory === ''
-                                        ? 'bg-blue-600 text-white shadow-sm'
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'">
-                                    Tous
+                                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'">
+                                    Toutes
                                 </button>
                                 <button @click="setCategory('competition')"
-                                    class="px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                                    class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
                                     :class="selectedCategory === 'competition'
-                                        ? 'bg-red-600 text-white shadow-sm'
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'">
+                                        ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'">
                                     🏆 Compétitions
                                 </button>
                                 <button @click="setCategory('entrainement')"
-                                    class="px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                                    class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
                                     :class="selectedCategory === 'entrainement'
-                                        ? 'bg-blue-600 text-white shadow-sm'
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'">
+                                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
+                                        : 'bg-gray-100 text-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'">
                                     💪 Entraînements
                                 </button>
                                 <button @click="setCategory('manifestation')"
-                                    class="px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                                    class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap"
                                     :class="selectedCategory === 'manifestation'
-                                        ? 'bg-green-600 text-white shadow-sm'
-                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'">
+                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'">
                                     🎉 Manifestations
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Tri et reset -->
-                        <div class="flex items-center gap-4">
+                        <!-- Droite: Tri et actions -->
+                        <div class="flex items-center gap-3">
                             <div class="flex items-center gap-2">
-                                <label for="sort" class="text-sm font-medium text-gray-700 dark:text-gray-300">Trier par
-                                    :</label>
-                                <select id="sort" v-model="selectedSort" @change="setSort(selectedSort)"
-                                    class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <label for="sort-select-desktop"
+                                    class="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                                    Trier par :
+                                </label>
+                                <select id="sort-select-desktop" v-model="selectedSort" @change="setSort(selectedSort)"
+                                    class="pl-3 pr-8 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                     <option value="date">Date (plus proche)</option>
                                     <option value="date_desc">Date (plus éloigné)</option>
                                     <option value="title">Titre (A-Z)</option>
@@ -399,15 +456,14 @@ onUnmounted(() => {
                             </div>
 
                             <button v-if="selectedCategory || selectedSort !== 'date'" @click="resetFilters"
-                                class="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                                class="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors whitespace-nowrap">
                                 Réinitialiser
                             </button>
+
                             <ReloadButton :loading="isLayouting" @click="layoutMasonry" />
                         </div>
                     </div>
                 </div>
-
-
 
                 <!-- MASONRY CONTAINER - Positionnement absolu -->
                 <div v-if="filteredEvents.length > 0" ref="eventsContainer" class="masonry-container"
@@ -426,14 +482,15 @@ onUnmounted(() => {
                         </svg>
 
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                            {{ selectedCategory ? 'Aucun événement dans cette catégorie' : 'Aucun événement disponible'
-                            }}
+                            {{ selectedCategory ? `Aucun événement ${statusText} dans cette catégorie` : `Aucun
+                            événement
+                            ${statusText}` }}
                         </h3>
 
                         <p class="text-gray-500 dark:text-gray-400 mb-6">
                             {{ selectedCategory
-                                ? 'Essayez de changer le filtre de catégorie ou consultez tous les événements.'
-                                : 'Aucun événement n\'est programmé pour le moment.'
+                                ? 'Essayez de modifier les filtres pour voir d\'autres événements.'
+                                : 'Aucun événement n\'est programmé pour cette période.'
                             }}
                         </p>
 
@@ -441,10 +498,10 @@ onUnmounted(() => {
                         <div class="flex flex-col sm:flex-row gap-3 justify-center">
                             <button v-if="selectedCategory" @click="resetFilters"
                                 class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                Voir tous les événements
+                                Voir toutes les catégories
                             </button>
 
-                            <Link v-if="canCreateEvent" :href="route('events.create')"
+                            <Link v-if="canCreateEvent && selectedStatus === 'upcoming'" :href="route('events.create')"
                                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors">
                             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -510,5 +567,10 @@ onUnmounted(() => {
     .masonry-container {
         padding: 0 0.5rem;
     }
+}
+
+/* Amélioration des onglets */
+.group:hover .text-xs {
+    transition: color 0.2s ease;
 }
 </style>

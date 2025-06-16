@@ -18,14 +18,39 @@ class EventController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Event::with(['illustration', 'address', 'organizer'])
-            ->where('start_date', '>=', now())
-            ->orderBy('start_date', 'asc');
+        $query = Event::with(['illustration', 'address', 'organizer']);
 
+        // Filtrage par statut d'événement
+        $status = $request->get('status', 'upcoming'); // upcoming, ongoing, past, all
+
+        switch ($status) {
+            case 'upcoming':
+                // Événements à venir (pas encore commencés)
+                $query->where('start_date', '>', now());
+                break;
+            case 'ongoing':
+                // Événements en cours (commencés mais pas terminés)
+                $query->where('start_date', '<=', now())
+                    ->where('end_date', '>=', now());
+                break;
+            case 'past':
+                // Événements passés (terminés)
+                $query->where('end_date', '<', now());
+                break;
+            case 'all':
+                // Tous les événements (pas de filtre par date)
+                break;
+            default:
+                // Par défaut : événements à venir et en cours
+                $query->where('end_date', '>=', now());
+        }
+
+        // Filtrage par catégorie
         if ($request->has('category') && $request->category) {
             $query->where('category', $request->category);
         }
 
+        // Tri des événements
         $sortBy = $request->get('sort', 'date');
         switch ($sortBy) {
             case 'date_desc':
@@ -73,6 +98,8 @@ class EventController extends Controller
                 'participants_count' => $event->registrations()->count(),
                 'registration_status' => $registrationStatus,
                 'is_registered' => $user ? $event->isUserRegistered($user) : false,
+                // Ajout du statut pour l'affichage
+                'status' => $this->getEventStatus($event),
             ];
         });
 
@@ -81,6 +108,7 @@ class EventController extends Controller
             'filters' => [
                 'category' => $request->get('category'),
                 'sort' => $request->get('sort', 'date'),
+                'status' => $request->get('status', 'upcoming'),
             ]
         ]);
     }
@@ -298,55 +326,6 @@ class EventController extends Controller
         return back()->with('success', 'Désinscription réussie.');
     }
 
-    private function canUserRegister(Event $event, $user = null): array
-    {
-        $now = now();
-        $result = ['can_register' => false, 'reason' => null];
-
-        if ($event->registration_open && $now < $event->registration_open) {
-            $result['reason'] = 'registration_not_open';
-            return $result;
-        }
-
-        if ($event->registration_close && $now > $event->registration_close) {
-            $result['reason'] = 'registration_closed';
-            return $result;
-        }
-
-        if ($event->start_date < $now) {
-            $result['reason'] = 'event_started';
-            return $result;
-        }
-
-        if (!$user) {
-            $result['reason'] = 'not_authenticated';
-            return $result;
-        }
-
-        if ($event->isUserRegistered($user)) {
-            $result['reason'] = 'already_registered';
-            return $result;
-        }
-
-        if ($event->max_participants && $event->registrations()->count() >= $event->max_participants) {
-            $result['reason'] = 'event_full';
-            return $result;
-        }
-
-        if ($event->members_only && !$user->hasMembership()) {
-            $result['reason'] = 'members_only';
-            return $result;
-        }
-
-        if ($event->requires_medical_certificate && !$this->userHasValidMedicalCertificate($user)) {
-            $result['reason'] = 'requires_medical_certificate';
-            return $result;
-        }
-
-        $result['can_register'] = true;
-        return $result;
-    }
-
     private function userHasValidMedicalCertificate($user): bool
     {
         return $user->documents()
@@ -423,8 +402,10 @@ class EventController extends Controller
             'category'            => $validated['category'],
             'start_date'          => Carbon::parse($validated['start_date']),
             'end_date'            => Carbon::parse($validated['end_date']),
-            'registration_open'   => Carbon::parse($validated['registration_open']),
-            'registration_close'  => Carbon::parse($validated['registration_close']),
+            // Ouverture des inscriptions : 00:00 du jour sélectionné
+            'registration_open'   => Carbon::parse($validated['registration_open'])->startOfDay(),
+            // Fermeture des inscriptions : 23:59 du jour sélectionné
+            'registration_close'  => Carbon::parse($validated['registration_close'])->endOfDay(),
             'max_participants'    => $validated['max_participants'] ?? null,
             'price'               => $validated['price'] ?? null,
             'description'         => $validated['description'] ?? null,
@@ -432,6 +413,7 @@ class EventController extends Controller
             'organizer_id'        => $request->user()->id,
         ]);
 
+        // Gestion de l'adresse (identique à l'original)
         if (
             !empty($validated['address']) ||
             !empty($validated['city']) ||
@@ -471,6 +453,7 @@ class EventController extends Controller
             ->route('events.index')
             ->with('success', 'Événement créé avec succès !');
     }
+
 
 
     /**
@@ -591,8 +574,10 @@ class EventController extends Controller
             'category' => $validated['category'],
             'start_date' => Carbon::parse($validated['start_date']),
             'end_date' => Carbon::parse($validated['end_date']),
-            'registration_open' => Carbon::parse($validated['registration_open']),
-            'registration_close' => Carbon::parse($validated['registration_close']),
+            // Ouverture des inscriptions : 00:00 du jour sélectionné
+            'registration_open' => Carbon::parse($validated['registration_open'])->startOfDay(),
+            // Fermeture des inscriptions : 23:59 du jour sélectionné
+            'registration_close' => Carbon::parse($validated['registration_close'])->endOfDay(),
             'max_participants' => $validated['max_participants'] ?? null,
             'members_only' => $validated['members_only'] ?? false,
             'requires_medical_certificate' => $validated['requires_medical_certificate'] ?? false,
@@ -601,6 +586,7 @@ class EventController extends Controller
             'file_id' => $fileId,
         ]);
 
+        // Gestion de l'adresse (identique à l'original)
         if (
             !empty($validated['address']) ||
             !empty($validated['city']) ||
@@ -639,7 +625,6 @@ class EventController extends Controller
         } else {
             $event->address()?->delete();
         }
-
 
         return redirect()
             ->route('events.index', $event)
@@ -918,5 +903,79 @@ class EventController extends Controller
                 ($event->isUserRegistered($request->user()) || $request->user()->isAdmin()) : false,
             'canManageArticles' => $request->user() ? $request->user()->isAdmin() : false,
         ]);
+    }
+
+    private function getEventStatus(Event $event): string
+    {
+        $now = now();
+
+        if ($event->start_date > $now) {
+            return 'upcoming';
+        } elseif ($event->start_date <= $now && $event->end_date >= $now) {
+            return 'ongoing';
+        } else {
+            return 'past';
+        }
+    }
+
+    /**
+     * Méthode mise à jour pour vérifier les inscriptions avec gestion des heures
+     */
+    private function canUserRegister(Event $event, $user = null): array
+    {
+        $now = now();
+        $result = ['can_register' => false, 'reason' => null];
+
+        // Vérification de l'ouverture des inscriptions (00:00 du jour)
+        if ($event->registration_open) {
+            $registrationOpenDate = Carbon::parse($event->registration_open)->startOfDay();
+            if ($now < $registrationOpenDate) {
+                $result['reason'] = 'registration_not_open';
+                return $result;
+            }
+        }
+
+        // Vérification de la fermeture des inscriptions (23:59 du jour)
+        if ($event->registration_close) {
+            $registrationCloseDate = Carbon::parse($event->registration_close)->endOfDay();
+            if ($now > $registrationCloseDate) {
+                $result['reason'] = 'registration_closed';
+                return $result;
+            }
+        }
+
+        // On permet l'inscription même si l'événement a commencé (tant qu'il n'est pas terminé)
+        if ($event->end_date < $now) {
+            $result['reason'] = 'event_finished';
+            return $result;
+        }
+
+        if (!$user) {
+            $result['reason'] = 'not_authenticated';
+            return $result;
+        }
+
+        if ($event->isUserRegistered($user)) {
+            $result['reason'] = 'already_registered';
+            return $result;
+        }
+
+        if ($event->max_participants && $event->registrations()->count() >= $event->max_participants) {
+            $result['reason'] = 'event_full';
+            return $result;
+        }
+
+        if ($event->members_only && !$user->hasMembership()) {
+            $result['reason'] = 'members_only';
+            return $result;
+        }
+
+        if ($event->requires_medical_certificate && !$this->userHasValidMedicalCertificate($user)) {
+            $result['reason'] = 'requires_medical_certificate';
+            return $result;
+        }
+
+        $result['can_register'] = true;
+        return $result;
     }
 }

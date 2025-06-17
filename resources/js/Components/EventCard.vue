@@ -401,7 +401,7 @@ const shouldShowPrice = computed(() => {
                         <div class="font-semibold text-gray-900 dark:text-white">
                             {{ formatDate(event.registration_start_date) }}
                             <span v-if="event.registration_end_date"> - {{ formatDate(event.registration_end_date)
-                            }}</span>
+                                }}</span>
                         </div>
                     </div>
                 </div>

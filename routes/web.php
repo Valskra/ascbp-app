@@ -21,22 +21,19 @@ use App\Http\Controllers\{
     DashboardController,
 };
 
-Route::post(
-    '/files/user-profile-picture',
-    [FileController::class, 'storeUserProfilePicture']
-)->name('files.store.user.profile-picture');
+// Routes de base
+Route::post('/files/user-profile-picture', [FileController::class, 'storeUserProfilePicture'])
+    ->name('files.store.user.profile-picture');
 
-Route::put(
-    '/profile/photo',
-    [ProfileController::class, 'updatePhoto']
-)->name('profile.update.photo');
+Route::put('/profile/photo', [ProfileController::class, 'updatePhoto'])
+    ->name('profile.update.photo');
 
 Route::get('/certificats/upload/{token}', [UploadLinkController::class, 'showForm'])
     ->name('upload-link.show');
 
-Route::get("/u/{token}",     [UploadLinkController::class, 'showForm'])
+Route::get("/u/{token}", [UploadLinkController::class, 'showForm'])
     ->name('upload-link.form');
-Route::post("/u/{token}",     [UploadLinkController::class, 'upload'])
+Route::post("/u/{token}", [UploadLinkController::class, 'upload'])
     ->name('upload-link.upload');
 
 Route::get('/', function () {
@@ -48,10 +45,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
+// Profil utilisateur
 Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'profile'])->name('profile.profile');
     Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -74,75 +68,63 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/certificats/{document}', [FileController::class, 'destroyCertificate'])->name('certificats.destroy');
     Route::post('/certificats/upload-link', [UploadLinkController::class, 'store'])
         ->name('upload-link.store');
-
-    Route::get('/certificats/upload-link/latest', [
-        UploadLinkController::class,
-        'latest'
-    ])->middleware('auth')
+    Route::get('/certificats/upload-link/latest', [UploadLinkController::class, 'latest'])
         ->name('upload-link.latest');
 });
 
 // Accès aux certificats
 Route::get('/certificate/{userId}/{token}', [CertificateController::class, 'showPublic'])
     ->name('certificate.public');
-////
 
-// Gestion admin des utilisateurs
+// Administration
 Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/users', [AdminUserController::class, 'index'])->name('users');
     Route::get('/users/export', [AdminUserController::class, 'export'])->name('export_users');
-
     Route::get('/events', [AdminEventController::class, 'index'])->name('events');
     Route::get('/events/export', [AdminEventController::class, 'export'])->name('events.export');
-
-    // Gestion des participants
     Route::get('/events/{event}/participants', [AdminEventController::class, 'participants'])->name('events.participants');
     Route::get('/events/{event}/participants/export', [AdminEventController::class, 'exportParticipants'])->name('events.participants.export');
     Route::delete('/events/{event}/participants/{registration}', [AdminEventController::class, 'unregisterUser'])->name('events.participants.unregister');
-
-
-
     Route::get('/', function () {
         return Inertia::render('AdminDashboard');
-    })->middleware(['auth', 'verified'])->name('dashboard');
+    })->name('dashboard');
 });
-////
 
-// Gestion des événements
+// Gestion des événements (animateurs)
 Route::middleware(['auth', IsAnimator::class])->prefix('events')->name('events.')->group(function () {
     Route::get('/create', [EventController::class, 'create'])->name('create');
     Route::post('/store', [EventController::class, 'store'])->name('store');
     Route::get('/manage', [EventController::class, 'manage'])->name('manage');
-
     Route::get('/{event}/edit', [EventController::class, 'edit'])->name('edit');
     Route::put('/{event}', [EventController::class, 'update'])->name('update');
     Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
     Route::get('/{event}/participants', [EventController::class, 'participants'])->name('participants');
 });
 
+// Événements (tous utilisateurs connectés)
 Route::middleware('auth')->prefix('events')->name('events.')->group(function () {
     Route::get('/', [EventController::class, 'index'])->name('index');
     Route::get('/{event}', [EventController::class, 'show'])->name('show');
-
     Route::get('/{event}/register', [EventController::class, 'showRegistration'])->name('registration');
     Route::post('/{event}/register', [EventController::class, 'register'])->name('register');
     Route::get('/{event}/registration/success', [EventController::class, 'handlePaymentSuccess'])->name('registration.success');
-
     Route::delete('/{event}/unregister', [EventController::class, 'unregister'])->name('unregister');
+
+    // Routes pour les événements en cours - NOUVEAUTÉS
+    Route::post('/{event}/posts', [EventController::class, 'storeLivePost'])->name('posts.store');
+    Route::get('/{event}/posts', [EventController::class, 'getLivePosts'])->name('posts.index');
+    Route::get('/{event}/media', [EventController::class, 'getEventMedia'])->name('media.index');
 });
 
+// API événements
 Route::get('/api/events', [EventController::class, 'apiIndex'])->name('api.events.index');
 
-////
-
-// Utilisation de l'assistant IA
+// Assistant IA
 Route::prefix('ai-assistant')->group(function () {
     Route::post('/correct-chatgpt', [AIAssistantController::class, 'correctWithChatGPT']);
     Route::post('/improve-chatgpt', [AIAssistantController::class, 'improveWithChatGPT']);
     Route::post('/improve-claude', [AIAssistantController::class, 'improveWithClaude']);
 });
-//// 
-
 
 // Articles publics (lecture)
 Route::prefix('articles')->name('articles.')->group(function () {
@@ -159,7 +141,6 @@ Route::prefix('events')->name('events.')->group(function () {
 Route::middleware('auth')->prefix('articles')->name('articles.')->group(function () {
     Route::get('/create', [ArticleController::class, 'create'])->name('create');
     Route::post('/', [ArticleController::class, 'store'])->name('store');
-
     Route::get('/{article}/edit', [ArticleController::class, 'edit'])->name('edit');
     Route::put('/{article}', [ArticleController::class, 'update'])->name('update');
     Route::delete('/{article}', [ArticleController::class, 'destroy'])->name('destroy');
@@ -168,31 +149,14 @@ Route::middleware('auth')->prefix('articles')->name('articles.')->group(function
     Route::post('/{article}/like', [ArticleController::class, 'toggleLike'])->name('like');
     Route::post('/{article}/pin', [ArticleController::class, 'togglePin'])->name('pin');
 
-    // Commentaires
+    // Commentaires - AMÉLIORÉS
     Route::post('/{article}/comments', [ArticleCommentController::class, 'store'])->name('comments.store');
     Route::put('/comments/{comment}', [ArticleCommentController::class, 'update'])->name('comments.update');
     Route::delete('/comments/{comment}', [ArticleCommentController::class, 'destroy'])->name('comments.destroy');
     Route::post('/comments/{comment}/like', [ArticleCommentController::class, 'toggleLike'])->name('comments.like');
 });
 
-// API pour les articles (pour le dashboard)
-Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
-    Route::get('/user/recent-articles', function (Request $request) {
-        return response()->json([
-            'articles' => $request->user()->recent_articles->map(function ($article) {
-                return [
-                    'id' => $article->id,
-                    'title' => $article->title,
-                    'publish_date' => $article->publish_date,
-                    'views_count' => $article->views_count,
-                    'likes_count' => $article->likes()->count(),
-                    'comments_count' => $article->allComments()->count(),
-                ];
-            })
-        ]);
-    })->name('user.recent-articles');
-});
-
+// API pour les articles et dashboard
 Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
     // Articles de l'utilisateur
     Route::get('/user/recent-articles', [DashboardController::class, 'userRecentArticles'])
@@ -234,10 +198,9 @@ Route::middleware('auth')->prefix('api')->name('api.')->group(function () {
     })->name('stats.general');
 });
 
-// Mettre à jour la route dashboard pour utiliser le contrôleur
+// Dashboard
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
-
 
 require __DIR__ . '/auth.php';

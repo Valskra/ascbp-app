@@ -5,9 +5,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Article extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'title',
         'excerpt',
@@ -19,11 +22,15 @@ class Article extends Model
         'views_count',
         'file_id',
         'user_id',
+        'is_post', // Nouveau champ pour différencier les posts des articles
+        'metadata', // Pour stocker les fichiers média et autres données
     ];
 
     protected $casts = [
         'publish_date' => 'datetime',
         'is_pinned' => 'boolean',
+        'is_post' => 'boolean',
+        'metadata' => 'array',
     ];
 
     protected $with = ['author', 'featuredImage'];
@@ -128,6 +135,22 @@ class Article extends Model
     }
 
     /**
+     * Scope pour les posts live (nouveau)
+     */
+    public function scopePosts(Builder $query)
+    {
+        return $query->where('is_post', true);
+    }
+
+    /**
+     * Scope pour les articles traditionnels (nouveau)
+     */
+    public function scopeArticles(Builder $query)
+    {
+        return $query->where('is_post', false);
+    }
+
+    /**
      * Vérifier si l'utilisateur peut modifier l'article
      */
     public function canBeEditedBy(User $user): bool
@@ -153,5 +176,25 @@ class Article extends Model
         }
 
         return substr(strip_tags($this->content), 0, 200) . '...';
+    }
+
+    /**
+     * Obtenir les fichiers média attachés (nouveau)
+     */
+    public function getMediaFilesAttribute()
+    {
+        if (!$this->metadata || !isset($this->metadata['media_files'])) {
+            return collect();
+        }
+
+        return collect($this->metadata['media_files'])->map(function ($media) {
+            $file = File::find($media['file_id']);
+            return $file ? [
+                'type' => $media['type'],
+                'url' => $file->url,
+                'name' => $file->name,
+                'size' => $file->size,
+            ] : null;
+        })->filter();
     }
 }

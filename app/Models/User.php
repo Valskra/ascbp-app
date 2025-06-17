@@ -77,6 +77,8 @@ class User extends Authenticatable
             'password' => 'hashed',
             'phone' => PhoneCast::class,
             'phone_secondary' => PhoneCast::class,
+            'metadata' => 'array',
+
         ];
     }
 

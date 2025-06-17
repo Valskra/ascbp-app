@@ -9,10 +9,328 @@ use Carbon\Carbon;
 use Inertia\Inertia;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
-use App\Models\{User, File, Registration};
+use App\Models\{User, File, Registration, Article};
 
 class EventController extends Controller
 {
+    public function show(Request $request, Event $event)
+    {
+        $event->load(['illustration', 'address', 'organizer', 'registrations.user']);
+
+        // Vérifier si l'événement est en cours
+        $isOngoing = $this->getEventStatus($event) === 'ongoing';
+
+        // Récupérer les 3 articles les plus récents pour l'aperçu
+        $recentArticles = $event->articles()
+            ->published()
+            ->with(['author', 'featuredImage'])
+            ->withCount(['likes', 'allComments'])
+            ->orderByDesc('is_pinned')
+            ->orderByDesc('publish_date')
+            ->limit(3)
+            ->get()
+            ->map(function ($article) use ($request) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'excerpt' => $article->excerpt,
+                    'publish_date' => $article->publish_date,
+                    'is_pinned' => $article->is_pinned,
+                    'author' => [
+                        'firstname' => $article->author->firstname,
+                        'lastname' => $article->author->lastname,
+                    ],
+                    'featured_image' => $article->featuredImage ? [
+                        'url' => $article->featuredImage->url
+                    ] : null,
+                    'likes_count' => $article->likes_count,
+                    'comments_count' => $article->all_comments_count,
+                    'is_liked' => $request->user() ? $article->isLikedBy($request->user()) : false,
+                ];
+            });
+
+        // Déterminer si l'utilisateur peut créer des articles/posts
+        $canCreateArticle = $request->user() ?
+            ($event->isUserRegistered($request->user()) || $request->user()->isAdmin()) : false;
+
+        $eventData = [
+            'id' => $event->id,
+            'title' => $event->title,
+            'category' => $event->category,
+            'description' => $event->description,
+            'start_date' => $event->start_date,
+            'end_date' => $event->end_date,
+            'registration_open' => $event->registration_open,
+            'registration_close' => $event->registration_close,
+            'max_participants' => $event->max_participants,
+            'price' => $event->price,
+            'illustration' => $event->illustration ? [
+                'url' => $event->illustration->url
+            ] : null,
+            'address' => $event->address ? [
+                'house_number' => $event->address->house_number,
+                'street_name' => $event->address->street_name,
+                'city' => $event->address->city,
+                'postal_code' => $event->address->postal_code,
+                'country' => $event->address->country,
+            ] : null,
+            'organizer' => [
+                'firstname' => $event->organizer->firstname,
+                'lastname' => $event->organizer->lastname,
+            ],
+            'participants' => $event->registrations->map(function ($registration) {
+                return [
+                    'id' => $registration->user->id,
+                    'firstname' => $registration->user->firstname,
+                    'lastname' => $registration->user->lastname,
+                ];
+            }),
+            'participants_count' => $event->registrations()->count(),
+            'can_register' => $this->canUserRegister($event, $request->user()),
+            'is_registered' => $request->user() ? $event->isUserRegistered($request->user()) : false,
+            'recent_articles' => $recentArticles,
+            'articles_count' => $event->articles()->published()->count(),
+            'can_create_article' => $canCreateArticle, // AJOUTÉ - Important pour la vue
+            'status' => $this->getEventStatus($event),
+            'is_ongoing' => $isOngoing,
+        ];
+
+        // Utiliser une vue différente selon si l'événement est en cours ou non
+        $viewName = $isOngoing ? 'Events/ShowOngoing' : 'Events/Show';
+
+        return Inertia::render($viewName, [
+            'event' => $eventData
+        ]);
+    }
+    /**
+     * Nouvelle méthode pour gérer les posts d'événements en cours
+     */
+    public function storeLivePost(Request $request, Event $event)
+    {
+        // Vérifier que l'événement est en cours
+        if ($this->getEventStatus($event) !== 'ongoing') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cette action n\'est disponible que pendant l\'événement.'
+            ], 403);
+        }
+
+        // Vérifier que l'utilisateur est inscrit ou admin
+        if (!$event->isUserRegistered($request->user()) && !$request->user()->isAdmin()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous devez être inscrit à cet événement pour poster.'
+            ], 403);
+        }
+
+        $validated = $request->validate([
+            'content' => 'required|string|max:1000',
+            'images' => 'nullable|array|max:4',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
+            'video' => 'nullable|mimes:mp4,mov,avi,wmv|max:50240',
+        ]);
+
+        // Traitement des fichiers
+        $mediaFiles = [];
+
+        // Images
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('event-posts/images', 'public');
+                $file = File::create([
+                    'fileable_id' => null,
+                    'fileable_type' => null,
+                    'name' => pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME),
+                    'extension' => $image->getClientOriginalExtension(),
+                    'mimetype' => $image->getMimeType(),
+                    'size' => $image->getSize(),
+                    'path' => $path,
+                    'disk' => 'public',
+                    'hash' => hash_file('sha256', $image->getRealPath()),
+                ]);
+                $mediaFiles[] = ['type' => 'image', 'file_id' => $file->id];
+            }
+        }
+
+        // Vidéo
+        if ($request->hasFile('video')) {
+            $video = $request->file('video');
+            $path = $video->store('event-posts/videos', 'public');
+            $file = File::create([
+                'fileable_id' => null,
+                'fileable_type' => null,
+                'name' => pathinfo($video->getClientOriginalName(), PATHINFO_FILENAME),
+                'extension' => $video->getClientOriginalExtension(),
+                'mimetype' => $video->getMimeType(),
+                'size' => $video->getSize(),
+                'path' => $path,
+                'disk' => 'public',
+                'hash' => hash_file('sha256', $video->getRealPath()),
+            ]);
+            $mediaFiles[] = ['type' => 'video', 'file_id' => $file->id];
+        }
+
+        // Créer l'article avec type "post"
+        $article = Article::create([
+            'title' => substr($validated['content'], 0, 50) . (strlen($validated['content']) > 50 ? '...' : ''),
+            'content' => $validated['content'],
+            'event_id' => $event->id,
+            'status' => 'published',
+            'publish_date' => now(),
+            'user_id' => $request->user()->id,
+            'is_post' => true,
+            'metadata' => [
+                'media_files' => $mediaFiles,
+                'post_type' => 'live',
+            ]
+        ]);
+
+        // Charger les médias pour la réponse
+        $formattedMediaFiles = [];
+        foreach ($mediaFiles as $media) {
+            $file = File::find($media['file_id']);
+            if ($file) {
+                $formattedMediaFiles[] = [
+                    'type' => $media['type'],
+                    'url' => $file->url,
+                    'name' => $file->name,
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'post' => [
+                'id' => $article->id,
+                'content' => $article->content,
+                'created_at' => $article->created_at,
+                'author' => [
+                    'id' => $request->user()->id,
+                    'firstname' => $request->user()->firstname,
+                    'lastname' => $request->user()->lastname,
+                ],
+                'media_files' => $formattedMediaFiles,
+                'likes_count' => 0,
+                'comments_count' => 0,
+                'is_liked' => false,
+            ]
+        ]);
+    }
+
+    /**
+     * Récupérer les posts live d'un événement - CORRIGÉE
+     */
+    public function getLivePosts(Request $request, Event $event)
+    {
+        if ($this->getEventStatus($event) !== 'ongoing') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cette action n\'est disponible que pendant l\'événement.'
+            ], 403);
+        }
+
+        $posts = $event->articles()
+            ->where('is_post', true)
+            ->with(['author', 'likes', 'allComments'])
+            ->withCount(['likes', 'allComments'])
+            ->orderByDesc('created_at')
+            ->paginate(10);
+
+        return response()->json([
+            'posts' => $posts->through(function ($post) use ($request) {
+                $mediaFiles = [];
+                if ($post->metadata && isset($post->metadata['media_files'])) {
+                    foreach ($post->metadata['media_files'] as $media) {
+                        $file = File::find($media['file_id']);
+                        if ($file) {
+                            $mediaFiles[] = [
+                                'type' => $media['type'],
+                                'url' => $file->url,
+                                'name' => $file->name,
+                            ];
+                        }
+                    }
+                }
+
+                return [
+                    'id' => $post->id,
+                    'content' => $post->content,
+                    'created_at' => $post->created_at,
+                    'author' => [
+                        'id' => $post->author->id,
+                        'firstname' => $post->author->firstname,
+                        'lastname' => $post->author->lastname,
+                    ],
+                    'media_files' => $mediaFiles,
+                    'likes_count' => $post->likes_count,
+                    'comments_count' => $post->all_comments_count,
+                    'is_liked' => $request->user() ? $post->isLikedBy($request->user()) : false,
+                    'can_edit' => $request->user() ? $post->canBeEditedBy($request->user()) : false,
+                ];
+            }),
+            'pagination' => [
+                'current_page' => $posts->currentPage(),
+                'last_page' => $posts->lastPage(),
+                'has_more_pages' => $posts->hasMorePages(),
+            ]
+        ]);
+    }
+
+
+
+    /**
+     * Récupérer les médias d'un événement - CORRIGÉE
+     */
+    public function getEventMedia(Request $request, Event $event)
+    {
+        if ($this->getEventStatus($event) !== 'ongoing') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cette action n\'est disponible que pendant l\'événement.'
+            ], 403);
+        }
+
+        $mediaItems = collect();
+
+        // Récupérer tous les médias des posts
+        $posts = $event->articles()
+            ->where('is_post', true)
+            ->whereNotNull('metadata')
+            ->with('author')
+            ->get();
+
+        foreach ($posts as $post) {
+            if (isset($post->metadata['media_files'])) {
+                foreach ($post->metadata['media_files'] as $media) {
+                    $file = File::find($media['file_id']);
+                    if ($file) {
+                        $mediaItems->push([
+                            'id' => $file->id,
+                            'type' => $media['type'],
+                            'url' => $file->url,
+                            'name' => $file->name,
+                            'created_at' => $post->created_at,
+                            'author' => [
+                                'firstname' => $post->author->firstname,
+                                'lastname' => $post->author->lastname,
+                            ],
+                            'post_id' => $post->id,
+                        ]);
+                    }
+                }
+            }
+        }
+
+        // Trier par date de création
+        $mediaItems = $mediaItems->sortByDesc('created_at')->values();
+
+        return response()->json([
+            'media' => $mediaItems->slice(0, 20)->values(),
+            'total' => $mediaItems->count(),
+        ]);
+    }
+
+
     /**
      * Afficher la liste des événements
      */
@@ -110,85 +428,6 @@ class EventController extends Controller
                 'sort' => $request->get('sort', 'date'),
                 'status' => $request->get('status', 'upcoming'),
             ]
-        ]);
-    }
-
-    public function show(Request $request, Event $event)
-    {
-        $event->load(['illustration', 'address', 'organizer', 'registrations.user']);
-
-        // Récupérer les 3 articles les plus récents
-        $recentArticles = $event->articles()
-            ->published()
-            ->with(['author', 'featuredImage'])
-            ->withCount(['likes', 'allComments'])
-            ->orderByDesc('is_pinned')
-            ->orderByDesc('publish_date')
-            ->limit(3)
-            ->get()
-            ->map(function ($article) use ($request) {
-                return [
-                    'id' => $article->id,
-                    'title' => $article->title,
-                    'excerpt' => $article->excerpt,
-                    'publish_date' => $article->publish_date,
-                    'is_pinned' => $article->is_pinned,
-                    'author' => [
-                        'firstname' => $article->author->firstname,
-                        'lastname' => $article->author->lastname,
-                    ],
-                    'featured_image' => $article->featuredImage ? [
-                        'url' => $article->featuredImage->url
-                    ] : null,
-                    'likes_count' => $article->likes_count,
-                    'comments_count' => $article->all_comments_count,
-                    'is_liked' => $request->user() ? $article->isLikedBy($request->user()) : false,
-                ];
-            });
-
-        $eventData = [
-            'id' => $event->id,
-            'title' => $event->title,
-            'category' => $event->category,
-            'description' => $event->description,
-            'start_date' => $event->start_date,
-            'end_date' => $event->end_date,
-            'registration_open' => $event->registration_open,
-            'registration_close' => $event->registration_close,
-            'max_participants' => $event->max_participants,
-            'price' => $event->price,
-            'illustration' => $event->illustration ? [
-                'url' => $event->illustration->url
-            ] : null,
-            'address' => $event->address ? [
-                'house_number' => $event->address->house_number,
-                'street_name' => $event->address->street_name,
-                'city' => $event->address->city,
-                'postal_code' => $event->address->postal_code,
-                'country' => $event->address->country,
-            ] : null,
-            'organizer' => [
-                'firstname' => $event->organizer->firstname,
-                'lastname' => $event->organizer->lastname,
-            ],
-            'participants' => $event->registrations->map(function ($registration) {
-                return [
-                    'id' => $registration->user->id,
-                    'firstname' => $registration->user->firstname,
-                    'lastname' => $registration->user->lastname,
-                ];
-            }),
-            'participants_count' => $event->registrations()->count(),
-            'can_register' => $this->canUserRegister($event, $request->user()),
-            'is_registered' => $request->user() ? $event->isUserRegistered($request->user()) : false,
-            'recent_articles' => $recentArticles,
-            'articles_count' => $event->articles()->published()->count(),
-            'can_create_article' => $request->user() ?
-                ($event->isUserRegistered($request->user()) || $request->user()->isAdmin()) : false,
-        ];
-
-        return Inertia::render('Events/Show', [
-            'event' => $eventData
         ]);
     }
 

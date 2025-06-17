@@ -4,9 +4,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ArticleComment extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'content',
         'article_id',

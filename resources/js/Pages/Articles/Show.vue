@@ -69,7 +69,7 @@
                             <div class="flex items-center gap-4">
                                 <button @click="toggleLike"
                                     class="flex items-center gap-1 hover:text-red-500 transition-colors"
-                                    :class="{ 'text-red-500': article.is_liked }">
+                                    :class="{ 'text-red-500': article.is_liked }" :disabled="likingArticle">
                                     <HeartIcon class="w-5 h-5" :class="{ 'fill-current': article.is_liked }" />
                                     {{ article.likes_count }}
                                 </button>
@@ -124,7 +124,7 @@
                                         <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                                             <span class="font-medium">{{ comment.author.firstname }} {{
                                                 comment.author.lastname
-                                                }}</span>
+                                            }}</span>
                                             <span>•</span>
                                             <span>{{ formatDate(comment.created_at) }}</span>
                                         </div>
@@ -133,7 +133,8 @@
                                             <!-- Like du commentaire -->
                                             <button @click="toggleCommentLike(comment)"
                                                 class="flex items-center gap-1 text-xs hover:text-red-500 transition-colors"
-                                                :class="{ 'text-red-500': comment.is_liked }">
+                                                :class="{ 'text-red-500': comment.is_liked }"
+                                                :disabled="likingComments.includes(comment.id)">
                                                 <HeartIcon class="w-3 h-3"
                                                     :class="{ 'fill-current': comment.is_liked }" />
                                                 {{ comment.likes_count }}
@@ -174,8 +175,9 @@
                                                 Annuler
                                             </button>
                                             <button @click="updateComment(comment)"
-                                                class="px-3 py-1 text-xs bg-blue-600 text-white hover:bg-blue-700 rounded">
-                                                Sauvegarder
+                                                class="px-3 py-1 text-xs bg-blue-600 text-white hover:bg-blue-700 rounded"
+                                                :disabled="editCommentForm.processing">
+                                                {{ editCommentForm.processing ? 'Sauvegarde...' : 'Sauvegarder' }}
                                             </button>
                                         </div>
                                     </div>
@@ -195,7 +197,7 @@
                                             <button type="submit"
                                                 class="px-3 py-1 text-xs bg-blue-600 text-white hover:bg-blue-700 rounded"
                                                 :disabled="replyForm.processing">
-                                                Répondre
+                                                {{ replyForm.processing ? 'Envoi...' : 'Répondre' }}
                                             </button>
                                         </div>
                                     </form>
@@ -210,7 +212,7 @@
                                                 class="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
                                                 <span class="font-medium">{{ reply.author.firstname }} {{
                                                     reply.author.lastname
-                                                    }}</span>
+                                                }}</span>
                                                 <span>•</span>
                                                 <span>{{ formatDate(reply.created_at) }}</span>
                                             </div>
@@ -218,7 +220,8 @@
                                             <div class="flex items-center gap-2">
                                                 <button @click="toggleCommentLike(reply)"
                                                     class="flex items-center gap-1 text-xs hover:text-red-500 transition-colors"
-                                                    :class="{ 'text-red-500': reply.is_liked }">
+                                                    :class="{ 'text-red-500': reply.is_liked }"
+                                                    :disabled="likingComments.includes(reply.id)">
                                                     <HeartIcon class="w-3 h-3"
                                                         :class="{ 'fill-current': reply.is_liked }" />
                                                     {{ reply.likes_count }}
@@ -256,7 +259,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { Link, useForm, router } from '@inertiajs/vue3';
-import { HeartIcon, ChatBubbleLeftIcon, PinIcon } from '@heroicons/vue/24/outline';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -267,6 +269,8 @@ const props = defineProps({
 // États réactifs
 const editingComment = ref(null);
 const replyingTo = ref(null);
+const likingArticle = ref(false);
+const likingComments = ref([]);
 
 // Formulaires
 const commentForm = useForm({
@@ -282,49 +286,93 @@ const editCommentForm = useForm({
 });
 
 // Fonctions de gestion des likes
-const toggleLike = async () => {
-    try {
-        const response = await axios.post(route('articles.like', props.article.id));
-        props.article.is_liked = response.data.liked;
-        props.article.likes_count = response.data.likes_count;
-    } catch (error) {
-        console.error('Erreur lors du like:', error);
-    }
+const toggleLike = () => {
+    if (likingArticle.value) return;
+
+    likingArticle.value = true;
+
+    router.post(route('articles.like', props.article.id), {}, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: (page) => {
+            // Mettre à jour les données de l'article avec la réponse
+            const updatedArticle = page.props.article || page.props.flash?.article;
+            if (updatedArticle) {
+                props.article.is_liked = updatedArticle.is_liked;
+                props.article.likes_count = updatedArticle.likes_count;
+            }
+            likingArticle.value = false;
+        },
+        onError: () => {
+            likingArticle.value = false;
+        },
+    });
 };
 
-const toggleCommentLike = async (comment) => {
-    try {
-        const response = await axios.post(route('articles.comments.like', comment.id));
-        comment.is_liked = response.data.liked;
-        comment.likes_count = response.data.likes_count;
-    } catch (error) {
-        console.error('Erreur lors du like du commentaire:', error);
-    }
+const toggleCommentLike = (comment) => {
+    if (likingComments.value.includes(comment.id)) return;
+
+    likingComments.value.push(comment.id);
+
+    router.post(route('articles.comments.like', comment.id), {}, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: (page) => {
+            // Mettre à jour les données du commentaire avec la réponse
+            const updatedComment = page.props.flash?.comment;
+            if (updatedComment) {
+                comment.is_liked = updatedComment.is_liked;
+                comment.likes_count = updatedComment.likes_count;
+            }
+            likingComments.value = likingComments.value.filter(id => id !== comment.id);
+        },
+        onError: () => {
+            likingComments.value = likingComments.value.filter(id => id !== comment.id);
+        },
+    });
 };
 
 // Fonctions de gestion des commentaires
 const submitComment = () => {
     commentForm.post(route('articles.comments.store', props.article.id), {
-        onSuccess: (response) => {
-            // Ajouter le nouveau commentaire à la liste
-            props.comments.push(response.props.flash.comment);
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: (page) => {
+            const newComment = page.props.flash?.comment;
+            if (newComment) {
+                props.comments.push(newComment);
+            }
             commentForm.reset();
         },
     });
 };
 
 const submitReply = (parentId) => {
-    replyForm.parent_id = parentId;
-    replyForm.post(route('articles.comments.store', props.article.id), {
-        onSuccess: (response) => {
-            // Ajouter la réponse au commentaire parent
-            const parentComment = props.comments.find(c => c.id === parentId);
-            if (parentComment) {
-                parentComment.replies.push(response.props.flash.comment);
+    const replyData = {
+        content: replyForm.content,
+        parent_id: parentId
+    };
+
+    router.post(route('articles.comments.store', props.article.id), replyData, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: (page) => {
+            const newReply = page.props.flash?.comment;
+            if (newReply) {
+                const parentComment = props.comments.find(c => c.id === parentId);
+                if (parentComment) {
+                    if (!parentComment.replies) {
+                        parentComment.replies = [];
+                    }
+                    parentComment.replies.push(newReply);
+                }
             }
             replyForm.reset();
             replyingTo.value = null;
         },
+        onError: () => {
+            // Gérer les erreurs si nécessaire
+        }
     });
 };
 
@@ -340,6 +388,8 @@ const cancelEditComment = () => {
 
 const updateComment = (comment) => {
     editCommentForm.put(route('articles.comments.update', comment.id), {
+        preserveState: true,
+        preserveScroll: true,
         onSuccess: () => {
             comment.content = editCommentForm.content;
             editingComment.value = null;
@@ -351,12 +401,14 @@ const updateComment = (comment) => {
 const deleteComment = (comment) => {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) {
         router.delete(route('articles.comments.destroy', comment.id), {
+            preserveState: true,
+            preserveScroll: true,
             onSuccess: () => {
                 // Retirer le commentaire de la liste
                 if (comment.parent_id) {
                     // C'est une réponse
                     const parentComment = props.comments.find(c => c.id === comment.parent_id);
-                    if (parentComment) {
+                    if (parentComment && parentComment.replies) {
                         const index = parentComment.replies.findIndex(r => r.id === comment.id);
                         if (index > -1) {
                             parentComment.replies.splice(index, 1);
@@ -382,13 +434,14 @@ const toggleReplyForm = (commentId) => {
 };
 
 // Fonctions utilitaires
-const togglePin = async () => {
-    try {
-        await router.post(route('articles.pin', props.article.id));
-        props.article.is_pinned = !props.article.is_pinned;
-    } catch (error) {
-        console.error('Erreur lors de l\'épinglage:', error);
-    }
+const togglePin = () => {
+    router.post(route('articles.pin', props.article.id), {}, {
+        preserveState: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            props.article.is_pinned = !props.article.is_pinned;
+        },
+    });
 };
 
 const deleteArticle = () => {

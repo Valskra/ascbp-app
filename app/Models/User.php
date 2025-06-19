@@ -312,6 +312,14 @@ class User extends Authenticatable
     //
     ///////////
 
+    /**
+     * The documents belonging to this user
+     */
+    public function documents()
+    {
+        return $this->hasMany(Document::class);
+    }
+
     public function uploadLinks()
     {
         return $this->hasMany(UploadLink::class);

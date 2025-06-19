@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{Article, ArticleComment, CommentLike};
+use App\Models\{Article, ArticleComment, CommentLike, User};
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ArticleCommentController extends Controller
 {
@@ -12,6 +13,11 @@ class ArticleCommentController extends Controller
      */
     public function store(Request $request, Article $article)
     {
+        // Vérifier que l'utilisateur est authentifié
+        if (!$request->user()) {
+            abort(401, 'Vous devez être connecté pour commenter.');
+        }
+
         $validated = $request->validate([
             'content' => 'required|string|max:2000',
             'parent_id' => 'nullable|exists:article_comments,id',
@@ -34,24 +40,28 @@ class ArticleCommentController extends Controller
 
         $comment->load(['author', 'likes']);
 
-        return response()->json([
-            'comment' => [
-                'id' => $comment->id,
-                'content' => $comment->content,
-                'created_at' => $comment->created_at,
-                'parent_id' => $comment->parent_id,
-                'author' => [
-                    'id' => $comment->author->id,
-                    'firstname' => $comment->author->firstname,
-                    'lastname' => $comment->author->lastname,
-                ],
-                'likes_count' => 0,
-                'is_liked' => false,
-                'can_edit' => true,
-                'replies' => [],
+        // Préparer les données du commentaire pour la réponse
+        $commentData = [
+            'id' => $comment->id,
+            'content' => $comment->content,
+            'created_at' => $comment->created_at,
+            'parent_id' => $comment->parent_id,
+            'author' => [
+                'id' => $comment->author->id,
+                'firstname' => $comment->author->firstname,
+                'lastname' => $comment->author->lastname,
             ],
+            'likes_count' => 0,
+            'is_liked' => false,
+            'can_edit' => $comment->canBeEditedBy($request->user()),
+            'can_delete' => $comment->canBeDeletedBy($request->user()),
+            'replies' => [],
+        ];
+
+        return redirect()->back()->with('flash', [
+            'comment' => $commentData,
             'message' => 'Commentaire ajouté avec succès !'
-        ], 201);
+        ]);
     }
 
     /**
@@ -71,13 +81,7 @@ class ArticleCommentController extends Controller
             'content' => $validated['content'],
         ]);
 
-        return response()->json([
-            'comment' => [
-                'id' => $comment->id,
-                'content' => $comment->content,
-                'created_at' => $comment->created_at,
-                'updated_at' => $comment->updated_at,
-            ],
+        return redirect()->back()->with('flash', [
             'message' => 'Commentaire modifié avec succès !'
         ]);
     }
@@ -93,7 +97,7 @@ class ArticleCommentController extends Controller
 
         $comment->delete();
 
-        return response()->json([
+        return redirect()->back()->with('flash', [
             'message' => 'Commentaire supprimé avec succès !'
         ]);
     }
@@ -104,6 +108,11 @@ class ArticleCommentController extends Controller
     public function toggleLike(Request $request, ArticleComment $comment)
     {
         $user = $request->user();
+
+        if (!$user) {
+            abort(401, 'Vous devez être connecté pour liker un commentaire.');
+        }
+
         $existingLike = CommentLike::where('comment_id', $comment->id)
             ->where('user_id', $user->id)
             ->first();
@@ -119,9 +128,15 @@ class ArticleCommentController extends Controller
             $liked = true;
         }
 
-        return response()->json([
-            'liked' => $liked,
-            'likes_count' => $comment->likes()->count(),
+        $likesCount = $comment->likes()->count();
+
+        return redirect()->back()->with('flash', [
+            'comment' => [
+                'id' => $comment->id,
+                'is_liked' => $liked,
+                'likes_count' => $likesCount,
+            ],
+            'message' => $liked ? 'Commentaire liké !' : 'Like retiré !'
         ]);
     }
 }

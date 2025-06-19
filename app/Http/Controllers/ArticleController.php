@@ -124,79 +124,102 @@ class ArticleController extends Controller
      */
     public function show(Request $request, Article $article)
     {
-        $article->incrementViews();
+        // Vérifier que l'article est publié ou que l'utilisateur peut le voir
+        if ($article->status !== 'published' && !$article->canBeViewedBy($request->user())) {
+            abort(404);
+        }
 
+        // Incrémenter le nombre de vues (optionnel)
+        $article->increment('views_count');
+
+        // Charger les relations nécessaires
         $article->load([
-            'author',
+            'author:id,firstname,lastname',
+            'event:id,title',
             'featuredImage',
-            'event',
-            'comments.author',
-            'comments.replies.author',
             'likes'
         ]);
 
-        $comments = $article->comments()
-            ->with(['author', 'replies.author', 'likes'])
-            ->withCount(['likes'])
-            ->orderBy('created_at')
-            ->get()
-            ->map(function ($comment) use ($request) {
-                return [
-                    'id' => $comment->id,
-                    'content' => $comment->content,
-                    'created_at' => $comment->created_at,
-                    'author' => [
-                        'id' => $comment->author->id,
-                        'firstname' => $comment->author->firstname,
-                        'lastname' => $comment->author->lastname,
-                    ],
-                    'likes_count' => $comment->likes_count,
-                    'is_liked' => $request->user() ? $comment->isLikedBy($request->user()) : false,
-                    'can_edit' => $request->user() ? $comment->canBeEditedBy($request->user()) : false,
-                    'replies' => $comment->replies->map(function ($reply) use ($request) {
-                        return [
-                            'id' => $reply->id,
-                            'content' => $reply->content,
-                            'created_at' => $reply->created_at,
-                            'author' => [
-                                'id' => $reply->author->id,
-                                'firstname' => $reply->author->firstname,
-                                'lastname' => $reply->author->lastname,
-                            ],
-                            'likes_count' => $reply->likes()->count(),
-                            'is_liked' => $request->user() ? $reply->isLikedBy($request->user()) : false,
-                            'can_edit' => $request->user() ? $reply->canBeEditedBy($request->user()) : false,
-                        ];
-                    }),
-                ];
-            });
+        // Charger les commentaires avec leurs réponses
+        $comments = ArticleComment::where('article_id', $article->id)
+            ->whereNull('parent_id') // Commentaires principaux seulement
+            ->with([
+                'author:id,firstname,lastname',
+                'likes',
+                'replies' => function ($query) {
+                    $query->with(['author:id,firstname,lastname', 'likes']);
+                }
+            ])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $user = $request->user();
+
+        // Formater les commentaires avec les permissions et états de like
+        $formattedComments = $comments->map(function ($comment) use ($user) {
+            return [
+                'id' => $comment->id,
+                'content' => $comment->content,
+                'created_at' => $comment->created_at,
+                'parent_id' => $comment->parent_id,
+                'author' => [
+                    'id' => $comment->author->id,
+                    'firstname' => $comment->author->firstname,
+                    'lastname' => $comment->author->lastname,
+                ],
+                'likes_count' => $comment->likes->count(),
+                'is_liked' => $comment->isLikedBy($user),
+                'can_edit' => $comment->canBeEditedBy($user),
+                'can_delete' => $comment->canBeDeletedBy($user),
+                'replies' => $comment->replies->map(function ($reply) use ($user) {
+                    return [
+                        'id' => $reply->id,
+                        'content' => $reply->content,
+                        'created_at' => $reply->created_at,
+                        'parent_id' => $reply->parent_id,
+                        'author' => [
+                            'id' => $reply->author->id,
+                            'firstname' => $reply->author->firstname,
+                            'lastname' => $reply->author->lastname,
+                        ],
+                        'likes_count' => $reply->likes->count(),
+                        'is_liked' => $reply->isLikedBy($user),
+                        'can_edit' => $reply->canBeEditedBy($user),
+                        'can_delete' => $reply->canBeDeletedBy($user),
+                    ];
+                })->toArray(),
+            ];
+        })->toArray();
+
+        // Préparer les données de l'article
+        $articleData = [
+            'id' => $article->id,
+            'title' => $article->title,
+            'content' => $article->content,
+            'publish_date' => $article->publish_date,
+            'views_count' => $article->views_count,
+            'is_pinned' => $article->is_pinned,
+            'author' => [
+                'id' => $article->author->id,
+                'firstname' => $article->author->firstname,
+                'lastname' => $article->author->lastname,
+            ],
+            'event' => $article->event ? [
+                'id' => $article->event->id,
+                'title' => $article->event->title,
+            ] : null,
+            'featured_image' => $article->featuredImage ? [
+                'url' => $article->featuredImage->url,
+            ] : null,
+            'likes_count' => $article->likes->count(),
+            'is_liked' => $user ? $article->likes->where('user_id', $user->id)->isNotEmpty() : false,
+            'can_edit' => $article->canBeEditedBy($user),
+            'can_pin' => $user && ($user->isAdmin() || $article->author_id === $user->id),
+        ];
 
         return Inertia::render('Articles/Show', [
-            'article' => [
-                'id' => $article->id,
-                'title' => $article->title,
-                'content' => $article->content,
-                'publish_date' => $article->publish_date,
-                'views_count' => $article->views_count,
-                'is_pinned' => $article->is_pinned,
-                'author' => [
-                    'id' => $article->author->id,
-                    'firstname' => $article->author->firstname,
-                    'lastname' => $article->author->lastname,
-                ],
-                'event' => $article->event ? [
-                    'id' => $article->event->id,
-                    'title' => $article->event->title,
-                ] : null,
-                'featured_image' => $article->featuredImage ? [
-                    'url' => $article->featuredImage->url
-                ] : null,
-                'likes_count' => $article->likes()->count(),
-                'is_liked' => $request->user() ? $article->isLikedBy($request->user()) : false,
-                'can_edit' => $request->user() ? $article->canBeEditedBy($request->user()) : false,
-                'can_pin' => $request->user() ? $request->user()->isAdmin() : false,
-            ],
-            'comments' => $comments,
+            'article' => $articleData,
+            'comments' => $formattedComments,
         ]);
     }
 
@@ -406,41 +429,60 @@ class ArticleController extends Controller
      */
     public function togglePin(Request $request, Article $article)
     {
-        if (!$request->user()->isAdmin()) {
-            abort(403, 'Seuls les administrateurs peuvent épingler des articles.');
+        $user = $request->user();
+
+        // Vérifier les permissions (admin ou auteur de l'article)
+        if (!$user->isAdmin() && $article->author_id !== $user->id) {
+            abort(403, 'Vous n\'êtes pas autorisé à épingler cet article.');
         }
 
-        $article->update(['is_pinned' => !$article->is_pinned]);
+        $article->update([
+            'is_pinned' => !$article->is_pinned
+        ]);
 
-        return back()->with('success', $article->is_pinned ? 'Article épinglé.' : 'Article désépinglé.');
+        return redirect()->back()->with('flash', [
+            'message' => $article->is_pinned ? 'Article épinglé !' : 'Article désépinglé !'
+        ]);
     }
-
     /**
      * Liker/déliker un article
      */
     public function toggleLike(Request $request, Article $article)
     {
         $user = $request->user();
-        $existingLike = ArticleLike::where('article_id', $article->id)
-            ->where('user_id', $user->id)
-            ->first();
+
+        if (!$user) {
+            abort(401, 'Vous devez être connecté pour liker un article.');
+        }
+
+        $existingLike = $article->likes()->where('user_id', $user->id)->first();
 
         if ($existingLike) {
             $existingLike->delete();
             $liked = false;
         } else {
-            ArticleLike::create([
-                'article_id' => $article->id,
+            $article->likes()->create([
                 'user_id' => $user->id,
             ]);
             $liked = true;
         }
 
-        return response()->json([
-            'liked' => $liked,
-            'likes_count' => $article->likes()->count(),
+        $likesCount = $article->likes()->count();
+
+        // Mettre à jour les propriétés de l'article pour la réponse
+        $article->is_liked = $liked;
+        $article->likes_count = $likesCount;
+
+        return redirect()->back()->with('flash', [
+            'article' => [
+                'id' => $article->id,
+                'is_liked' => $liked,
+                'likes_count' => $likesCount,
+            ],
+            'message' => $liked ? 'Article liké !' : 'Like retiré !'
         ]);
     }
+
 
     /**
      * Formater les données d'un article pour l'API

@@ -1,91 +1,142 @@
 <?php
-// app/Models/ArticleComment.php
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ArticleComment extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'content',
         'article_id',
         'user_id',
         'parent_id',
-        'is_approved',
     ];
 
     protected $casts = [
-        'is_approved' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
-    protected $with = ['author'];
-
     /**
-     * L'auteur du commentaire
+     * Relation avec l'article
      */
-    public function author()
-    {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-
-    /**
-     * L'article commenté
-     */
-    public function article()
+    public function article(): BelongsTo
     {
         return $this->belongsTo(Article::class);
     }
 
     /**
-     * Commentaire parent (pour les réponses)
+     * Relation avec l'auteur du commentaire
      */
-    public function parent()
+    public function author(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Relation avec le commentaire parent
+     */
+    public function parent(): BelongsTo
     {
         return $this->belongsTo(ArticleComment::class, 'parent_id');
     }
 
     /**
-     * Réponses au commentaire
+     * Relation avec les réponses
      */
-    public function replies()
+    public function replies(): HasMany
     {
-        return $this->hasMany(ArticleComment::class, 'parent_id');
+        return $this->hasMany(ArticleComment::class, 'parent_id')->with(['author', 'likes']);
     }
 
     /**
-     * Les likes du commentaire
+     * Relation avec les likes
      */
-    public function likes()
+    public function likes(): HasMany
     {
         return $this->hasMany(CommentLike::class, 'comment_id');
     }
 
     /**
-     * Vérifier si un utilisateur a liké le commentaire
+     * Vérifier si le commentaire peut être modifié par l'utilisateur
      */
-    public function isLikedBy(User $user = null): bool
+    public function canBeEditedBy(?User $user): bool
     {
-        if (!$user) return false;
+        if (!$user) {
+            return false;
+        }
+
+        // L'auteur peut modifier son commentaire
+        if ($this->user_id === $user->id) {
+            return true;
+        }
+
+        // Les admins peuvent modifier tous les commentaires
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Vérifier si le commentaire peut être supprimé par l'utilisateur
+     */
+    public function canBeDeletedBy(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        // L'auteur peut supprimer son commentaire
+        if ($this->user_id === $user->id) {
+            return true;
+        }
+
+        // Les admins peuvent supprimer tous les commentaires
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        // L'auteur de l'article peut supprimer les commentaires sur son article
+        if ($this->article->author_id === $user->id) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Vérifier si le commentaire est liké par l'utilisateur
+     */
+    public function isLikedBy(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
 
         return $this->likes()->where('user_id', $user->id)->exists();
     }
 
     /**
-     * Vérifier si l'utilisateur peut modifier le commentaire
+     * Scope pour les commentaires principaux (sans parent)
      */
-    public function canBeEditedBy(User $user): bool
+    public function scopeMain($query)
     {
-        return $user->id === $this->user_id || $user->isAdmin();
+        return $query->whereNull('parent_id');
     }
 
     /**
-     * Vérifier si l'utilisateur peut supprimer le commentaire
+     * Scope pour les réponses (avec parent)
      */
-    public function canBeDeletedBy(User $user): bool
+    public function scopeReplies($query)
     {
-        return $user->id === $this->user_id || $user->isAdmin();
+        return $query->whereNotNull('parent_id');
     }
 }

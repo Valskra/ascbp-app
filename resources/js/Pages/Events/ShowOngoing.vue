@@ -400,7 +400,7 @@ onMounted(() => {
                                 <div class="flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
                                     <span>{{ event.participants_count }} participant{{ event.participants_count !== 1 ?
                                         's' : ''
-                                    }}</span>
+                                        }}</span>
                                     <span v-if="fullAddress">📍 {{ fullAddress.cityPostal }}</span>
                                     <span>👤 {{ event.organizer.firstname }} {{ event.organizer.lastname }}</span>
                                 </div>
@@ -509,7 +509,11 @@ onMounted(() => {
                             <div class="flex items-start space-x-4">
                                 <div
                                     class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <span class="text-blue-600 dark:text-blue-400 font-medium">
+                                    <img v-if="$page.props.auth.user.profile_picture?.url"
+                                        :src="$page.props.auth.user.profile_picture.url" alt="Avatar de l'utilisateur"
+                                        class="w-full h-full object-cover rounded-full">
+
+                                    <span v-else class="text-blue-600 dark:text-blue-400 font-medium">
                                         {{ $page.props.auth.user.firstname[0] }}{{ $page.props.auth.user.lastname[0] }}
                                     </span>
                                 </div>

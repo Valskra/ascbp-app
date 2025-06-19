@@ -25,6 +25,16 @@ class ProfileController extends Controller
         ]);
     }
 
+    public function getUserProfilePicture($filename)
+    {
+        $path = "user_profile_pictures/{$filename}";
+
+        if (!Storage::disk('s3')->exists($path)) {
+            abort(404);
+        }
+
+        return Storage::disk('s3')->response($path);
+    }
     /**
      * Display the user's profile form.
      */

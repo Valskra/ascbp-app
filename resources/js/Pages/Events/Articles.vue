@@ -175,7 +175,6 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Pagination from '@/Components/Pagination.vue';
 import ArticleActions from '@/Components/ArticleActions.vue';
 import { Link } from '@inertiajs/vue3';
-import { PinIcon, DocumentTextIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     event: Object,

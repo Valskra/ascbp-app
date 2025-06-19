@@ -9,7 +9,7 @@ use Carbon\Carbon;
 use Inertia\Inertia;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
-use App\Models\{User, File, Registration, Article};
+use App\Models\{User, File, Registration, Article, ArticleComment, CommentLike};
 
 class EventController extends Controller
 {
@@ -50,8 +50,10 @@ class EventController extends Controller
             });
 
         // Déterminer si l'utilisateur peut créer des articles/posts
-        $canCreateArticle = $request->user() ?
-            ($event->isUserRegistered($request->user()) || $request->user()->isAdmin()) : false;
+        $canCreateArticle = $request->user();
+
+        // NOUVEAU: Déterminer si l'utilisateur peut commenter (tous les utilisateurs authentifiés)
+        $canComment = $request->user() ? true : false;
 
         $eventData = [
             'id' => $event->id,
@@ -90,7 +92,8 @@ class EventController extends Controller
             'is_registered' => $request->user() ? $event->isUserRegistered($request->user()) : false,
             'recent_articles' => $recentArticles,
             'articles_count' => $event->articles()->published()->count(),
-            'can_create_article' => $canCreateArticle, // AJOUTÉ - Important pour la vue
+            'can_create_article' => $canCreateArticle,
+            'can_comment' => $canComment, // NOUVEAU - Ajout important
             'status' => $this->getEventStatus($event),
             'is_ongoing' => $isOngoing,
         ];
@@ -102,6 +105,7 @@ class EventController extends Controller
             'event' => $eventData
         ]);
     }
+
     /**
      * Nouvelle méthode pour gérer les posts d'événements en cours
      */
@@ -116,105 +120,134 @@ class EventController extends Controller
         }
 
         // Vérifier que l'utilisateur est inscrit ou admin
-        if (!$event->isUserRegistered($request->user()) && !$request->user()->isAdmin()) {
+        if (!$request->user()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Vous devez être inscrit à cet événement pour poster.'
+                'message' => 'Vous devez être identifié pour poster.'
             ], 403);
         }
 
         $validated = $request->validate([
             'content' => 'required|string|max:1000',
             'images' => 'nullable|array|max:4',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif|max:5120',
-            'video' => 'nullable|mimes:mp4,mov,avi,wmv|max:50240',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'video' => 'nullable|mimes:mp4,mov,avi,wmv,webm|max:51200', // 50MB
+        ], [
+            'content.required' => 'Le contenu est requis.',
+            'content.max' => 'Le contenu ne peut pas dépasser 1000 caractères.',
+            'images.max' => 'Vous ne pouvez pas télécharger plus de 4 images.',
+            'images.*.image' => 'Le fichier doit être une image.',
+            'images.*.mimes' => 'Les images doivent être au format JPEG, PNG, JPG, GIF ou WebP.',
+            'images.*.max' => 'Chaque image ne doit pas dépasser 5 MB.',
+            'video.mimes' => 'La vidéo doit être au format MP4, MOV, AVI, WMV ou WebM.',
+            'video.max' => 'La vidéo ne doit pas dépasser 50 MB.',
         ]);
 
-        // Traitement des fichiers
-        $mediaFiles = [];
+        try {
+            // Traitement des fichiers
+            $mediaFiles = [];
 
-        // Images
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('event-posts/images', 'public');
+            // Images
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $index => $image) {
+                    if ($index >= 4) break; // Sécurité supplémentaire
+
+                    $path = $image->store('event-posts/images', 'public');
+                    $file = File::create([
+                        'fileable_id' => null,
+                        'fileable_type' => null,
+                        'name' => pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME),
+                        'extension' => $image->getClientOriginalExtension(),
+                        'mimetype' => $image->getMimeType(),
+                        'size' => $image->getSize(),
+                        'path' => $path,
+                        'disk' => 'public',
+                        'hash' => hash_file('sha256', $image->getRealPath()),
+                    ]);
+                    $mediaFiles[] = ['type' => 'image', 'file_id' => $file->id];
+                }
+            }
+
+            // Vidéo
+            if ($request->hasFile('video')) {
+                $video = $request->file('video');
+                $path = $video->store('event-posts/videos', 'public');
                 $file = File::create([
                     'fileable_id' => null,
                     'fileable_type' => null,
-                    'name' => pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME),
-                    'extension' => $image->getClientOriginalExtension(),
-                    'mimetype' => $image->getMimeType(),
-                    'size' => $image->getSize(),
+                    'name' => pathinfo($video->getClientOriginalName(), PATHINFO_FILENAME),
+                    'extension' => $video->getClientOriginalExtension(),
+                    'mimetype' => $video->getMimeType(),
+                    'size' => $video->getSize(),
                     'path' => $path,
                     'disk' => 'public',
-                    'hash' => hash_file('sha256', $image->getRealPath()),
+                    'hash' => hash_file('sha256', $video->getRealPath()),
                 ]);
-                $mediaFiles[] = ['type' => 'image', 'file_id' => $file->id];
+                $mediaFiles[] = ['type' => 'video', 'file_id' => $file->id];
             }
-        }
 
-        // Vidéo
-        if ($request->hasFile('video')) {
-            $video = $request->file('video');
-            $path = $video->store('event-posts/videos', 'public');
-            $file = File::create([
-                'fileable_id' => null,
-                'fileable_type' => null,
-                'name' => pathinfo($video->getClientOriginalName(), PATHINFO_FILENAME),
-                'extension' => $video->getClientOriginalExtension(),
-                'mimetype' => $video->getMimeType(),
-                'size' => $video->getSize(),
-                'path' => $path,
-                'disk' => 'public',
-                'hash' => hash_file('sha256', $video->getRealPath()),
+            // Créer l'article avec type "post"
+            $article = Article::create([
+                'title' => substr($validated['content'], 0, 50) . (strlen($validated['content']) > 50 ? '...' : ''),
+                'content' => $validated['content'],
+                'event_id' => $event->id,
+                'status' => 'published',
+                'publish_date' => now(),
+                'user_id' => $request->user()->id,
+                'is_post' => true,
+                'metadata' => [
+                    'media_files' => $mediaFiles,
+                    'post_type' => 'live',
+                    'created_from' => 'event_live_feed'
+                ]
             ]);
-            $mediaFiles[] = ['type' => 'video', 'file_id' => $file->id];
-        }
 
-        // Créer l'article avec type "post"
-        $article = Article::create([
-            'title' => substr($validated['content'], 0, 50) . (strlen($validated['content']) > 50 ? '...' : ''),
-            'content' => $validated['content'],
-            'event_id' => $event->id,
-            'status' => 'published',
-            'publish_date' => now(),
-            'user_id' => $request->user()->id,
-            'is_post' => true,
-            'metadata' => [
-                'media_files' => $mediaFiles,
-                'post_type' => 'live',
-            ]
-        ]);
-
-        // Charger les médias pour la réponse
-        $formattedMediaFiles = [];
-        foreach ($mediaFiles as $media) {
-            $file = File::find($media['file_id']);
-            if ($file) {
-                $formattedMediaFiles[] = [
-                    'type' => $media['type'],
-                    'url' => $file->url,
-                    'name' => $file->name,
-                ];
+            // Charger les médias pour la réponse
+            $formattedMediaFiles = [];
+            foreach ($mediaFiles as $media) {
+                $file = File::find($media['file_id']);
+                if ($file) {
+                    $formattedMediaFiles[] = [
+                        'type' => $media['type'],
+                        'url' => $file->url,
+                        'name' => $file->name . '.' . $file->extension,
+                    ];
+                }
             }
-        }
 
-        return response()->json([
-            'success' => true,
-            'post' => [
-                'id' => $article->id,
-                'content' => $article->content,
-                'created_at' => $article->created_at,
-                'author' => [
-                    'id' => $request->user()->id,
-                    'firstname' => $request->user()->firstname,
-                    'lastname' => $request->user()->lastname,
-                ],
-                'media_files' => $formattedMediaFiles,
-                'likes_count' => 0,
-                'comments_count' => 0,
-                'is_liked' => false,
-            ]
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Post publié avec succès !',
+                'post' => [
+                    'id' => $article->id,
+                    'content' => $article->content,
+                    'created_at' => $article->created_at,
+                    'author' => [
+                        'id' => $request->user()->id,
+                        'firstname' => $request->user()->firstname,
+                        'lastname' => $request->user()->lastname,
+                    ],
+                    'media_files' => $formattedMediaFiles,
+                    'likes_count' => 0,
+                    'comments_count' => 0,
+                    'is_liked' => false,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            // En cas d'erreur, nettoyer les fichiers déjà uploadés
+            foreach ($mediaFiles as $media) {
+                $file = File::find($media['file_id']);
+                if ($file) {
+                    Storage::disk($file->disk)->delete($file->path);
+                    $file->delete();
+                }
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la publication : ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -231,7 +264,15 @@ class EventController extends Controller
 
         $posts = $event->articles()
             ->where('is_post', true)
-            ->with(['author', 'likes', 'allComments'])
+            ->with([
+                'author',
+                'likes',
+                'allComments' => function ($query) {
+                    $query->with(['author', 'likes'])
+                        ->withCount('likes')
+                        ->orderBy('created_at', 'asc');
+                }
+            ])
             ->withCount(['likes', 'allComments'])
             ->orderByDesc('created_at')
             ->paginate(10);
@@ -252,6 +293,40 @@ class EventController extends Controller
                     }
                 }
 
+                // Formater les commentaires
+                $comments = $post->allComments->whereNull('parent_id')->map(function ($comment) use ($request) {
+                    return [
+                        'id' => $comment->id,
+                        'content' => $comment->content,
+                        'created_at' => $comment->created_at,
+                        'author' => [
+                            'id' => $comment->author->id,
+                            'firstname' => $comment->author->firstname,
+                            'lastname' => $comment->author->lastname,
+                        ],
+                        'likes_count' => $comment->likes_count,
+                        'is_liked' => $request->user() ? $comment->isLikedBy($request->user()) : false,
+                        'can_edit' => $request->user() ? $comment->canBeEditedBy($request->user()) : false,
+                        'can_delete' => $request->user() ? $comment->canBeDeletedBy($request->user()) : false,
+                        'replies' => $comment->replies->map(function ($reply) use ($request) {
+                            return [
+                                'id' => $reply->id,
+                                'content' => $reply->content,
+                                'created_at' => $reply->created_at,
+                                'author' => [
+                                    'id' => $reply->author->id,
+                                    'firstname' => $reply->author->firstname,
+                                    'lastname' => $reply->author->lastname,
+                                ],
+                                'likes_count' => $reply->likes()->count(),
+                                'is_liked' => $request->user() ? $reply->isLikedBy($request->user()) : false,
+                                'can_edit' => $request->user() ? $reply->canBeEditedBy($request->user()) : false,
+                                'can_delete' => $request->user() ? $reply->canBeDeletedBy($request->user()) : false,
+                            ];
+                        }),
+                    ];
+                });
+
                 return [
                     'id' => $post->id,
                     'content' => $post->content,
@@ -266,6 +341,8 @@ class EventController extends Controller
                     'comments_count' => $post->all_comments_count,
                     'is_liked' => $request->user() ? $post->isLikedBy($request->user()) : false,
                     'can_edit' => $request->user() ? $post->canBeEditedBy($request->user()) : false,
+                    'comments' => $comments,
+                    'can_comment' => $request->user() ? true : false, // Tous les utilisateurs authentifiés peuvent commenter
                 ];
             }),
             'pagination' => [

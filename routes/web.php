@@ -21,6 +21,10 @@ use App\Http\Controllers\{
     DashboardController,
 };
 
+Route::get('/user_profile_pictures/{filename}', [ProfileController::class, 'getUserProfilePicture']);
+
+
+
 // Routes de base
 Route::post('/files/user-profile-picture', [FileController::class, 'storeUserProfilePicture'])
     ->name('files.store.user.profile-picture');
@@ -102,6 +106,8 @@ Route::middleware(['auth', IsAnimator::class])->prefix('events')->name('events.'
 });
 
 // Événements (tous utilisateurs connectés)
+// Dans web.php, ajouter ces routes dans la section "Événements (tous utilisateurs connectés)"
+
 Route::middleware('auth')->prefix('events')->name('events.')->group(function () {
     Route::get('/', [EventController::class, 'index'])->name('index');
     Route::get('/{event}', [EventController::class, 'show'])->name('show');
@@ -110,20 +116,26 @@ Route::middleware('auth')->prefix('events')->name('events.')->group(function () 
     Route::get('/{event}/registration/success', [EventController::class, 'handlePaymentSuccess'])->name('registration.success');
     Route::delete('/{event}/unregister', [EventController::class, 'unregister'])->name('unregister');
 
-    // Routes pour les événements en cours - NOUVEAUTÉS
+    // Routes pour les événements en cours
     Route::post('/{event}/posts', [EventController::class, 'storeLivePost'])->name('posts.store');
     Route::get('/{event}/posts', [EventController::class, 'getLivePosts'])->name('posts.index');
     Route::get('/{event}/media', [EventController::class, 'getEventMedia'])->name('media.index');
+
+    // NOUVEAU: Routes pour les commentaires des posts d'événements
+    Route::post('/{event}/posts/{article}/comments', [ArticleCommentController::class, 'store'])->name('posts.comments.store');
+    Route::put('/{event}/posts/comments/{comment}', [ArticleCommentController::class, 'update'])->name('posts.comments.update');
+    Route::delete('/{event}/posts/comments/{comment}', [ArticleCommentController::class, 'destroy'])->name('posts.comments.destroy');
+    Route::post('/{event}/posts/comments/{comment}/like', [ArticleCommentController::class, 'toggleLike'])->name('posts.comments.like');
 });
 
 // API événements
 Route::get('/api/events', [EventController::class, 'apiIndex'])->name('api.events.index');
 
 // Assistant IA
-Route::prefix('ai-assistant')->group(function () {
-    Route::post('/correct-chatgpt', [AIAssistantController::class, 'correctWithChatGPT']);
-    Route::post('/improve-chatgpt', [AIAssistantController::class, 'improveWithChatGPT']);
-    Route::post('/improve-claude', [AIAssistantController::class, 'improveWithClaude']);
+Route::middleware('auth')->prefix('ai-assistant')->name('ai.')->group(function () {
+    Route::post('/correct-chatgpt', [AIAssistantController::class, 'correctWithChatGPT'])->name('correct.chatgpt');
+    Route::post('/improve-chatgpt', [AIAssistantController::class, 'improveWithChatGPT'])->name('improve.chatgpt');
+    Route::post('/improve-claude', [AIAssistantController::class, 'improveWithClaude'])->name('improve.claude');
 });
 
 // Articles publics (lecture)
@@ -145,11 +157,11 @@ Route::middleware('auth')->prefix('articles')->name('articles.')->group(function
     Route::put('/{article}', [ArticleController::class, 'update'])->name('update');
     Route::delete('/{article}', [ArticleController::class, 'destroy'])->name('destroy');
 
-    // Actions AJAX
+    // Actions AJAX remplacées par des redirections
     Route::post('/{article}/like', [ArticleController::class, 'toggleLike'])->name('like');
     Route::post('/{article}/pin', [ArticleController::class, 'togglePin'])->name('pin');
 
-    // Commentaires - AMÉLIORÉS
+    // Commentaires - Routes simplifiées
     Route::post('/{article}/comments', [ArticleCommentController::class, 'store'])->name('comments.store');
     Route::put('/comments/{comment}', [ArticleCommentController::class, 'update'])->name('comments.update');
     Route::delete('/comments/{comment}', [ArticleCommentController::class, 'destroy'])->name('comments.destroy');

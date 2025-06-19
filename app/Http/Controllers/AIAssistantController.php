@@ -35,34 +35,49 @@ class AIAssistantController extends Controller
     public function correctWithChatGPT(Request $request): JsonResponse
     {
         $request->validate([
-            'content' => 'required|string'
+            'content' => 'required|string|max:2000'
         ]);
 
         try {
             $response = $this->openaiClient->post('chat/completions', [
                 'json' => [
-                    'model' => 'gpt-4',
+                    'model' => 'gpt-4o-mini', // Modèle plus rapide et moins cher
                     'messages' => [
                         [
                             'role' => 'system',
-                            'content' => 'Tu es un correcteur professionnel. Corrige uniquement les fautes d\'orthographe, de grammaire et de syntaxe du texte suivant, sans changer le style ou le fond du message.'
+                            'content' => 'Tu es un correcteur professionnel francophone. Corrige uniquement les fautes d\'orthographe, de grammaire et de syntaxe du texte suivant, sans changer le style, le ton ou le fond du message. Si le texte est déjà correct, renvoie-le tel quel. Garde la même longueur et structure.'
                         ],
                         [
                             'role' => 'user',
                             'content' => $request->content
                         ]
                     ],
-                    'max_tokens' => 2000,
-                    'temperature' => 0.1
+                    'max_tokens' => 1500,
+                    'temperature' => 0.1,
+                    'presence_penalty' => 0,
+                    'frequency_penalty' => 0
                 ]
             ]);
 
             $data = json_decode($response->getBody(), true);
+
+            if (isset($data['choices'][0]['message']['content'])) {
+                return response()->json([
+                    'success' => true,
+                    'corrected_content' => trim($data['choices'][0]['message']['content'])
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Réponse invalide de l\'API'
+                ], 500);
+            }
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
             return response()->json([
-                'success' => true,
-                'corrected_content' => $data['choices'][0]['message']['content']
-            ]);
-        } catch (Exception $e) {
+                'success' => false,
+                'error' => 'Erreur de communication avec l\'API : ' . $e->getMessage()
+            ], 503);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'error' => 'Erreur lors de la correction : ' . $e->getMessage()

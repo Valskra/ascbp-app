@@ -1,0 +1,36 @@
+name: Mirror to School Repository
+
+on:
+  push:
+    branches: [main, develop]
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Récupère tout l'historique
+
+      - name: Mirror to school repository
+        run: |
+          # Configurer Git
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+          # Ajouter le remote de l'école
+          git remote add school https://${{ secrets.SCHOOL_USERNAME }}:${{ secrets.SCHOOL_TOKEN }}@git.ecole-89.com/alexis.raccah/2024_grad.git
+
+          # Créer la branche de rendu si elle n'existe pas
+          git checkout -b deployment || git checkout deployment
+
+          # Merger les changements de main
+          git merge main
+
+          # Pousser vers l'école
+          git push school deployment:main --force
+
+      - name: Clean up
+        run: git remote remove school

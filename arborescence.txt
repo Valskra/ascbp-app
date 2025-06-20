@@ -1,379 +1,452 @@
-./
-├── CHANGELOG.md*
-├── README.md*
-├── _ide_helper.php*
-├── app/
-│   ├── Casts/
-│   │   └── PhoneCast.php*
-│   ├── Http/
-│   │   ├── Controllers/
-│   │   │   ├── AIAssistantController.php*
-│   │   │   ├── AdminEventController.php*
-│   │   │   ├── AdminUserController.php*
-│   │   │   ├── ArticleCommentController.php*
-│   │   │   ├── ArticleController.php*
-│   │   │   ├── Auth/
-│   │   │   │   ├── AuthenticatedSessionController.php*
-│   │   │   │   ├── ConfirmablePasswordController.php*
-│   │   │   │   ├── EmailVerificationNotificationController.php*
-│   │   │   │   ├── EmailVerificationPromptController.php*
-│   │   │   │   ├── NewPasswordController.php*
-│   │   │   │   ├── PasswordController.php*
-│   │   │   │   ├── PasswordResetLinkController.php*
-│   │   │   │   ├── RegisteredUserController.php*
-│   │   │   │   └── VerifyEmailController.php*
-│   │   │   ├── CertificateController.php*
-│   │   │   ├── Controller.php*
-│   │   │   ├── DashboardController.php*
-│   │   │   ├── EventController.php*
-│   │   │   ├── FileController.php*
-│   │   │   ├── MembershipController.php*
-│   │   │   ├── ProfileController.php*
-│   │   │   └── UploadLinkController.php*
-│   │   ├── Middleware/
-│   │   │   ├── HandleInertiaRequests.php*
-│   │   │   ├── IsAdmin.php*
-│   │   │   ├── IsAnimator.php*
-│   │   │   └── IsSuperAnimator.php*
-│   │   └── Requests/
-│   │       ├── Auth/
-│   │       │   └── LoginRequest.php*
-│   │       └── ProfileUpdateRequest.php*
-│   ├── Models/
-│   │   ├── Address.php*
-│   │   ├── Article.php*
-│   │   ├── ArticleComment.php*
-│   │   ├── ArticleLike.php*
-│   │   ├── CommentLike.php*
-│   │   ├── Contact.php*
-│   │   ├── Document.php*
-│   │   ├── Event.php*
-│   │   ├── EventAddress.php*
-│   │   ├── File.php*
-│   │   ├── Membership.php*
-│   │   ├── Permission.php*
-│   │   ├── Registration.php*
-│   │   ├── Role.php*
-│   │   ├── UploadLink.php*
-│   │   └── User.php*
-│   ├── Providers/
-│   │   └── AppServiceProvider.php*
-│   └── articles_backup.json*
-├── arborescence.txt*
-├── artisan*
-├── bootstrap/
-│   ├── app.php*
-│   ├── cache/
-│   │   ├── config.php*
-│   │   ├── packages.php*
-│   │   └── services.php*
-│   └── providers.php*
-├── composables/
-│   └── useMasonry.js*
-├── composer.json*
-├── composer.lock*
-├── config/
-│   ├── app.php*
-│   ├── auth.php*
-│   ├── cache.php*
-│   ├── cors.php*
-│   ├── database.php*
-│   ├── filesystems.php*
-│   ├── hashing.php*
-│   ├── logging.php*
-│   ├── mail.php*
-│   ├── queue.php*
-│   ├── services.php*
-│   └── session.php*
-├── database/
-│   ├── database.sqlite*
-│   ├── factories/
-│   │   ├── AddressFactory.php*
-│   │   ├── ArticleCommentFactory.php*
-│   │   ├── ArticleFactory.php*
-│   │   ├── ContactFactory.php*
-│   │   ├── DocumentFactory.php*
-│   │   ├── EventAddressFactory.php*
-│   │   ├── EventFactory.php*
-│   │   ├── FileFactory.php*
-│   │   ├── MembershipFactory.php*
-│   │   ├── RegistrationFactory.php*
-│   │   └── UserFactory.php*
-│   ├── migrations/
-│   │   ├── 0001_01_01_000000_create_users_table.php*
-│   │   ├── 0001_01_01_000001_create_cache_table.php*
-│   │   ├── 0001_01_01_000002_create_jobs_table.php*
-│   │   ├── 2025_01_21_142206_create_files_table.php*
-│   │   ├── 2025_01_21_142207_create_permissions_table.php*
-│   │   ├── 2025_01_21_142208_create_roles_table.php*
-│   │   ├── 2025_01_21_142209_create_audit_logs_table.php*
-│   │   ├── 2025_01_21_142209_create_memberships_table.php*
-│   │   ├── 2025_01_21_142210_create_addresses_table.php*
-│   │   ├── 2025_01_21_142210_create_contacts_table.php*
-│   │   ├── 2025_01_21_142210_create_events_table.php*
-│   │   ├── 2025_01_21_142211_create_articles_table.php*
-│   │   ├── 2025_01_21_142211_create_documents_table.php*
-│   │   ├── 2025_01_21_142211_create_preferences_table.php*
-│   │   ├── 2025_01_21_142212_create_registrations_table.php*
-│   │   ├── 2025_01_21_142212_create_user_roles_table.php*
-│   │   ├── 2025_05_04_135818_create_upload_links.php*
-│   │   ├── 2025_05_06_152315_create_event_addresses_table.php*
-│   │   ├── 2025_06_05_092023_create_article_comments_table.php*
-│   │   ├── 2025_06_05_092835_create_article_likes_table.php*
-│   │   └── 2025_06_05_093913_create_comment_likes_table.php*
-│   ├── schema/
-│   │   └── mysql-schema.sql*
-│   └── seeders/
-│       ├── ArticlePermissionsSeeder.php*
-│       ├── ArticleSeeder.php*
-│       ├── CompleteSeeder.php*
-│       ├── DatabaseSeeder.php*
-│       ├── EventSeeder.php*
-│       ├── RolePermissionSeeder.php*
-│       └── UserSeeder.php*
-├── jsconfig.json*
-├── make_id1_admin.txt*
-├── package-lock.json*
-├── package.json*
-├── phpunit.xml*
-├── postcss.config.js*
-├── public/
-│   ├── build/
-│   │   ├── assets/
-│   │   │   ├── ApplicationLogo-CinMenbb.js*
-│   │   │   ├── AuthenticatedLayout-VgBdZoKR.js*
-│   │   │   ├── ConfirmPassword-D8xPup5_.js*
-│   │   │   ├── Dashboard-BJmEVGKM.js*
-│   │   │   ├── DeleteUserForm-Bb6TGYz9.js*
-│   │   │   ├── Edit-B-LJcI28.js*
-│   │   │   ├── ForgotPassword-an5Wb9n4.js*
-│   │   │   ├── GuestLayout-PBgtdV61.js*
-│   │   │   ├── Login-BGoq1I3E.js*
-│   │   │   ├── PrimaryButton-BhmCEZx9.js*
-│   │   │   ├── Register-BqDtDgq7.js*
-│   │   │   ├── ResetPassword-DnTSaTqA.js*
-│   │   │   ├── TextInput-D_AwVnvo.js*
-│   │   │   ├── UpdatePasswordForm-CO5mdCSl.js*
-│   │   │   ├── UpdateProfileInformationForm-Bkuft6Xv.js*
-│   │   │   ├── VerifyEmail-B7lvxQ1H.js*
-│   │   │   ├── Welcome-CsrWN3YN.js*
-│   │   │   ├── _plugin-vue_export-helper-DlAUqK2U.js*
-│   │   │   ├── app-BOYNYulM.css*
-│   │   │   └── app-CBVi1XmB.js*
-│   │   └── manifest.json*
-│   ├── favicon.ico*
-│   ├── fonts/
-│   │   ├── garet/
-│   │   │   ├── Garet-Book.otf*
-│   │   │   ├── Garet-Book.ttf*
-│   │   │   ├── Garet-Book.woff*
-│   │   │   ├── Garet-Book.woff2*
-│   │   │   ├── Garet-Heavy.otf*
-│   │   │   ├── Garet-Heavy.ttf*
-│   │   │   ├── Garet-Heavy.woff*
-│   │   │   └── Garet-Heavy.woff2*
-│   │   └── scandia/
-│   │       ├── Scandia-Bold.eot*
-│   │       ├── Scandia-Bold.ttf*
-│   │       ├── Scandia-Bold.woff*
-│   │       ├── Scandia-Bold.woff2*
-│   │       ├── Scandia-BoldItalic.eot*
-│   │       ├── Scandia-BoldItalic.ttf*
-│   │       ├── Scandia-BoldItalic.woff*
-│   │       ├── Scandia-BoldItalic.woff2*
-│   │       ├── Scandia-Light.eot*
-│   │       ├── Scandia-Light.ttf*
-│   │       ├── Scandia-Light.woff*
-│   │       ├── Scandia-Light.woff2*
-│   │       ├── Scandia-LightItalic.eot*
-│   │       ├── Scandia-LightItalic.ttf*
-│   │       ├── Scandia-LightItalic.woff*
-│   │       ├── Scandia-LightItalic.woff2*
-│   │       ├── Scandia-Medium.eot*
-│   │       ├── Scandia-Medium.ttf*
-│   │       ├── Scandia-Medium.woff*
-│   │       ├── Scandia-Medium.woff2*
-│   │       ├── Scandia-MediumItalic.eot*
-│   │       ├── Scandia-MediumItalic.ttf*
-│   │       ├── Scandia-MediumItalic.woff*
-│   │       ├── Scandia-MediumItalic.woff2*
-│   │       ├── Scandia-Regular.eot*
-│   │       ├── Scandia-Regular.ttf*
-│   │       ├── Scandia-Regular.woff*
-│   │       ├── Scandia-Regular.woff2*
-│   │       ├── Scandia-RegularItalic.eot*
-│   │       ├── Scandia-RegularItalic.ttf*
-│   │       ├── Scandia-RegularItalic.woff*
-│   │       ├── Scandia-RegularItalic.woff2*
-│   │       ├── Scandia-Stencil.eot*
-│   │       └── Scandia-Stencil.ttf*
-│   ├── hot*
-│   ├── index.php*
-│   └── robots.txt*
-├── resources/
-│   ├── css/
-│   │   ├── app.css*
-│   │   ├── cropper.css*
-│   │   └── fonts.css*
-│   ├── img/
-│   │   ├── ASCBP-logo - carré.svg*
-│   │   ├── ASCBP-logo.svg*
-│   │   ├── profil.jpeg*
-│   │   └── trash-svgrepo-com.svg*
-│   ├── js/
-│   │   ├── Components/
-│   │   │   ├── ApplicationLogo.vue*
-│   │   │   ├── ApplicationLogoLong.vue*
-│   │   │   ├── ArticleActions.vue*
-│   │   │   ├── Certificat.vue*
-│   │   │   ├── Checkbox.vue*
-│   │   │   ├── CommentForm.vue*
-│   │   │   ├── CommentList.vue*
-│   │   │   ├── CommentSection.vue*
-│   │   │   ├── ConfirmModal.vue*
-│   │   │   ├── DangerButton.vue*
-│   │   │   ├── DocumentCard.vue*
-│   │   │   ├── Dropdown.vue*
-│   │   │   ├── DropdownLink.vue*
-│   │   │   ├── ErrorAlert.vue*
-│   │   │   ├── EventCard.vue*
-│   │   │   ├── EventItem.vue*
-│   │   │   ├── EventsDisplay.vue*
-│   │   │   ├── InputError.vue*
-│   │   │   ├── InputLabel.vue*
-│   │   │   ├── LinkListModal.vue*
-│   │   │   ├── Modal.vue*
-│   │   │   ├── NavLink.vue*
-│   │   │   ├── NotificationItem.vue*
-│   │   │   ├── Pagination.vue*
-│   │   │   ├── PostActions.vue*
-│   │   │   ├── PrimaryButton.vue*
-│   │   │   ├── ResponsiveNavLink.vue*
-│   │   │   ├── SecondaryButton.vue*
-│   │   │   ├── TextInput.vue*
-│   │   │   ├── UpcomingEventsCarousel.vue*
-│   │   │   ├── UploadLinkModal.vue*
-│   │   │   └── svg/
-│   │   │       ├── ReloadButton.vue*
-│   │   │       ├── calendarIcon.vue*
-│   │   │       ├── downloadFileIcon.vue*
-│   │   │       ├── exportIcon.vue*
-│   │   │       ├── fileIcon.vue*
-│   │   │       ├── keyIcon.vue*
-│   │   │       ├── linkIcon.vue*
-│   │   │       ├── shareIcon.vue*
-│   │   │       ├── trashIcon.vue*
-│   │   │       └── usersIcon.vue*
-│   │   ├── Layouts/
-│   │   │   ├── AuthenticatedLayout.vue*
-│   │   │   └── GuestLayout.vue*
-│   │   ├── Pages/
-│   │   │   ├── Admin/
-│   │   │   │   ├── ManageEvents.vue*
-│   │   │   │   └── ManageUsers.vue*
-│   │   │   ├── AdminDashboard.vue*
-│   │   │   ├── Articles/
-│   │   │   │   ├── Create.vue*
-│   │   │   │   ├── Index.vue*
-│   │   │   │   └── Show.vue*
-│   │   │   ├── Auth/
-│   │   │   │   ├── ConfirmPassword.vue*
-│   │   │   │   ├── ForgotPassword.vue*
-│   │   │   │   ├── Login.vue*
-│   │   │   │   ├── Register.vue*
-│   │   │   │   ├── ResetPassword.vue*
-│   │   │   │   └── VerifyEmail.vue*
-│   │   │   ├── Dashboard.vue*
-│   │   │   ├── Events/
-│   │   │   │   ├── Articles.vue*
-│   │   │   │   ├── Create.vue*
-│   │   │   │   ├── Edit.vue*
-│   │   │   │   ├── Index.vue*
-│   │   │   │   ├── Manage.vue*
-│   │   │   │   ├── Participants.vue*
-│   │   │   │   ├── Registration.vue*
-│   │   │   │   ├── Show.vue*
-│   │   │   │   └── ShowOngoing.vue*
-│   │   │   ├── FileTest.vue*
-│   │   │   ├── Membership/
-│   │   │   │   └── Create.vue*
-│   │   │   ├── Profile/
-│   │   │   │   ├── Edit.vue*
-│   │   │   │   ├── Partials/
-│   │   │   │   │   ├── DeleteUserForm.vue*
-│   │   │   │   │   ├── ProfileCard.vue*
-│   │   │   │   │   ├── ProfileContact.vue*
-│   │   │   │   │   ├── ProfileInformationDisplay.vue*
-│   │   │   │   │   ├── ProfileLayout.vue*
-│   │   │   │   │   ├── ProfileUpdateForm.vue*
-│   │   │   │   │   ├── UpdateAddressForm.vue*
-│   │   │   │   │   ├── UpdateBirthForm.vue*
-│   │   │   │   │   ├── UpdateContactsForm.vue*
-│   │   │   │   │   ├── UpdateEmailForm.vue*
-│   │   │   │   │   ├── UpdateName.vue*
-│   │   │   │   │   ├── UpdatePasswordForm.vue*
-│   │   │   │   │   ├── UpdatePhoneForm.vue*
-│   │   │   │   │   ├── UpdateProfileCard.vue*
-│   │   │   │   │   ├── UpdateProfileInformationForm.vue*
-│   │   │   │   │   └── UpdateProfilePhoto.vue*
-│   │   │   │   ├── Profile.vue*
-│   │   │   │   └── UserCertificat.vue*
-│   │   │   ├── Public/
-│   │   │   │   ├── UploadSuccess.vue*
-│   │   │   │   └── UploadViaLink.vue*
-│   │   │   ├── TestArticles.vue*
-│   │   │   └── Welcome.vue*
-│   │   ├── app.js*
-│   │   └── bootstrap.js*
-│   ├── lang/
-│   │   └── fr/
-│   │       └── validation.php*
-│   └── views/
-│       └── app.blade.php*
-├── routes/
-│   ├── auth.php*
-│   ├── console.php*
-│   └── web.php*
-├── storage/
-│   ├── app/
-│   │   ├── article_comments_backup.json*
-│   │   ├── article_likes_backup.json*
-│   │   ├── articles_backup.json*
-│   │   └── public/
-│   ├── framework/
-│   │   ├── testing/
-│   │   │   └── disks/
-│   │   │       └── s3/
-│   │   │           └── user_profile_pictures/
-│   │   │               └── 1.jpg*
-│   │   └── views/
-│   └── logs/
-│       └── ascbp.log*
-├── tailwind.config.js*
-├── tests/
-│   ├── Feature/
-│   │   ├── AdminDashboardTest.php*
-│   │   ├── AdminUserManagementTest.php*
-│   │   ├── Auth/
-│   │   │   ├── AuthenticationTest.php*
-│   │   │   ├── EmailVerificationTest.php*
-│   │   │   ├── PasswordConfirmationTest.php*
-│   │   │   ├── PasswordResetTest.php*
-│   │   │   ├── PasswordUpdateTest.php*
-│   │   │   └── RegistrationTest.php*
-│   │   ├── CertificateLinkTest.php*
-│   │   ├── CertificateUploadTest.php*
-│   │   ├── EventManagementTest.php*
-│   │   ├── ExampleTest.php*
-│   │   ├── PhotoUploadTest.php*
-│   │   ├── ProfileDeleteTest.php*
-│   │   ├── ProfileTest.php*
-│   │   ├── ProfileUpdateTest.php*
-│   │   └── UserDashboardTest.php*
-│   ├── Pest.php*
-│   ├── TestCase.php*
-│   └── Unit/
-│       └── ExampleTest.php*
-├── text.txt*
-├── tree.txt*
-└── vite.config.js*
+.
+├── CHANGELOG.md
+├── Dockerfile
+├── README.md
+├── _ide_helper.php
+├── app
+│   ├── Casts
+│   │   └── PhoneCast.php
+│   ├── Http
+│   │   ├── Controllers
+│   │   │   ├── AIAssistantController.php
+│   │   │   ├── AdminEventController.php
+│   │   │   ├── AdminUserController.php
+│   │   │   ├── ArticleCommentController.php
+│   │   │   ├── ArticleController.php
+│   │   │   ├── Auth
+│   │   │   │   ├── AuthenticatedSessionController.php
+│   │   │   │   ├── ConfirmablePasswordController.php
+│   │   │   │   ├── EmailVerificationNotificationController.php
+│   │   │   │   ├── EmailVerificationPromptController.php
+│   │   │   │   ├── NewPasswordController.php
+│   │   │   │   ├── PasswordController.php
+│   │   │   │   ├── PasswordResetLinkController.php
+│   │   │   │   ├── RegisteredUserController.php
+│   │   │   │   └── VerifyEmailController.php
+│   │   │   ├── CertificateController.php
+│   │   │   ├── Controller.php
+│   │   │   ├── DashboardController.php
+│   │   │   ├── EventController.php
+│   │   │   ├── FileController.php
+│   │   │   ├── MembershipController.php
+│   │   │   ├── ProfileController.php
+│   │   │   └── UploadLinkController.php
+│   │   ├── Middleware
+│   │   │   ├── HandleInertiaRequests.php
+│   │   │   ├── IsAdmin.php
+│   │   │   ├── IsAnimator.php
+│   │   │   └── IsSuperAnimator.php
+│   │   └── Requests
+│   │       ├── Auth
+│   │       │   └── LoginRequest.php
+│   │       └── ProfileUpdateRequest.php
+│   ├── Models
+│   │   ├── Address.php
+│   │   ├── Article.php
+│   │   ├── ArticleComment.php
+│   │   ├── ArticleLike.php
+│   │   ├── CommentLike.php
+│   │   ├── Contact.php
+│   │   ├── Document.php
+│   │   ├── Event.php
+│   │   ├── EventAddress.php
+│   │   ├── File.php
+│   │   ├── Membership.php
+│   │   ├── Permission.php
+│   │   ├── Registration.php
+│   │   ├── Role.php
+│   │   ├── UploadLink.php
+│   │   └── User.php
+│   ├── Providers
+│   │   └── AppServiceProvider.php
+│   └── articles_backup.json
+├── arborescence.txt
+├── artisan
+├── bootstrap
+│   ├── app.php
+│   ├── cache
+│   │   ├── config.php
+│   │   ├── packages.php
+│   │   └── services.php
+│   └── providers.php
+├── composables
+│   └── useMasonry.js
+├── composer.json
+├── composer.lock
+├── config
+│   ├── app.php
+│   ├── auth.php
+│   ├── cache.php
+│   ├── cors.php
+│   ├── database.php
+│   ├── filesystems.php
+│   ├── hashing.php
+│   ├── logging.php
+│   ├── mail.php
+│   ├── queue.php
+│   ├── services.php
+│   └── session.php
+├── database
+│   ├── database.sqlite
+│   ├── factories
+│   │   ├── AddressFactory.php
+│   │   ├── ArticleCommentFactory.php
+│   │   ├── ArticleFactory.php
+│   │   ├── ContactFactory.php
+│   │   ├── DocumentFactory.php
+│   │   ├── EventAddressFactory.php
+│   │   ├── EventFactory.php
+│   │   ├── FileFactory.php
+│   │   ├── MembershipFactory.php
+│   │   ├── RegistrationFactory.php
+│   │   └── UserFactory.php
+│   ├── migrations
+│   │   ├── 0001_01_01_000000_create_users_table.php
+│   │   ├── 0001_01_01_000001_create_cache_table.php
+│   │   ├── 0001_01_01_000002_create_jobs_table.php
+│   │   ├── 2025_01_21_142206_create_files_table.php
+│   │   ├── 2025_01_21_142207_create_permissions_table.php
+│   │   ├── 2025_01_21_142208_create_roles_table.php
+│   │   ├── 2025_01_21_142209_create_audit_logs_table.php
+│   │   ├── 2025_01_21_142209_create_memberships_table.php
+│   │   ├── 2025_01_21_142210_create_addresses_table.php
+│   │   ├── 2025_01_21_142210_create_contacts_table.php
+│   │   ├── 2025_01_21_142210_create_events_table.php
+│   │   ├── 2025_01_21_142211_create_articles_table.php
+│   │   ├── 2025_01_21_142211_create_documents_table.php
+│   │   ├── 2025_01_21_142211_create_preferences_table.php
+│   │   ├── 2025_01_21_142212_create_registrations_table.php
+│   │   ├── 2025_01_21_142212_create_user_roles_table.php
+│   │   ├── 2025_05_04_135818_create_upload_links.php
+│   │   ├── 2025_05_06_152315_create_event_addresses_table.php
+│   │   ├── 2025_06_05_092023_create_article_comments_table.php
+│   │   ├── 2025_06_05_092835_create_article_likes_table.php
+│   │   └── 2025_06_05_093913_create_comment_likes_table.php
+│   ├── schema
+│   │   └── mysql-schema.sql
+│   └── seeders
+│       ├── ArticlePermissionsSeeder.php
+│       ├── ArticleSeeder.php
+│       ├── CompleteSeeder.php
+│       ├── DatabaseSeeder.php
+│       ├── EventSeeder.php
+│       ├── RolePermissionSeeder.php
+│       └── UserSeeder.php
+├── debug-git.ps1
+├── docker
+│   ├── Caddyfile
+│   ├── mysql
+│   │   └── init
+│   │       └── 01-create-database.sql
+│   ├── nginx.conf
+│   ├── php
+│   │   └── php.ini
+│   └── supervisord.conf
+├── docker-compose.yml
+├── docs
+│   ├── dependencies-analysis.md
+│   └── deployment-guide.md
+├── jsconfig.json
+├── make_id1_admin.txt
+├── package-lock.json
+├── package.json
+├── phpunit.xml
+├── postcss.config.js
+├── public
+│   ├── build
+│   │   ├── assets
+│   │   │   ├── ApplicationLogo-CinMenbb.js
+│   │   │   ├── AuthenticatedLayout-VgBdZoKR.js
+│   │   │   ├── ConfirmPassword-D8xPup5_.js
+│   │   │   ├── Dashboard-BJmEVGKM.js
+│   │   │   ├── DeleteUserForm-Bb6TGYz9.js
+│   │   │   ├── Edit-B-LJcI28.js
+│   │   │   ├── ForgotPassword-an5Wb9n4.js
+│   │   │   ├── GuestLayout-PBgtdV61.js
+│   │   │   ├── Login-BGoq1I3E.js
+│   │   │   ├── PrimaryButton-BhmCEZx9.js
+│   │   │   ├── Register-BqDtDgq7.js
+│   │   │   ├── ResetPassword-DnTSaTqA.js
+│   │   │   ├── TextInput-D_AwVnvo.js
+│   │   │   ├── UpdatePasswordForm-CO5mdCSl.js
+│   │   │   ├── UpdateProfileInformationForm-Bkuft6Xv.js
+│   │   │   ├── VerifyEmail-B7lvxQ1H.js
+│   │   │   ├── Welcome-CsrWN3YN.js
+│   │   │   ├── _plugin-vue_export-helper-DlAUqK2U.js
+│   │   │   ├── app-BOYNYulM.css
+│   │   │   └── app-CBVi1XmB.js
+│   │   └── manifest.json
+│   ├── favicon.ico
+│   ├── fonts
+│   │   ├── garet
+│   │   │   ├── Garet-Book.otf
+│   │   │   ├── Garet-Book.ttf
+│   │   │   ├── Garet-Book.woff
+│   │   │   ├── Garet-Book.woff2
+│   │   │   ├── Garet-Heavy.otf
+│   │   │   ├── Garet-Heavy.ttf
+│   │   │   ├── Garet-Heavy.woff
+│   │   │   └── Garet-Heavy.woff2
+│   │   └── scandia
+│   │       ├── Scandia-Bold.eot
+│   │       ├── Scandia-Bold.ttf
+│   │       ├── Scandia-Bold.woff
+│   │       ├── Scandia-Bold.woff2
+│   │       ├── Scandia-BoldItalic.eot
+│   │       ├── Scandia-BoldItalic.ttf
+│   │       ├── Scandia-BoldItalic.woff
+│   │       ├── Scandia-BoldItalic.woff2
+│   │       ├── Scandia-Light.eot
+│   │       ├── Scandia-Light.ttf
+│   │       ├── Scandia-Light.woff
+│   │       ├── Scandia-Light.woff2
+│   │       ├── Scandia-LightItalic.eot
+│   │       ├── Scandia-LightItalic.ttf
+│   │       ├── Scandia-LightItalic.woff
+│   │       ├── Scandia-LightItalic.woff2
+│   │       ├── Scandia-Medium.eot
+│   │       ├── Scandia-Medium.ttf
+│   │       ├── Scandia-Medium.woff
+│   │       ├── Scandia-Medium.woff2
+│   │       ├── Scandia-MediumItalic.eot
+│   │       ├── Scandia-MediumItalic.ttf
+│   │       ├── Scandia-MediumItalic.woff
+│   │       ├── Scandia-MediumItalic.woff2
+│   │       ├── Scandia-Regular.eot
+│   │       ├── Scandia-Regular.ttf
+│   │       ├── Scandia-Regular.woff
+│   │       ├── Scandia-Regular.woff2
+│   │       ├── Scandia-RegularItalic.eot
+│   │       ├── Scandia-RegularItalic.ttf
+│   │       ├── Scandia-RegularItalic.woff
+│   │       ├── Scandia-RegularItalic.woff2
+│   │       ├── Scandia-Stencil.eot
+│   │       └── Scandia-Stencil.ttf
+│   ├── hot
+│   ├── index.php
+│   └── robots.txt
+├── resources
+│   ├── css
+│   │   ├── app.css
+│   │   ├── cropper.css
+│   │   └── fonts.css
+│   ├── img
+│   │   ├── ASCBP-logo - carré.svg
+│   │   ├── ASCBP-logo.svg
+│   │   ├── profil.jpeg
+│   │   └── trash-svgrepo-com.svg
+│   ├── js
+│   │   ├── Components
+│   │   │   ├── ApplicationLogo.vue
+│   │   │   ├── ApplicationLogoLong.vue
+│   │   │   ├── ArticleActions.vue
+│   │   │   ├── Certificat.vue
+│   │   │   ├── Checkbox.vue
+│   │   │   ├── CommentForm.vue
+│   │   │   ├── CommentList.vue
+│   │   │   ├── CommentSection.vue
+│   │   │   ├── ConfirmModal.vue
+│   │   │   ├── DangerButton.vue
+│   │   │   ├── DocumentCard.vue
+│   │   │   ├── Dropdown.vue
+│   │   │   ├── DropdownLink.vue
+│   │   │   ├── ErrorAlert.vue
+│   │   │   ├── EventCard.vue
+│   │   │   ├── EventItem.vue
+│   │   │   ├── EventsDisplay.vue
+│   │   │   ├── InputError.vue
+│   │   │   ├── InputLabel.vue
+│   │   │   ├── LinkListModal.vue
+│   │   │   ├── Modal.vue
+│   │   │   ├── NavLink.vue
+│   │   │   ├── NotificationItem.vue
+│   │   │   ├── Pagination.vue
+│   │   │   ├── PostActions.vue
+│   │   │   ├── PrimaryButton.vue
+│   │   │   ├── ResponsiveNavLink.vue
+│   │   │   ├── SecondaryButton.vue
+│   │   │   ├── TextInput.vue
+│   │   │   ├── UpcomingEventsCarousel.vue
+│   │   │   ├── UploadLinkModal.vue
+│   │   │   └── svg
+│   │   │       ├── ReloadButton.vue
+│   │   │       ├── calendarIcon.vue
+│   │   │       ├── downloadFileIcon.vue
+│   │   │       ├── exportIcon.vue
+│   │   │       ├── fileIcon.vue
+│   │   │       ├── keyIcon.vue
+│   │   │       ├── linkIcon.vue
+│   │   │       ├── shareIcon.vue
+│   │   │       ├── trashIcon.vue
+│   │   │       └── usersIcon.vue
+│   │   ├── Layouts
+│   │   │   ├── AuthenticatedLayout.vue
+│   │   │   └── GuestLayout.vue
+│   │   ├── Pages
+│   │   │   ├── Admin
+│   │   │   │   ├── ManageEvents.vue
+│   │   │   │   └── ManageUsers.vue
+│   │   │   ├── AdminDashboard.vue
+│   │   │   ├── Articles
+│   │   │   │   ├── Create.vue
+│   │   │   │   ├── Index.vue
+│   │   │   │   └── Show.vue
+│   │   │   ├── Auth
+│   │   │   │   ├── ConfirmPassword.vue
+│   │   │   │   ├── ForgotPassword.vue
+│   │   │   │   ├── Login.vue
+│   │   │   │   ├── Register.vue
+│   │   │   │   ├── ResetPassword.vue
+│   │   │   │   └── VerifyEmail.vue
+│   │   │   ├── Dashboard.vue
+│   │   │   ├── Events
+│   │   │   │   ├── Articles.vue
+│   │   │   │   ├── Create.vue
+│   │   │   │   ├── Edit.vue
+│   │   │   │   ├── Index.vue
+│   │   │   │   ├── Manage.vue
+│   │   │   │   ├── Participants.vue
+│   │   │   │   ├── Registration.vue
+│   │   │   │   ├── Show.vue
+│   │   │   │   └── ShowOngoing.vue
+│   │   │   ├── FileTest.vue
+│   │   │   ├── Membership
+│   │   │   │   └── Create.vue
+│   │   │   ├── Profile
+│   │   │   │   ├── Edit.vue
+│   │   │   │   ├── Partials
+│   │   │   │   │   ├── DeleteUserForm.vue
+│   │   │   │   │   ├── ProfileCard.vue
+│   │   │   │   │   ├── ProfileContact.vue
+│   │   │   │   │   ├── ProfileInformationDisplay.vue
+│   │   │   │   │   ├── ProfileLayout.vue
+│   │   │   │   │   ├── ProfileUpdateForm.vue
+│   │   │   │   │   ├── UpdateAddressForm.vue
+│   │   │   │   │   ├── UpdateBirthForm.vue
+│   │   │   │   │   ├── UpdateContactsForm.vue
+│   │   │   │   │   ├── UpdateEmailForm.vue
+│   │   │   │   │   ├── UpdateName.vue
+│   │   │   │   │   ├── UpdatePasswordForm.vue
+│   │   │   │   │   ├── UpdatePhoneForm.vue
+│   │   │   │   │   ├── UpdateProfileCard.vue
+│   │   │   │   │   ├── UpdateProfileInformationForm.vue
+│   │   │   │   │   └── UpdateProfilePhoto.vue
+│   │   │   │   ├── Profile.vue
+│   │   │   │   └── UserCertificat.vue
+│   │   │   ├── Public
+│   │   │   │   ├── UploadSuccess.vue
+│   │   │   │   └── UploadViaLink.vue
+│   │   │   ├── TestArticles.vue
+│   │   │   └── Welcome.vue
+│   │   ├── app.js
+│   │   └── bootstrap.js
+│   ├── lang
+│   │   └── fr
+│   │       └── validation.php
+│   └── views
+│       └── app.blade.php
+├── routes
+│   ├── auth.php
+│   ├── console.php
+│   └── web.php
+├── scripts
+│   ├── deploy.sh
+│   ├── health-check.sh
+│   ├── server-setup.sh
+│   └── setup-ssh-keys.sh
+├── storage
+│   ├── app
+│   │   ├── article_comments_backup.json
+│   │   ├── article_likes_backup.json
+│   │   ├── articles_backup.json
+│   │   └── public
+│   │       ├── event-posts
+│   │       │   └── images
+│   │       │       └── rd7ciz6um6P2OwkLcMU1y9w7cGAaMxNT3uWpBzC8.png
+│   │       ├── events
+│   │       │   ├── 9vLxZtB2ccu9PPF3aZjRyj3HFODeGAYY7fXMAJb8.png
+│   │       │   ├── EZRpvuxQIa6ceO5kpZiAHHegKvvPey3ycnryBmjI.png
+│   │       │   ├── Fpw9DGJ4v9EywjDAF3UfXwrDN9NDa3gtAxkPCYDR.png
+│   │       │   ├── NN9jH5MroB1WciXM2CbcaKdikSo7ydoMYJIxrX7X.png
+│   │       │   ├── OJhWIIW0todHWduuCq3WBjX8TDBsYMKOfEHyrhaI.png
+│   │       │   ├── RK0yDbl365X5hl4a164uwuWomPZXhRwdNFPjZvD0.png
+│   │       │   ├── SbxSUSQ9HjA1foYPCtczqLmmHGuordonjHtuEPNx.png
+│   │       │   ├── XzC9bpxdO42FFB2bmz7Xgchky53Kh1vTUI7uK6J6.png
+│   │       │   ├── Y06Aj9Nj00JRiWshmb29tszrhpo88sSxSpz9jpuQ.png
+│   │       │   ├── Y4P59u9RuhfE7LydBzld58RfscuQ7MxWg088vkns.png
+│   │       │   ├── ZOux2AdQo3Zzx57wVCOqgwZBl44cpfLEwa35QD39.png
+│   │       │   ├── bqexknrydWfty8uAN4BUCq8BaXeWrmUB0GrOrtW6.png
+│   │       │   ├── dcunQMYqTcwMAZwPiQCge407xgyylbw1Fp1Ofm9X.png
+│   │       │   ├── e3eOARXppGMB4pnC8XBNTeWUKDgpgv14n1pJN7Uu.png
+│   │       │   ├── e7Pk1wiUzg3Ev0Snt8Ax1NqpNEnm92l3mMPkEeSr.png
+│   │       │   ├── ewfhK1k0xCh9Bp4lFJDiGWvxSRbeTSVNC8mUAv5j.png
+│   │       │   ├── n4nkxZ40WZMMn3WIkvJM2ItE7uNgJK6GqYDBk4NI.png
+│   │       │   ├── ouNzAuNgZHvSVSCNfzF0wqUsom84lHdLbqqAFBqK.png
+│   │       │   ├── rFzq9aFls2M2TxwQwXYBLOgEczjiaowmfnwVOefU.png
+│   │       │   ├── rhc44BnrgnPvKwdDvtAoQ7z886rOUFOnm0RM8wCE.png
+│   │       │   ├── s0hx8mKqaintMdU9QL2qO7kQhHcS2fT2IeD6S5q0.png
+│   │       │   ├── suihhCyWadE2CSLxBhIXNUGrv9rRMsgHqIWq9iHs.png
+│   │       │   └── ywxQjBHA8FqmnbX5x4Y4a79f6xMrvtxjdunH1KGV.png
+│   │       └── test
+│   │           ├── lgLM6AawBEhXnarrGL4tNw5BHp39w2SJUQ7w5A5X.png
+│   │           └── zLtAOZ40BYyfQqOlgSFxaVZi1O8ucX2aEYnh5VvG.jpg
+│   ├── framework
+│   │   ├── testing
+│   │   │   └── disks
+│   │   │       └── s3
+│   │   │           └── user_profile_pictures
+│   │   │               └── 1.jpg
+│   │   └── views
+│   │       ├── 004cfaaba41e0d4bf083a6b949043319.php
+│   │       ├── 164d8b1cfa333c91996d1d1ca0cfcc3a.php
+│   │       ├── 1fa930d5e9c9ebfdfb561939ab5e311e.php
+│   │       ├── 217f64190b128050b7c63b90def3b8c3.php
+│   │       ├── 21ef82136f75ce050a162eead39c98a1.php
+│   │       ├── 28e38cceee71c5c308aed6083344b842.php
+│   │       ├── 2f867179f255fb7abf8533886c6ee099.php
+│   │       ├── 6d485507abff6328741479a85d875fc1.php
+│   │       ├── 73299dc7c276b03d260821eefdf9cda9.php
+│   │       ├── 74aeb812a35b0eadcabaa695f82c4350.php
+│   │       ├── 798c35158178e806cb895d8082729d7e.php
+│   │       ├── 81db5371bd7bb637c311e04b3e52fe38.php
+│   │       ├── 8ee47df173c385aaf6c7b7417dfab8cb.php
+│   │       ├── ae1a1bf6de30bc695fd00590fa479c48.php
+│   │       ├── b6c2513b3850877483aaad33eba60524.php
+│   │       ├── bf9a00f40910822d482978fb8b751771.php
+│   │       ├── cddc7f0ad85f2912e2b28dbef8f4b0c0.php
+│   │       ├── deb7769f6dd62c5beed4d0eb78200986.php
+│   │       ├── ec8fb4a2776c3d562ed75b1afe74a1d0.php
+│   │       ├── f7ee22dae866bace8ae23d22b91ea8cc.php
+│   │       └── f8d9c5fac7777e550fec5e5b2b1aae55.php
+│   └── logs
+│       └── ascbp.log
+├── sync-to-school.ps1
+├── sync-to-school.sh
+├── tailwind.config.js
+├── tests
+│   ├── Feature
+│   │   ├── AdminDashboardTest.php
+│   │   ├── AdminUserManagementTest.php
+│   │   ├── Auth
+│   │   │   ├── AuthenticationTest.php
+│   │   │   ├── EmailVerificationTest.php
+│   │   │   ├── PasswordConfirmationTest.php
+│   │   │   ├── PasswordResetTest.php
+│   │   │   ├── PasswordUpdateTest.php
+│   │   │   └── RegistrationTest.php
+│   │   ├── CertificateLinkTest.php
+│   │   ├── CertificateUploadTest.php
+│   │   ├── EventManagementTest.php
+│   │   ├── ExampleTest.php
+│   │   ├── PhotoUploadTest.php
+│   │   ├── ProfileDeleteTest.php
+│   │   ├── ProfileTest.php
+│   │   ├── ProfileUpdateTest.php
+│   │   └── UserDashboardTest.php
+│   ├── Pest.php
+│   ├── TestCase.php
+│   └── Unit
+│       └── ExampleTest.php
+├── text.txt
+├── tree.txt
+└── vite.config.js

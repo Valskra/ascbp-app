@@ -1,0 +1,1124 @@
+
+  [30;43;1m WARN [39;49;22m Test results may not be as expected because the XML configuration file did not pass validation:
+
+  Line 70:
+  - Element 'coverage', attribute 'processUncoveredFiles': The attribute 'processUncoveredFiles' is not allowed.
+
+  Line 71:
+  - Element 'include': This element is not expected.
+
+
+   WARN  No code coverage driver available
+PHPUnit 11.5.15 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.2.12
+Configuration: C:\Users\alexi\Documents\Casden\ascbp-app\phpunit.xml
+Random Seed:   1750424328
+
+
+   PASS  Tests\Feature\Auth\EmailVerificationTest
+  ✓ email can be verified                                                                                                                                        0.41s  
+  ✓ email is not verified with invalid hash                                                                                                                      0.04s  
+  ✓ email verification screen can be rendered                                                                                                                    0.04s  
+
+   PASS  Tests\Feature\UserDashboardTest
+  ✓ example                                                                                                                                                      0.02s  
+
+   PASS  Tests\Feature\Auth\PasswordResetTest
+  ✓ reset password screen can be rendered                                                                                                                        0.07s  
+  ✓ reset password link screen can be rendered                                                                                                                   0.02s  
+  ✓ password can be reset with valid token                                                                                                                       0.11s  
+  ✓ reset password link can be requested                                                                                                                         0.05s  
+
+   PASS  Tests\Feature\ExampleTest
+  ✓ it returns a successful response                                                                                                                             0.02s  
+
+   FAIL  Tests\Feature\Articles\ArticleLifecycleTest
+  ⨯ Article Complete Lifecycle → it handles article moderation workflow
+  ⨯ Article Complete Lifecycle → it enforces permission restrictions correctly
+  ⨯ Article Complete Lifecycle → it handles article viewing and statistics
+  ⨯ Article Complete Lifecycle → it processes article interactions (likes and comments)
+  ⨯ Article Complete Lifecycle → it handles article deletion with cleanup
+  ⨯ Article Complete Lifecycle → it completes full article creation workflow with image
+
+   PASS  Tests\Feature\ProfileDeleteTest
+  ✓ example                                                                                                                                                      0.02s  
+
+   FAIL  Tests\Feature\ProfileTest
+  ✓ profile page is displayed                                                                                                                                    0.02s  
+  ⨯ user can delete their account                                                                                                                                1.71s  
+  ⨯ email verification status is unchanged when the email address is unchanged                                                                                   0.89s  
+  ⨯ correct password must be provided to delete account                                                                                                          0.89s  
+  ⨯ profile information can be updated                                                                                                                           0.88s  
+
+   PASS  Tests\Feature\AdminDashboardTest
+  ✓ example                                                                                                                                                      0.02s  
+
+   PASS  Tests\Feature\CertificateUploadTest
+  ✓ example                                                                                                                                                      0.03s  
+
+   PASS  Tests\Feature\CertificateLinkTest
+  ✓ example                                                                                                                                                      0.02s  
+
+   PASS  Tests\Feature\PhotoUploadTest
+  ✓ it rejects a second upload of the same profile picture                                                                                                       0.04s  
+  ✓ it rejects invalid profile picture (exe file)                                                                                                                0.03s  
+  ✓ it stores valid profile picture                                                                                                                              0.03s  
+
+   FAIL  Tests\Feature\Events\EventRegistrationTest
+  ✓ Event Registration Integration → it handles event unregistration correctly                                                                                   0.03s  
+  ✓ Event Registration Integration → it requires authentication for registration                                                                                 0.02s  
+  ✓ Event Registration Integration → it allows members-only registration for valid members                                                                       0.03s  
+  ⨯ Event Registration Integration → it validates registration data correctly                                                                                    0.02s  
+  ✓ Event Registration Integration → it prevents registration when event is full                                                                                 0.02s  
+  ⨯ Event Registration Integration → it enforces members-only restriction                                                                                        0.03s  
+  ⨯ Event Registration Integration → it allows valid user registration                                                                                           0.03s  
+  ✓ Event Registration Integration → it prevents double registration                                                                                             0.02s  
+
+   PASS  Tests\Feature\EventManagementTest
+  ✓ example                                                                                                                                                      0.02s  
+
+   PASS  Tests\Feature\ProfileUpdateTest
+  ✓ example                                                                                                                                                      0.02s  
+
+   PASS  Tests\Feature\Auth\AuthenticationTest
+  ✓ users can not authenticate with invalid password                                                                                                             0.23s  
+  ✓ users can authenticate using the login screen                                                                                                                0.05s  
+  ✓ users can logout                                                                                                                                             0.02s  
+  ✓ login screen can be rendered                                                                                                                                 0.02s  
+
+   PASS  Tests\Feature\Auth\RegistrationTest
+  ✓ registration screen can be rendered                                                                                                                          0.02s  
+  ✓ new users can register                                                                                                                                       0.05s  
+
+   PASS  Tests\Feature\Auth\PasswordUpdateTest
+  ✓ correct password must be provided to update password                                                                                                         0.05s  
+  ✓ password can be updated                                                                                                                                      0.10s  
+
+   PASS  Tests\Feature\Auth\PasswordConfirmationTest
+  ✓ password can be confirmed                                                                                                                                    0.05s  
+  ✓ confirm password screen can be rendered                                                                                                                      0.03s  
+  ✓ password is not confirmed with invalid password                                                                                                              0.23s  
+
+   PASS  Tests\Feature\AdminUserManagementTest
+  ✓ example                                                                                                                                                      0.02s  
+
+   FAIL  Tests\Unit\Models\UserTest
+  ⨯ User Model → it calculates membership status correctly for expired member
+  ⨯ User Model → it calculates membership time left correctly
+  ⨯ User Model → it checks admin permissions correctly
+  ⨯ User Model → it calculates membership status correctly for former member
+  ⨯ User Model → it handles user without membership correctly
+  ⨯ User Model → it calculates membership status correctly for active member
+
+   PASS  Tests\Unit\ExampleTest
+  ✓ that true is true
+
+   FAIL  Tests\Unit\Models\EventTest
+  ⨯ Event Model → it checks if user can register when everything is valid
+  ⨯ Event Model → it prevents registration when event is full
+  ⨯ Event Model → it validates max participants change restrictions
+  ⨯ Event Model → it counts participants correctly
+  ⨯ Event Model → it calculates numeric price correctly
+  ⨯ Event Model → it checks if event is paid correctly
+  ⨯ Event Model → it verifies user registration status
+  ⨯ Event Model → it prevents registration for non-members on members-only events
+  ⨯ Event Model → it prevents registration when registration is closed
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Articles\ArticleLifecycleTest > `Article Complete Lifecycle` → it handles article moderation workflow                 BadMethodCallException   
+  Call to undefined method App\Models\Role::factory()
+
+  at vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+     63▕      * @throws \BadMethodCallException
+     64▕      */
+     65▕     protected static function throwBadMethodCallException($method)
+     66▕     {
+  ➜  67▕         throw new BadMethodCallException(sprintf(
+     68▕             'Call to undefined method %s::%s()', static::class, $method
+     69▕         ));
+     70▕     }
+     71▕ }
+
+  1   vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+  2   vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Articles\ArticleLifecycleTest > `Article Complete Lifecycle` → it enforces permission restrictions correctly          BadMethodCallException   
+  Call to undefined method App\Models\Role::factory()
+
+  at vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+     63▕      * @throws \BadMethodCallException
+     64▕      */
+     65▕     protected static function throwBadMethodCallException($method)
+     66▕     {
+  ➜  67▕         throw new BadMethodCallException(sprintf(
+     68▕             'Call to undefined method %s::%s()', static::class, $method
+     69▕         ));
+     70▕     }
+     71▕ }
+
+  1   vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+  2   vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Articles\ArticleLifecycleTest > `Article Complete Lifecycle` → it handles article viewing and statistics              BadMethodCallException   
+  Call to undefined method App\Models\Role::factory()
+
+  at vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+     63▕      * @throws \BadMethodCallException
+     64▕      */
+     65▕     protected static function throwBadMethodCallException($method)
+     66▕     {
+  ➜  67▕         throw new BadMethodCallException(sprintf(
+     68▕             'Call to undefined method %s::%s()', static::class, $method
+     69▕         ));
+     70▕     }
+     71▕ }
+
+  1   vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+  2   vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Articles\ArticleLifecycleTest > `Article Complete Lifecycle` → it processes article interactions (likes and comment…  BadMethodCallException   
+  Call to undefined method App\Models\Role::factory()
+
+  at vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+     63▕      * @throws \BadMethodCallException
+     64▕      */
+     65▕     protected static function throwBadMethodCallException($method)
+     66▕     {
+  ➜  67▕         throw new BadMethodCallException(sprintf(
+     68▕             'Call to undefined method %s::%s()', static::class, $method
+     69▕         ));
+     70▕     }
+     71▕ }
+
+  1   vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+  2   vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Articles\ArticleLifecycleTest > `Article Complete Lifecycle` → it handles article deletion with cleanup               BadMethodCallException   
+  Call to undefined method App\Models\Role::factory()
+
+  at vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+     63▕      * @throws \BadMethodCallException
+     64▕      */
+     65▕     protected static function throwBadMethodCallException($method)
+     66▕     {
+  ➜  67▕         throw new BadMethodCallException(sprintf(
+     68▕             'Call to undefined method %s::%s()', static::class, $method
+     69▕         ));
+     70▕     }
+     71▕ }
+
+  1   vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+  2   vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Articles\ArticleLifecycleTest > `Article Complete Lifecycle` → it completes full article creation workflow with ima…  BadMethodCallException   
+  Call to undefined method App\Models\Role::factory()
+
+  at vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+     63▕      * @throws \BadMethodCallException
+     64▕      */
+     65▕     protected static function throwBadMethodCallException($method)
+     66▕     {
+  ➜  67▕         throw new BadMethodCallException(sprintf(
+     68▕             'Call to undefined method %s::%s()', static::class, $method
+     69▕         ));
+     70▕     }
+     71▕ }
+
+  1   vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+  2   vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\ProfileTest > user can delete their account                                                                                                    
+  Expected response status code [201, 301, 302, 303, 307, 308] but received 405.
+Failed asserting that false is true.
+
+  at tests\Feature\ProfileTest.php:67
+     63▕         ]);
+     64▕ 
+     65▕     $response
+     66▕         ->assertSessionHasNoErrors()
+  ➜  67▕         ->assertRedirect('/');
+     68▕ 
+     69▕     $this->assertGuest();
+     70▕     $this->assertNull($user->fresh());
+     71▕ });
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\ProfileTest > email verification status is unchanged when the email address is unchanged                                                       
+  Expected response status code [201, 301, 302, 303, 307, 308] but received 405.
+Failed asserting that false is true.
+
+  at tests\Feature\ProfileTest.php:51
+     47▕         ]);
+     48▕ 
+     49▕     $response
+     50▕         ->assertSessionHasNoErrors()
+  ➜  51▕         ->assertRedirect('/profile');
+     52▕ 
+     53▕     $this->assertNotNull($user->refresh()->email_verified_at);
+     54▕ });
+     55▕
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\ProfileTest > correct password must be provided to delete account                                                                              
+  Session is missing expected key [errors].
+Failed asserting that false is true.
+
+  at tests\Feature\ProfileTest.php:84
+     80▕             'password' => 'wrong-password',
+     81▕         ]);
+     82▕ 
+     83▕     $response
+  ➜  84▕         ->assertSessionHasErrors('password')
+     85▕         ->assertRedirect('/profile');
+     86▕ 
+     87▕     $this->assertNotNull($user->fresh());
+     88▕ });
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\ProfileTest > profile information can be updated                                                                                               
+  Expected response status code [201, 301, 302, 303, 307, 308] but received 405.
+Failed asserting that false is true.
+
+  at tests\Feature\ProfileTest.php:28
+     24▕         ]);
+     25▕ 
+     26▕     $response
+     27▕         ->assertSessionHasNoErrors()
+  ➜  28▕         ->assertRedirect('/profile');
+     29▕ 
+     30▕     $user->refresh();
+     31▕ 
+     32▕     $this->assertSame('Test', $user->firstname);
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Events\EventRegistrationTest > `Event Registration Integration` → it validates registration data correctly                                     
+  Session is missing expected key [errors].
+Failed asserting that false is true.
+
+  at tests\Feature\Events\EventRegistrationTest.php:148
+    144▕                 'phone' => '0123456789',
+    145▕                 'birth_date' => now()->addDay(), // Date future invalide
+    146▕             ]);
+    147▕ 
+  ➜ 148▕         $response->assertSessionHasErrors(['firstname', 'email', 'birth_date']);
+    149▕ 
+    150▕         $this->assertDatabaseMissing('registrations', [
+    151▕             'event_id' => $this->event->id,
+    152▕             'user_id' => $this->user->id,
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Events\EventRegistrationTest > `Event Registration Integration` → it enforces members-only restriction                                         
+  Failed asserting that two strings are equal.
+--- Expected
++++ Actual
+@@ @@
+-'http://localhost/membership'
++'http://localhost/events/1'
+
+  at tests\Feature\Events\EventRegistrationTest.php:76
+     72▕ 
+     73▕         $response = $this->actingAs($this->user)
+     74▕             ->get(route('events.registration', $this->event));
+     75▕ 
+  ➜  76▕         $response->assertRedirect(route('membership.create'));
+     77▕         $response->assertSessionHas('error');
+     78▕     });
+     79▕ 
+     80▕     it('allows members-only registration for valid members', function () {
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Feature\Events\EventRegistrationTest > `Event Registration Integration` → it allows valid user registration                                            
+  Failed asserting that two strings are equal.
+--- Expected
++++ Actual
+@@ @@
+-'http://localhost/events/1'
++'http://localhost'
+
+  at tests\Feature\Events\EventRegistrationTest.php:34
+     30▕                 'phone' => '0123456789',
+     31▕                 'birth_date' => '1990-01-01',
+     32▕             ]);
+     33▕ 
+  ➜  34▕         $response->assertRedirect(route('events.show', $this->event));
+     35▕         $response->assertSessionHas('success', 'Inscription réussie !');
+     36▕ 
+     37▕         $this->assertDatabaseHas('registrations', [
+     38▕             'event_id' => $this->event->id,
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\UserTest > `User Model` → it calculates membership status correctly for expired member                          InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\UserTest > `User Model` → it calculates membership time left correctly                                          InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\UserTest > `User Model` → it checks admin permissions correctly                                                 InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\UserTest > `User Model` → it calculates membership status correctly for former member                           InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\UserTest > `User Model` → it handles user without membership correctly                                          InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\UserTest > `User Model` → it calculates membership status correctly for active member                           InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\EventTest > `Event Model` → it checks if user can register when everything is valid                             InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\EventTest > `Event Model` → it prevents registration when event is full                                         InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\EventTest > `Event Model` → it validates max participants change restrictions                                   InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\EventTest > `Event Model` → it counts participants correctly                                                    InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\EventTest > `Event Model` → it calculates numeric price correctly                                               InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\EventTest > `Event Model` → it checks if event is paid correctly                                                InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\EventTest > `Event Model` → it verifies user registration status                                                InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\EventTest > `Event Model` → it prevents registration for non-members on members-only events                     InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+  ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────  
+   FAILED  Tests\Unit\Models\EventTest > `Event Model` → it prevents registration when registration is closed                                InvalidArgumentException   
+  Unknown format "randomElement"
+
+  at vendor\fakerphp\faker\src\Faker\Generator.php:743
+    739▕                 return $this->formatters[$format];
+    740▕             }
+    741▕         }
+    742▕ 
+  ➜ 743▕         throw new \InvalidArgumentException(sprintf('Unknown format "%s"', $format));
+    744▕     }
+    745▕ 
+    746▕     /**
+    747▕      * Replaces tokens ('{{ tokenName }}') with the result from the token method call
+
+  1   vendor\fakerphp\faker\src\Faker\Generator.php:743
+  2   vendor\fakerphp\faker\src\Faker\Generator.php:708
+
+
+  Tests:    28 failed, 37 passed (94 assertions)
+  Duration: 7.13s
+  Random Order Seed: 1750424328
+
+Time: 00:06.922, Memory: 66.00 MB
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\AdminDashboardTest.php
+ ✔ example
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\AdminUserManagementTest.php
+ ✔ example
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Articles\ArticleLifecycleTest.php
+ ✘ `Article Complete Lifecycle` → it completes full article creation workflow with image
+   │
+   │ BadMethodCallException: Call to undefined method App\Models\Role::factory()
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Articles\ArticleLifecycleTest.php:21
+   │
+ ✘ `Article Complete Lifecycle` → it handles article viewing and statistics
+   │
+   │ BadMethodCallException: Call to undefined method App\Models\Role::factory()
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Articles\ArticleLifecycleTest.php:21
+   │
+ ✘ `Article Complete Lifecycle` → it processes article interactions (likes and comments)
+   │
+   │ BadMethodCallException: Call to undefined method App\Models\Role::factory()
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Articles\ArticleLifecycleTest.php:21
+   │
+ ✘ `Article Complete Lifecycle` → it handles article moderation workflow
+   │
+   │ BadMethodCallException: Call to undefined method App\Models\Role::factory()
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Articles\ArticleLifecycleTest.php:21
+   │
+ ✘ `Article Complete Lifecycle` → it enforces permission restrictions correctly
+   │
+   │ BadMethodCallException: Call to undefined method App\Models\Role::factory()
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Articles\ArticleLifecycleTest.php:21
+   │
+ ✘ `Article Complete Lifecycle` → it handles article deletion with cleanup
+   │
+   │ BadMethodCallException: Call to undefined method App\Models\Role::factory()
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:67
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Support\Traits\ForwardsCalls.php:36
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2372
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Model.php:2384
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Articles\ArticleLifecycleTest.php:21
+   │
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Auth\AuthenticationTest.php
+ ✔ login screen can be rendered
+ ✔ users can authenticate using the login screen
+ ✔ users can not authenticate with invalid password
+ ✔ users can logout
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Auth\EmailVerificationTest.php
+ ✔ email verification screen can be rendered
+ ✔ email can be verified
+ ✔ email is not verified with invalid hash
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Auth\PasswordConfirmationTest.php
+ ✔ confirm password screen can be rendered
+ ✔ password can be confirmed
+ ✔ password is not confirmed with invalid password
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Auth\PasswordResetTest.php
+ ✔ reset password link screen can be rendered
+ ✔ reset password link can be requested
+ ✔ reset password screen can be rendered
+ ✔ password can be reset with valid token
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Auth\PasswordUpdateTest.php
+ ✔ password can be updated
+ ✔ correct password must be provided to update password
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Auth\RegistrationTest.php
+ ✔ registration screen can be rendered
+ ✔ new users can register
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\CertificateLinkTest.php
+ ✔ example
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\CertificateUploadTest.php
+ ✔ example
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\EventManagementTest.php
+ ✔ example
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Events\EventRegistrationTest.php
+ ✘ `Event Registration Integration` → it allows valid user registration
+   │
+   │ Failed asserting that two strings are equal.
+   │ --- Expected
+   │ +++ Actual
+   │ @@ @@
+   │ -'http://localhost/events/1'
+   │ +'http://localhost'
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponseAssert.php:45
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:325
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:191
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Events\EventRegistrationTest.php:34
+   │
+ ✔ `Event Registration Integration` → it prevents double registration
+ ✘ `Event Registration Integration` → it enforces members-only restriction
+   │
+   │ Failed asserting that two strings are equal.
+   │ --- Expected
+   │ +++ Actual
+   │ @@ @@
+   │ -'http://localhost/membership'
+   │ +'http://localhost/events/1'
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponseAssert.php:45
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:325
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:191
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Events\EventRegistrationTest.php:76
+   │
+ ✔ `Event Registration Integration` → it allows members-only registration for valid members
+ ✔ `Event Registration Integration` → it prevents registration when event is full
+ ✔ `Event Registration Integration` → it handles event unregistration correctly
+ ✘ `Event Registration Integration` → it validates registration data correctly
+   │
+   │ Session is missing expected key [errors].
+   │ Failed asserting that false is true.
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponseAssert.php:45
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:1426
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:1503
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\Events\EventRegistrationTest.php:148
+   │
+ ✔ `Event Registration Integration` → it requires authentication for registration
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\ExampleTest.php
+ ✔ it returns a successful response
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\PhotoUploadTest.php
+ ✔ it stores valid profile picture
+ ✔ it rejects invalid profile picture (exe file)
+ ✔ it rejects a second upload of the same profile picture
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\ProfileDeleteTest.php
+ ✔ example
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\ProfileTest.php
+ ✔ profile page is displayed
+ ✘ profile information can be updated
+   │
+   │ Expected response status code [201, 301, 302, 303, 307, 308] but received 405.
+   │ Failed asserting that false is true.
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponseAssert.php:45
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:185
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\ProfileTest.php:28
+   │
+ ✘ email verification status is unchanged when the email address is unchanged
+   │
+   │ Expected response status code [201, 301, 302, 303, 307, 308] but received 405.
+   │ Failed asserting that false is true.
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponseAssert.php:45
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:185
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\ProfileTest.php:51
+   │
+ ✘ user can delete their account
+   │
+   │ Expected response status code [201, 301, 302, 303, 307, 308] but received 405.
+   │ Failed asserting that false is true.
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponseAssert.php:45
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:185
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\ProfileTest.php:67
+   │
+ ✘ correct password must be provided to delete account
+   │
+   │ Session is missing expected key [errors].
+   │ Failed asserting that false is true.
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponseAssert.php:45
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:1426
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Testing\TestResponse.php:1503
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\ProfileTest.php:84
+   │
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\ProfileUpdateTest.php
+ ✔ example
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Feature\UserDashboardTest.php
+ ✔ example
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\ExampleTest.php
+ ✔ that true is true
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\EventTest.php
+ ✘ `Event Model` → it checks if user can register when everything is valid
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\EventFactory.php:43
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:297
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\EventTest.php:12
+   │
+ ✘ `Event Model` → it prevents registration when event is full
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\EventFactory.php:43
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:297
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\EventTest.php:30
+   │
+ ✘ `Event Model` → it prevents registration when registration is closed
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\EventFactory.php:43
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:297
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\EventTest.php:52
+   │
+ ✘ `Event Model` → it prevents registration for non-members on members-only events
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\EventFactory.php:43
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:297
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\EventTest.php:64
+   │
+ ✘ `Event Model` → it calculates numeric price correctly
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\EventFactory.php:43
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:297
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\EventTest.php:76
+   │
+ ✘ `Event Model` → it checks if event is paid correctly
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\EventFactory.php:43
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:297
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\EventTest.php:86
+   │
+ ✘ `Event Model` → it verifies user registration status
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\EventFactory.php:43
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\EventTest.php:95
+   │
+ ✘ `Event Model` → it counts participants correctly
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\EventFactory.php:43
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\EventTest.php:110
+   │
+ ✘ `Event Model` → it validates max participants change restrictions
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\EventFactory.php:43
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:297
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\EventTest.php:126
+   │
+
+C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\UserTest.php
+ ✘ `User Model` → it calculates membership status correctly for active member
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\UserFactory.php:74
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\UserTest.php:12
+   │
+ ✘ `User Model` → it calculates membership status correctly for expired member
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\UserFactory.php:74
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\UserTest.php:26
+   │
+ ✘ `User Model` → it calculates membership status correctly for former member
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\UserFactory.php:74
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\UserTest.php:40
+   │
+ ✘ `User Model` → it checks admin permissions correctly
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\UserFactory.php:74
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\UserTest.php:53
+   │
+ ✘ `User Model` → it calculates membership time left correctly
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\UserFactory.php:74
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\UserTest.php:71
+   │
+ ✘ `User Model` → it handles user without membership correctly
+   │
+   │ InvalidArgumentException: Unknown format "randomElement"
+   │
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:743
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:708
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\fakerphp\faker\src\Faker\Generator.php:973
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\database\factories\UserFactory.php:74
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:468
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:447
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:431
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Concerns\GuardsAttributes.php:155
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:430
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:404
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\vendor\laravel\framework\src\Illuminate\Database\Eloquent\Factories\Factory.php:300
+   │ C:\Users\alexi\Documents\Casden\ascbp-app\tests\Unit\Models\UserTest.php:88
+   │
+
+There were 2 PHPUnit test runner warnings:
+
+1) Test results may not be as expected because the XML configuration file did not pass validation:
+
+  Line 70:
+  - Element 'coverage', attribute 'processUncoveredFiles': The attribute 'processUncoveredFiles' is not allowed.
+
+  Line 71:
+  - Element 'include': This element is not expected.
+
+
+2) No code coverage driver available
+
+ERRORS!
+Tests: 65, Assertions: 94, Errors: 21, Failures: 7, Warnings: 2.

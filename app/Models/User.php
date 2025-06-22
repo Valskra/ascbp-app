@@ -32,6 +32,8 @@ class User extends Authenticatable
         'email_pro',
         'iban',
         'password',
+        'account_status',
+        'metadata',
     ];
 
     /**
@@ -74,7 +76,6 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'birth_date' => 'date:Y-m-d',
-            'password' => 'hashed',
             'phone' => PhoneCast::class,
             'phone_secondary' => PhoneCast::class,
             'metadata' => 'array',

@@ -1,3 +1,49 @@
+tests/
+├── Database/
+│   └── Seeders/
+│       └──TestDatabaseSeeder.php*
+├── E2E/
+│   └──EventRegistrationFlow.spec.js*
+├── Feature/
+│   ├──AdminDashboardTest.php*
+│   ├──AdminUserManagementTest.php*
+│   ├── Articles/
+│   │   └──ArticleLifecycleTest.php*
+│   ├── Auth/
+│   │   ├──AuthenticationTest.php*
+│   │   ├──EmailVerificationTest.php*
+│   │   ├──PasswordConfirmationTest.php*
+│   │   ├──PasswordResetTest.php*
+│   │   ├──PasswordUpdateTest.php*
+│   │   └──RegistrationTest.php*
+│   ├──CertificateLinkTest.php*
+│   ├──CertificateUploadTest.php*
+│   ├──EventManagementTest.php*
+│   ├── Events/
+│   ├──ExampleTest.php*
+│   ├──PhotoUploadTest.php*
+│   ├──ProfileDeleteTest.php*
+│   ├──ProfileTest.php*
+│   ├──ProfileUpdateTest.php*
+│   └──UserDashboardTest.php*
+├── Frontend/
+│   ├── Components/
+│   │   └──EventCardTest.js*
+│   ├── Pages/
+│   └──setup.js*
+├── Mocks/
+│   └──ServiceMock.php*
+├──Pest.php*
+├──TestCase.php*
+└── Unit/
+    ├──ExampleTest.php*
+    ├── Models/
+    │   ├──ArticleTest.php*
+    │   ├──EventTest.php*
+    │   ├──FileTest.php*
+    │   ├──UserTest.php*
+    │   └──UserTestSimple.php*
+    ├── Services/
+    └──SimpleUserTest.php*
 
-   ERROR  Code coverage driver not available. Did you install Xdebug or PCOV?
-
+14 directories, 32 files

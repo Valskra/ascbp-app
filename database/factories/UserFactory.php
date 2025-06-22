@@ -1,97 +1,63 @@
 <?php
 
+// database/factories/UserFactory.php - Fix définitif du problème de hash
+
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
- */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
     protected static ?string $password;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
-        $frenchFirstNames = [
-            'male' => ['Alexandre', 'Antoine', 'Arthur', 'Aurélien', 'Baptiste', 'Benjamin', 'Clément', 'Damien', 'David', 'Emmanuel', 'Fabien', 'Florian', 'Guillaume', 'Hugo', 'Jérémy', 'Julien', 'Kevin', 'Louis', 'Lucas', 'Mathieu', 'Maxime', 'Nicolas', 'Olivier', 'Pierre', 'Quentin', 'Raphaël', 'Romain', 'Sébastien', 'Thomas', 'Vincent'],
-            'female' => ['Amélie', 'Anne', 'Aurélie', 'Camille', 'Caroline', 'Catherine', 'Céline', 'Charlotte', 'Chloé', 'Claire', 'Émilie', 'Emma', 'Estelle', 'Éva', 'Fanny', 'Florence', 'Isabelle', 'Julie', 'Laura', 'Léa', 'Lucie', 'Manon', 'Marie', 'Marine', 'Mélanie', 'Nathalie', 'Pauline', 'Sarah', 'Sophie', 'Virginie']
-        ];
-
-        $frenchLastNames = [
-            'Bernard',
-            'Dubois',
-            'Durand',
-            'Moreau',
-            'Petit',
-            'Robert',
-            'Richard',
-            'Michel',
-            'Martin',
-            'Roux',
-            'David',
-            'Bertrand',
-            'Leroy',
-            'Garnier',
-            'Chevalier',
-            'François',
-            'Legrand',
-            'Mercier',
-            'Boyer',
-            'Blanc',
-            'Barbier',
-            'Arnaud',
-            'Martinez',
-            'Girard',
-            'Pierre',
-            'Schmitt',
-            'Perrin',
-            'Morel',
-            'Mathieu',
-            'Clement',
-            'Gauthier',
-            'Dupont',
-            'Lopez',
-            'Fontaine',
-            'Rousseau',
-            'Dufour',
-            'Morvan',
-            'Guillot',
-            'Caron',
-            'Brunet'
-        ];
-
-        $gender = $this->faker->randomElement(['male', 'female']);
-        $firstname = $this->faker->randomElement($frenchFirstNames[$gender]);
-        $lastname = $this->faker->randomElement($frenchLastNames);
-
         return [
-            'firstname' => $firstname,
-            'lastname' => $lastname,
-            'birth_date' => $this->faker->dateTimeBetween('-70 years', '-16 years')->format('Y-m-d'),
-            'phone' => $this->faker->optional(0.8)->phoneNumber(),
-            'phone_secondary' => $this->faker->optional(0.3)->phoneNumber(),
-            'email' => strtolower($firstname . '.' . $lastname . $this->faker->numberBetween(1, 999) . '@example.com'),
-            'email_pro' => $this->faker->optional(0.4)->safeEmail(),
+            'firstname' => fake()->firstName(),
+            'lastname' => fake()->lastName(),
+            'birth_date' => fake()->dateTimeBetween('-65 years', '-18 years')->format('Y-m-d'),
+            'phone' => fake()->phoneNumber(),
+            'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'iban' => $this->faker->optional(0.6)->iban('FR'),
-            'password' => static::$password ??= Hash::make('password'),
+            'account_status' => 'active',
+            // ✅ Solution: Utiliser bcrypt directement qui est compatible avec Laravel 11
+            'password' => bcrypt('password'),
             'remember_token' => Str::random(10),
         ];
     }
 
+    public function admin(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'firstname' => 'Admin',
+            'lastname' => 'ASCBP',
+            'email' => 'admin@gmail.com',
+        ]);
+    }
+
+    public function animator(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'firstname' => 'Animateur',
+            'lastname' => 'ASCBP',
+        ]);
+    }
+
     /**
-     * Indicate that the model's email address should be unverified.
+     * Indicate that the user's password should be the given value.
+     */
+    public function withPassword(string $password): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'password' => bcrypt($password),
+        ]);
+    }
+
+    /**
+     * Indicate that the user should have an unverified email.
      */
     public function unverified(): static
     {

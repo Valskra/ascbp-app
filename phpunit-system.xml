@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- phpunit-system.xml - Configuration phpunit dédiée aux tests système -->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         executionOrder="random"
+         failOnWarning="true"
+         failOnRisky="true"
+         failOnEmptyTestSuite="true"
+         beStrictAboutOutputDuringTests="true"
+         verbose="true"
+         timeoutForSmallTests="30"
+         timeoutForMediumTests="60"
+         timeoutForLargeTests="120"
+         cacheDirectory=".phpunit.cache">
+    
+    <testsuites>
+        <!-- Tests Système uniquement -->
+        <testsuite name="System">
+            <directory>tests/Feature/System</directory>
+        </testsuite>
+        <!-- Si vous voulez inclure les autres tests -->
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+            <exclude>tests/Feature/System</exclude>
+        </testsuite>
+    </testsuites>
+    
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+        <exclude>
+            <directory>app/Console/Kernel.php</directory>
+            <directory>app/Exceptions/Handler.php</directory>
+            <directory>app/Http/Middleware</directory>
+        </exclude>
+    </source>
+    
+    <php>
+        <!-- Variables d'environnement de base (compatibles avec votre config) -->
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:2fl+Ktvkph+Fk4Qbj7OmBXCtJ9oH2FH7qLdMGhC5oKo="/>
+        <env name="APP_DEBUG" value="true"/>
+        <env name="APP_URL" value="http://localhost"/>
+        <env name="HASH_DRIVER" value="bcrypt"/>
+        
+        <!-- Database (garde votre config) -->
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        
+        <!-- Cache (garde votre config) -->
+        <env name="CACHE_STORE" value="array"/>
+        <env name="CACHE_PREFIX" value="test_"/>
+        
+        <!-- Session (garde votre config) -->
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="SESSION_LIFETIME" value="120"/>
+        
+        <!-- Queue (garde votre config) -->
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        
+        <!-- Mail (garde votre config) -->
+        <env name="MAIL_MAILER" value="array"/>
+        
+        <!-- Variables supplémentaires pour tests système -->
+        <env name="MOCK_EXTERNAL_SERVICES" value="true"/>
+        
+        <!-- Filesystem Configuration pour Tests Système -->
+        <env name="FILESYSTEM_DISK" value="testing"/>
+        
+        <!-- S3 Testing Configuration -->
+        <env name="AWS_ACCESS_KEY_ID" value="test_access_key"/>
+        <env name="AWS_SECRET_ACCESS_KEY" value="test_secret_key"/>
+        <env name="AWS_DEFAULT_REGION" value="test_region"/>
+        <env name="AWS_BUCKET" value="test_bucket"/>
+        <env name="AWS_ENDPOINT" value="http://localhost:9000"/>
+        <env name="AWS_USE_PATH_STYLE_ENDPOINT" value="true"/>
+        <env name="AWS_URL" value="http://localhost:9000/test_bucket"/>
+        
+        <!-- Stripe Testing Configuration -->
+        <env name="STRIPE_KEY" value="pk_test_fake_key_for_testing"/>
+        <env name="STRIPE_SECRET" value="sk_test_fake_secret_for_testing"/>
+        <env name="STRIPE_WEBHOOK_SECRET" value="whsec_fake_webhook_secret_for_testing"/>
+        <env name="STRIPE_WEBHOOK_TOLERANCE" value="300"/>
+        
+        <!-- External API Configuration -->
+        <env name="OPENAI_API_KEY" value="fake_openai_key_for_testing"/>
+        <env name="ANTHROPIC_API_KEY" value="fake_anthropic_key_for_testing"/>
+        
+        <!-- Performance Testing -->
+        <env name="MAX_EXECUTION_TIME" value="30"/>
+        <env name="MEMORY_LIMIT" value="512M"/>
+        
+        <!-- Security Testing -->
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        
+        <!-- Feature Flags for Testing -->
+        <env name="ENABLE_SYSTEM_MONITORING" value="true"/>
+        <env name="ENABLE_PERFORMANCE_TRACKING" value="true"/>
+        <env name="ENABLE_ERROR_REPORTING" value="true"/>
+        
+        <!-- Rate Limiting for Tests -->
+        <env name="RATE_LIMIT_ENABLED" value="false"/>
+        <env name="API_RATE_LIMIT" value="1000"/>
+        
+        <!-- File Upload Limits -->
+        <env name="MAX_FILE_SIZE" value="10240"/> <!-- 10MB in KB -->
+        <env name="MAX_FILES_PER_UPLOAD" value="5"/>
+        
+        <!-- Timezone -->
+        <env name="APP_TIMEZONE" value="UTC"/>
+        
+        <!-- Locale -->
+        <env name="APP_LOCALE" value="fr"/>
+        <env name="APP_FALLBACK_LOCALE" value="en"/>
+    </php>
+    
+    <groups>
+        <group>
+            <n>system</n>
+            <description>Tests d'intégration système complets</description>
+        </group>
+        <group>
+            <n>stripe</n>
+            <description>Tests d'intégration Stripe</description>
+        </group>
+        <group>
+            <n>storage</n>
+            <description>Tests de stockage de fichiers S3</description>
+        </group>
+        <group>
+            <n>email</n>
+            <description>Tests du système d'email</description>
+        </group>
+        <group>
+            <n>database</n>
+            <description>Tests de performance et intégrité base de données</description>
+        </group>
+        <group>
+            <n>performance</n>
+            <description>Tests de performance et charge</description>
+        </group>
+        <group>
+            <n>security</n>
+            <description>Tests de sécurité</description>
+        </group>
+        <group>
+            <n>slow</n>
+            <description>Tests lents nécessitant plus de temps</description>
+        </group>
+    </groups>
+    
+    <logging>
+        <junit outputFile="storage/logs/junit-system.xml"/>
+        <teamcity outputFile="storage/logs/teamcity-system.txt"/>
+        <testdoxHtml outputFile="storage/logs/testdox-system.html"/>
+        <testdoxText outputFile="storage/logs/testdox-system.txt"/>
+    </logging>
+    
+    <coverage includeUncoveredFiles="true"
+              processUncoveredFiles="true"
+              pathCoverage="false"
+              ignoreDeprecatedCodeUnits="true"
+              disableCodeCoverageIgnore="false">
+        <report>
+            <clover outputFile="storage/logs/clover-system.xml"/>
+            <cobertura outputFile="storage/logs/cobertura-system.xml"/>
+            <crap4j outputFile="storage/logs/crap4j-system.xml" threshold="50"/>
+            <html outputDirectory="storage/logs/coverage-system-html" lowUpperBound="50" highLowerBound="90"/>
+            <php outputFile="storage/logs/coverage-system.php"/>
+            <text outputFile="storage/logs/coverage-system.txt" showUncoveredFiles="false" showOnlySummary="true"/>
+            <xml outputDirectory="storage/logs/coverage-system-xml"/>
+        </report>
+    </coverage>
+</phpunit>="1.0" encoding="UTF-8"?>
+<!-- phpunit.xml - Configuration phpunit pour les tests système -->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         executionOrder="random"
+         failOnWarning="true"
+         failOnRisky="true"
+         failOnEmptyTestSuite="true"
+         beStrictAboutOutputDuringTests="true"
+         verbose="true"
+         timeoutForSmallTests="30"
+         timeoutForMediumTests="60"
+         timeoutForLargeTests="120">
+    
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+        <testsuite name="System">
+            <directory>tests/Feature/System</directory>
+        </testsuite>
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+    </testsuites>
+    
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+        <exclude>
+            <directory>app/Console/Kernel.php</directory>
+            <directory>app/Exceptions/Handler.php</directory>
+            <directory>app/Http/Middleware</directory>
+        </exclude>
+    </source>
+    
+    <php>
+        <!-- Environment Variables for System Tests -->
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:2fl+Ktvkdg+ZIjfZ4t9s6ia9Q8T+5h4YfYHY6d6p8o="/>
+        <env name="APP_DEBUG" value="true"/>
+        <env name="APP_URL" value="http://localhost"/>
+        
+        <!-- Database Configuration -->
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        
+        <!-- Cache Configuration -->
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="CACHE_PREFIX" value="test_"/>
+        
+        <!-- Session Configuration -->
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="SESSION_LIFETIME" value="120"/>
+        
+        <!-- Queue Configuration -->
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        
+        <!-- Mail Configuration for System Tests -->
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="MAIL_HOST" value="localhost"/>
+        <env name="MAIL_PORT" value="2525"/>
+        <env name="MAIL_USERNAME" value="test@example.com"/>
+        <env name="MAIL_PASSWORD" value="password"/>
+        <env name="MAIL_ENCRYPTION" value="null"/>
+        <env name="MAIL_FROM_ADDRESS" value="test@ascbp.test"/>
+        <env name="MAIL_FROM_NAME" value="ASCBP Test"/>
+        
+        <!-- Filesystem Configuration for System Tests -->
+        <env name="FILESYSTEM_DISK" value="testing"/>
+        
+        <!-- S3 Testing Configuration -->
+        <env name="AWS_ACCESS_KEY_ID" value="test_access_key"/>
+        <env name="AWS_SECRET_ACCESS_KEY" value="test_secret_key"/>
+        <env name="AWS_DEFAULT_REGION" value="test_region"/>
+        <env name="AWS_BUCKET" value="test_bucket"/>
+        <env name="AWS_ENDPOINT" value="http://localhost:9000"/>
+        <env name="AWS_USE_PATH_STYLE_ENDPOINT" value="true"/>
+        <env name="AWS_URL" value="http://localhost:9000/test_bucket"/>
+        
+        <!-- Stripe Testing Configuration -->
+        <env name="STRIPE_KEY" value="pk_test_fake_key_for_testing"/>
+        <env name="STRIPE_SECRET" value="sk_test_fake_secret_for_testing"/>
+        <env name="STRIPE_WEBHOOK_SECRET" value="whsec_fake_webhook_secret_for_testing"/>
+        <env name="STRIPE_WEBHOOK_TOLERANCE" value="300"/>
+        
+        <!-- External API Configuration -->
+        <env name="OPENAI_API_KEY" value="fake_openai_key_for_testing"/>
+        <env name="ANTHROPIC_API_KEY" value="fake_anthropic_key_for_testing"/>
+        
+        <!-- Logging Configuration -->
+        <env name="LOG_CHANNEL" value="single"/>
+        <env name="LOG_LEVEL" value="debug"/>
+        
+        <!-- Performance Testing -->
+        <env name="MAX_EXECUTION_TIME" value="30"/>
+        <env name="MEMORY_LIMIT" value="512M"/>
+        
+        <!-- Security Testing -->
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="HASH_DRIVER" value="bcrypt"/>
+        
+        <!-- Feature Flags for Testing -->
+        <env name="ENABLE_SYSTEM_MONITORING" value="true"/>
+        <env name="ENABLE_PERFORMANCE_TRACKING" value="true"/>
+        <env name="ENABLE_ERROR_REPORTING" value="true"/>
+        
+        <!-- Rate Limiting for Tests -->
+        <env name="RATE_LIMIT_ENABLED" value="false"/>
+        <env name="API_RATE_LIMIT" value="1000"/>
+        
+        <!-- File Upload Limits -->
+        <env name="MAX_FILE_SIZE" value="10240"/> <!-- 10MB in KB -->
+        <env name="MAX_FILES_PER_UPLOAD" value="5"/>
+        
+        <!-- Timezone -->
+        <env name="APP_TIMEZONE" value="UTC"/>
+        
+        <!-- Locale -->
+        <env name="APP_LOCALE" value="fr"/>
+        <env name="APP_FALLBACK_LOCALE" value="en"/>
+    </php>
+    
+    <groups>
+        <group>
+            <name>system</name>
+            <description>Tests d'intégration système complets</description>
+        </group>
+        <group>
+            <name>stripe</name>
+            <description>Tests d'intégration Stripe</description>
+        </group>
+        <group>
+            <name>storage</name>
+            <description>Tests de stockage de fichiers S3</description>
+        </group>
+        <group>
+            <name>email</name>
+            <description>Tests du système d'email</description>
+        </group>
+        <group>
+            <name>database</name>
+            <description>Tests de performance et intégrité base de données</description>
+        </group>
+        <group>
+            <name>performance</name>
+            <description>Tests de performance et charge</description>
+        </group>
+        <group>
+            <name>security</name>
+            <description>Tests de sécurité</description>
+        </group>
+        <group>
+            <name>slow</name>
+            <description>Tests lents nécessitant plus de temps</description>
+        </group>
+    </groups>
+    
+    <logging>
+        <junit outputFile="storage/logs/junit.xml"/>
+        <teamcity outputFile="storage/logs/teamcity.txt"/>
+        <testdoxHtml outputFile="storage/logs/testdox.html"/>
+        <testdoxText outputFile="storage/logs/testdox.txt"/>
+    </logging>
+    
+    <coverage includeUncoveredFiles="true"
+              processUncoveredFiles="true"
+              pathCoverage="false"
+              ignoreDeprecatedCodeUnits="true"
+              disableCodeCoverageIgnore="false">
+        <report>
+            <clover outputFile="storage/logs/clover.xml"/>
+            <cobertura outputFile="storage/logs/cobertura.xml"/>
+            <crap4j outputFile="storage/logs/crap4j.xml" threshold="50"/>
+            <html outputDirectory="storage/logs/coverage-html" lowUpperBound="50" highLowerBound="90"/>
+            <php outputFile="storage/logs/coverage.php"/>
+            <text outputFile="storage/logs/coverage.txt" showUncoveredFiles="false" showOnlySummary="true"/>
+            <xml outputDirectory="storage/logs/coverage-xml"/>
+        </report>
+    </coverage>
+</phpunit>

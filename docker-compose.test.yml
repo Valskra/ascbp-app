@@ -1,0 +1,108 @@
+# ==============================================================================
+# docker-compose.test.yml - Configuration Docker pour Tests
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  # Application Laravel pour tests
+  laravel-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: laravel-test-app
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+      - ./storage/app:/var/www/storage/app
+      - ./storage/logs:/var/www/storage/logs
+    environment:
+      - APP_ENV=testing
+      - DB_CONNECTION=sqlite
+      - DB_DATABASE=':memory:'
+      - CACHE_DRIVER=array
+      - SESSION_DRIVER=array
+      - QUEUE_CONNECTION=sync
+    depends_on:
+      - postgres-test
+      - redis-test
+    networks:
+      - laravel-test-network
+    command: ['./scripts/run-all-tests.sh']
+
+  # PostgreSQL pour tests d'intégration
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: laravel-test-postgres
+    environment:
+      POSTGRES_DB: laravel_test
+      POSTGRES_USER: laravel_test
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    ports:
+      - '5433:5432'
+    networks:
+      - laravel-test-network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U laravel_test -d laravel_test']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis pour tests de cache/session
+  redis-test:
+    image: redis:7-alpine
+    container_name: laravel-test-redis
+    ports:
+      - '6380:6379'
+    networks:
+      - laravel-test-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Mailhog pour tests d'emails
+  mailhog-test:
+    image: mailhog/mailhog:latest
+    container_name: laravel-test-mailhog
+    ports:
+      - '1026:1025' # SMTP
+      - '8026:8025' # Interface web
+    networks:
+      - laravel-test-network
+
+  # MinIO pour tests de stockage S3
+  minio-test:
+    image: minio/minio:latest
+    container_name: laravel-test-minio
+    environment:
+      MINIO_ROOT_USER: testuser
+      MINIO_ROOT_PASSWORD: testpassword
+    ports:
+      - '9001:9000'
+      - '9002:9001'
+    volumes:
+      - minio_test_data:/data
+    networks:
+      - laravel-test-network
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+volumes:
+  postgres_test_data:
+    driver: local
+  minio_test_data:
+    driver: local
+
+networks:
+  laravel-test-network:
+    driver: bridge

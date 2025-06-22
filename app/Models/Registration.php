@@ -10,32 +10,26 @@ class Registration extends Model
     use HasFactory;
 
     protected $fillable = [
-        'event_id',
         'user_id',
+        'event_id',
         'registration_date',
         'amount',
-        'metadata'
+        'status',
+        'payment_method',
     ];
 
     protected $casts = [
-        'registration_date' => 'date',
+        'registration_date' => 'datetime',
         'amount' => 'decimal:2',
-        'metadata' => 'array'
     ];
 
-    /**
-     * Relation avec l'événement
-     */
-    public function event()
-    {
-        return $this->belongsTo(Event::class);
-    }
-
-    /**
-     * Relation avec l'utilisateur
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
     }
 }

@@ -1,5 +1,4 @@
 <?php
-// tests/TestCase.php - VERSION CORRIGÉE qui préserve votre code
 
 namespace Tests;
 
@@ -40,31 +39,10 @@ abstract class TestCase extends BaseTestCase
             });
         }
 
-        // Fix pour le service Hash - AMÉLIORÉ
+        // Fix pour le service Hash
         if (!app()->bound('hash')) {
             app()->singleton('hash', function ($app) {
                 return new \Illuminate\Hashing\HashManager($app);
-            });
-        }
-
-        // NOUVEAU: Fix pour le service Config
-        if (!app()->bound('config')) {
-            app()->singleton('config', function ($app) {
-                return new \Illuminate\Config\Repository();
-            });
-        }
-
-        // NOUVEAU: Définir storagePath comme méthode sur l'application
-        if (!method_exists(app(), 'storagePath')) {
-            app()->singleton('storagePath', function () {
-                return function ($path = '') {
-                    return storage_path($path);
-                };
-            });
-
-            // Ajouter la méthode à l'instance d'application
-            app()->macro('storagePath', function ($path = '') {
-                return storage_path($path);
             });
         }
     }

@@ -5,8 +5,8 @@
 
 [1m[46m RUN [49m[22m [36mv3.2.4 [39m[90mC:/Users/alexi/Documents/Casden/ascbp-app[39m
 
- [31m❯[39m tests/Frontend/Components/UserProfileFormTest.js [2m([22m[2m48 tests[22m[2m | [22m[31m40 failed[39m[2m)[22m[32m 202[2mms[22m[39m
-[31m   [31m×[31m UserProfileForm Component[2m > [22mloads user data correctly[39m[32m 20[2mms[22m[39m
+ [31m❯[39m tests/Frontend/Components/UserProfileFormTest.js [2m([22m[2m48 tests[22m[2m | [22m[31m40 failed[39m[2m)[22m[32m 183[2mms[22m[39m
+[31m   [31m×[31m UserProfileForm Component[2m > [22mloads user data correctly[39m[32m 19[2mms[22m[39m
 [31m     → [vitest] No "useForm" export is defined on the "@inertiajs/vue3" mock. Did you forget to return it from "vi.mock"?
 If you need to partially mock a module, you can use "importOriginal" helper inside:
 [39m
@@ -30,15 +30,15 @@ If you need to partially mock a module, you can use "importOriginal" helper insi
 [31m     → [vitest] No "useForm" export is defined on the "@inertiajs/vue3" mock. Did you forget to return it from "vi.mock"?
 If you need to partially mock a module, you can use "importOriginal" helper inside:
 [39m
-[31m   [31m×[31m UserProfileForm Component[2m > [22mshows email verification notice when needed[39m[32m 2[2mms[22m[39m
+[31m   [31m×[31m UserProfileForm Component[2m > [22mshows email verification notice when needed[39m[32m 1[2mms[22m[39m
 [31m     → [vitest] No "useForm" export is defined on the "@inertiajs/vue3" mock. Did you forget to return it from "vi.mock"?
 If you need to partially mock a module, you can use "importOriginal" helper inside:
 [39m
-[31m   [31m×[31m FileUploader Component[2m > [22mrenders upload form correctly[39m[32m 19[2mms[22m[39m
+[31m   [31m×[31m FileUploader Component[2m > [22mrenders upload form correctly[39m[32m 17[2mms[22m[39m
 [31m     → [vitest] No "useForm" export is defined on the "@inertiajs/vue3" mock. Did you forget to return it from "vi.mock"?
 If you need to partially mock a module, you can use "importOriginal" helper inside:
 [39m
-[31m   [31m×[31m FileUploader Component[2m > [22mvalidates file title input[39m[32m 5[2mms[22m[39m
+[31m   [31m×[31m FileUploader Component[2m > [22mvalidates file title input[39m[32m 6[2mms[22m[39m
 [31m     → [vitest] No "useForm" export is defined on the "@inertiajs/vue3" mock. Did you forget to return it from "vi.mock"?
 If you need to partially mock a module, you can use "importOriginal" helper inside:
 [39m
@@ -66,12 +66,12 @@ If you need to partially mock a module, you can use "importOriginal" helper insi
 [31m     → [vitest] No "useForm" export is defined on the "@inertiajs/vue3" mock. Did you forget to return it from "vi.mock"?
 If you need to partially mock a module, you can use "importOriginal" helper inside:
 [39m
-   [32m✓[39m PaymentForm Component[2m > [22mrenders payment form fields[32m 22[2mms[22m[39m
-   [32m✓[39m PaymentForm Component[2m > [22mhandles card number input[32m 6[2mms[22m[39m
+   [32m✓[39m PaymentForm Component[2m > [22mrenders payment form fields[32m 21[2mms[22m[39m
+   [32m✓[39m PaymentForm Component[2m > [22mhandles card number input[32m 5[2mms[22m[39m
    [32m✓[39m PaymentForm Component[2m > [22mhandles expiry date input[32m 3[2mms[22m[39m
-   [32m✓[39m PaymentForm Component[2m > [22mhandles CVV input[32m 3[2mms[22m[39m
-   [32m✓[39m PaymentForm Component[2m > [22mprocesses successful payment[32m 6[2mms[22m[39m
-   [32m✓[39m PaymentForm Component[2m > [22mhandles payment error[32m 5[2mms[22m[39m
+   [32m✓[39m PaymentForm Component[2m > [22mhandles CVV input[32m 2[2mms[22m[39m
+   [32m✓[39m PaymentForm Component[2m > [22mprocesses successful payment[32m 5[2mms[22m[39m
+   [32m✓[39m PaymentForm Component[2m > [22mhandles payment error[32m 3[2mms[22m[39m
    [32m✓[39m PaymentForm Component[2m > [22mdisables submit button during processing[32m 2[2mms[22m[39m
    [32m✓[39m PaymentForm Component[2m > [22mvalidates required fields[32m 2[2mms[22m[39m
 [31m   [31m×[31m Dashboard Page[2m > [22mdisplays user welcome message[39m[32m 8[2mms[22m[39m
@@ -92,15 +92,15 @@ If you need to partially mock a module, you can use "importOriginal" helper insi
 [31m     → _ctx.route is not a function[39m
 [31m   [31m×[31m Dashboard Page[2m > [22mshows notification count[39m[32m 2[2mms[22m[39m
 [31m     → _ctx.route is not a function[39m
-[31m   [31m×[31m Dashboard Page[2m > [22mhandles different membership statuses[39m[32m 3[2mms[22m[39m
+[31m   [31m×[31m Dashboard Page[2m > [22mhandles different membership statuses[39m[32m 2[2mms[22m[39m
 [31m     → _ctx.route is not a function[39m
 [31m   [31m×[31m Dashboard Page[2m > [22mcalculates membership time correctly[39m[32m 2[2mms[22m[39m
 [31m     → _ctx.route is not a function[39m
 [31m   [31m×[31m Dashboard Page[2m > [22mhandles notifications interaction[39m[32m 2[2mms[22m[39m
 [31m     → _ctx.route is not a function[39m
-[31m   [31m×[31m EventsList Page[2m > [22mdisplays all events initially[39m[32m 8[2mms[22m[39m
+[31m   [31m×[31m EventsList Page[2m > [22mdisplays all events initially[39m[32m 7[2mms[22m[39m
 [31m     → _ctx.route is not a function[39m
-[31m   [31m×[31m EventsList Page[2m > [22mfilters events by category[39m[32m 3[2mms[22m[39m
+[31m   [31m×[31m EventsList Page[2m > [22mfilters events by category[39m[32m 2[2mms[22m[39m
 [31m     → _ctx.route is not a function[39m
 [31m   [31m×[31m EventsList Page[2m > [22msorts events correctly[39m[32m 2[2mms[22m[39m
 [31m     → _ctx.route is not a function[39m
@@ -116,7 +116,7 @@ If you need to partially mock a module, you can use "importOriginal" helper insi
 [31m     → _ctx.route is not a function[39m
 [31m   [31m×[31m EventsList Page[2m > [22mshows create event button for animators[39m[32m 2[2mms[22m[39m
 [31m     → _ctx.route is not a function[39m
-[31m   [31m×[31m EventsList Page[2m > [22mdoes not show create event button for regular users[39m[32m 2[2mms[22m[39m
+[31m   [31m×[31m EventsList Page[2m > [22mdoes not show create event button for regular users[39m[32m 3[2mms[22m[39m
 [31m     → _ctx.route is not a function[39m
 [31m   [31m×[31m EventsList Page[2m > [22mhandles empty event list[39m[32m 2[2mms[22m[39m
 [31m     → _ctx.route is not a function[39m
@@ -127,6 +127,6 @@ If you need to partially mock a module, you can use "importOriginal" helper insi
 
 [2m Test Files [22m [1m[31m3 failed[39m[22m[90m (3)[39m
 [2m      Tests [22m [1m[31m40 failed[39m[22m[2m | [22m[1m[32m8 passed[39m[22m[90m (48)[39m
-[2m   Start at [22m 13:13:11
-[2m   Duration [22m 2.97s[2m (transform 933ms, setup 127ms, collect 1.17s, tests 202ms, environment 2.33s, prepare 1.46s)[22m
+[2m   Start at [22m 13:13:53
+[2m   Duration [22m 2.91s[2m (transform 822ms, setup 87ms, collect 1.12s, tests 183ms, environment 2.21s, prepare 1.52s)[22m
 

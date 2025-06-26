@@ -1,7 +1,12 @@
 <?php
 
-it('returns a successful response', function () {
-    $response = $this->get('/');
+use Tests\TestCase;
 
-    $response->assertStatus(200);
-});
+class ExampleTest extends TestCase
+{
+    public function test_returns_successful_response()
+    {
+        $response = $this->get('/');
+        $response->assertStatus(200);
+    }
+}

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- phpunit.xml - VERSION CORRIGÉE avec tous les services -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
@@ -21,15 +22,43 @@
         </include>
     </source>
     <php>
+        <!-- Configuration de base (inchangée) -->
         <env name="APP_ENV" value="testing"/>
         <env name="APP_KEY" value="base64:2fl+Ktvkph+Fk4Qbj7OmBXCtJ9oH2FH7qLdMGhC5oKo="/>
+        <env name="APP_DEBUG" value="true"/>
+        <env name="APP_URL" value="http://localhost"/>
+        
+        <!-- Hash driver (corrigé) -->
         <env name="HASH_DRIVER" value="bcrypt"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        
+        <!-- Database -->
         <env name="DB_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
+        
+        <!-- Cache -->
         <env name="CACHE_STORE" value="array"/>
+        
+        <!-- Session -->
         <env name="SESSION_DRIVER" value="array"/>
+        
+        <!-- Mail -->
         <env name="MAIL_MAILER" value="array"/>
+        
+        <!-- Queue -->
         <env name="QUEUE_CONNECTION" value="sync"/>
+        
+        <!-- NOUVEAUX: Services externes pour éviter les erreurs -->
+        <env name="STRIPE_SECRET" value="sk_test_fake"/>
+        <env name="STRIPE_KEY" value="pk_test_fake"/>
+        
+        <!-- S3 Config -->
+        <env name="AWS_ACCESS_KEY_ID" value="test"/>
+        <env name="AWS_SECRET_ACCESS_KEY" value="test"/>
+        <env name="AWS_DEFAULT_REGION" value="us-east-1"/>
+        <env name="AWS_BUCKET" value="test"/>
+        
+        <!-- Désactiver services externes -->
         <env name="MOCK_EXTERNAL_SERVICES" value="true"/>
     </php>
 </phpunit>

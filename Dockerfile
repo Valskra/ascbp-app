@@ -1,26 +1,7 @@
-# Stage 1: Build dependencies and assets
-FROM node:18-alpine AS node_builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install Node dependencies (including dev dependencies for build)
-RUN npm ci
-
-# Copy source files needed for build
-COPY resources/ resources/
-COPY public/ public/
-COPY vite.config.js tailwind.config.js postcss.config.js jsconfig.json ./
-
-# Build frontend assets
-RUN npm run build
-
-# Stage 2: PHP Build
+# Stage 1: PHP Build and Composer dependencies
 FROM php:8.2-fpm-alpine AS php_builder
 
-# Install system dependencies
+# Install system dependencies INCLUDING sqlite-dev and zlib-dev
 RUN apk add --no-cache \
     git \
     curl \
@@ -32,7 +13,9 @@ RUN apk add --no-cache \
     unzip \
     oniguruma-dev \
     icu-dev \
-    libxml2-dev
+    libxml2-dev \
+    zlib-dev \
+    sqlite-dev
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -54,17 +37,52 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Copy composer files
-COPY composer.json composer.lock ./
+# Copy composer files and artisan
+COPY composer.json composer.lock artisan ./
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+# Install PHP dependencies (skip scripts initially)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
+
+# Stage 2: Node.js build (after PHP dependencies are ready)
+FROM node:18-alpine AS node_builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install Node dependencies
+RUN npm ci
+
+# Copy vendor from php_builder (needed for Ziggy)
+COPY --from=php_builder /app/vendor ./vendor
+
+# Copy source files needed for build
+COPY resources/ resources/
+COPY public/ public/
+COPY vite.config.js tailwind.config.js postcss.config.js jsconfig.json ./
+
+# Build frontend assets
+RUN npm run build
 
 # Stage 3: Production
 FROM php:8.2-fpm-alpine
 
-# Install runtime dependencies only
+# Install runtime dependencies INCLUDING sqlite and zlib
 RUN apk add --no-cache \
+    git \
+    curl \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    oniguruma-dev \
+    icu-dev \
+    libxml2-dev \
+    zlib-dev \
+    sqlite-dev \
     libpng \
     libjpeg-turbo \
     freetype \
@@ -73,7 +91,9 @@ RUN apk add --no-cache \
     icu \
     libxml2 \
     nginx \
-    supervisor
+    supervisor \
+    zlib \
+    sqlite
 
 # Install PHP extensions (same as build stage)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \

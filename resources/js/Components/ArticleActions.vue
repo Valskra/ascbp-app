@@ -4,14 +4,14 @@
             <!-- Likes -->
             <button @click="toggleLike" class="flex items-center gap-1 hover:text-red-500 transition-colors"
                 :class="{ 'text-red-500': article.is_liked }" :disabled="!$page.props.auth.user">
-                <HeartIcon class="w-4 h-4" :class="{ 'fill-current': article.is_liked }" />
+                <!-- <HeartIcon class="w-4 h-4" :class="{ 'fill-current': article.is_liked }" /> -->
                 {{ article.likes_count }}
             </button>
 
             <!-- Commentaires -->
             <Link :href="route('articles.show', article.id) + '#comments'"
                 class="flex items-center gap-1 hover:text-blue-500 transition-colors">
-            <ChatBubbleLeftIcon class="w-4 h-4" />
+            <!-- <ChatBubbleLeftIcon class="w-4 h-4" /> -->
             {{ article.comments_count }}
             </Link>
         </div>
@@ -30,7 +30,6 @@
 
 <script setup>
 import { Link, router } from '@inertiajs/vue3';
-import { HeartIcon, ChatBubbleLeftIcon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
     article: {

@@ -248,7 +248,7 @@ function getCategoryIcon(category) {
                         <div class="ml-5">
                             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total participants</p>
                             <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ stats.total_participants
-                            }}</p>
+                                }}</p>
                         </div>
                     </div>
                 </div>
@@ -266,7 +266,7 @@ function getCategoryIcon(category) {
                         <div class="ml-5">
                             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Participants payants</p>
                             <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ stats.paid_participants
-                            }}</p>
+                                }}</p>
                         </div>
                     </div>
                 </div>
@@ -284,7 +284,7 @@ function getCategoryIcon(category) {
                         <div class="ml-5">
                             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Participants gratuits</p>
                             <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ stats.free_participants
-                            }}</p>
+                                }}</p>
                         </div>
                     </div>
                 </div>
@@ -496,9 +496,9 @@ function getCategoryIcon(category) {
                     </svg>
                     <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Aucun participant</h3>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {{ search ? 'Aucun participant ne correspond à votre recherche.' : 'Aucun participant inscrit à
-                        cet
-                        événement.' }}
+                        {{ search ?
+                            'Aucun participant ne correspond à votre recherche.' :
+                            'Aucun participant inscrit à cet événement.' }}
                     </p>
                 </div>
 

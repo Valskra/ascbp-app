@@ -19,4 +19,48 @@ class ArticleFactory extends Factory
             'is_post' => fake()->boolean(30),
         ];
     }
+
+    /**
+     * Créer un post court
+     */
+    public function post(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'is_post' => true,
+            'title' => fake()->sentence(3), // Titre plus court pour un post
+            'content' => fake()->paragraph(1), // Contenu plus court
+        ]);
+    }
+
+    /**
+     * Créer un article normal (pas un post)
+     */
+    public function article(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'is_post' => false,
+            'content' => fake()->paragraphs(5, true), // Contenu plus long
+        ]);
+    }
+
+    /**
+     * Créer un brouillon
+     */
+    public function draft(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'status' => 'draft',
+            'publish_date' => null,
+        ]);
+    }
+
+    /**
+     * Créer un article épinglé
+     */
+    public function pinned(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'is_pinned' => true, // Si vous avez cette colonne
+        ]);
+    }
 }

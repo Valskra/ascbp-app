@@ -152,7 +152,7 @@ class EventController extends Controller
                 foreach ($request->file('images') as $index => $image) {
                     if ($index >= 4) break; // Sécurité supplémentaire
 
-                    $path = $image->store('event-posts/images', 'public');
+                    $path = $image->store('event-posts/images', 's3');
                     $file = File::create([
                         'fileable_id' => null,
                         'fileable_type' => null,
@@ -161,7 +161,7 @@ class EventController extends Controller
                         'mimetype' => $image->getMimeType(),
                         'size' => $image->getSize(),
                         'path' => $path,
-                        'disk' => 'public',
+                        'disk' => 's3',
                         'hash' => hash_file('sha256', $image->getRealPath()),
                     ]);
                     $mediaFiles[] = ['type' => 'image', 'file_id' => $file->id];
@@ -171,7 +171,7 @@ class EventController extends Controller
             // Vidéo
             if ($request->hasFile('video')) {
                 $video = $request->file('video');
-                $path = $video->store('event-posts/videos', 'public');
+                $path = $video->store('event-posts/videos', 's3');  // au lieu de 'public'
                 $file = File::create([
                     'fileable_id' => null,
                     'fileable_type' => null,
@@ -180,7 +180,7 @@ class EventController extends Controller
                     'mimetype' => $video->getMimeType(),
                     'size' => $video->getSize(),
                     'path' => $path,
-                    'disk' => 'public',
+                    'disk' => 's3',
                     'hash' => hash_file('sha256', $video->getRealPath()),
                 ]);
                 $mediaFiles[] = ['type' => 'video', 'file_id' => $file->id];
@@ -697,7 +697,7 @@ class EventController extends Controller
         $fileId = null;
         if ($request->hasFile('image')) {
             $uploaded = $request->file('image');
-            $path = $uploaded->store('events', 'public');
+            $path = $uploaded->store('events', 's3');
 
             $file = File::create([
                 'fileable_id'   => null,
@@ -869,7 +869,7 @@ class EventController extends Controller
             }
 
             $uploaded = $request->file('image');
-            $path = $uploaded->store('events', 'public');
+            $path = $uploaded->store('events', 's3');
 
             $file = File::create([
                 'fileable_id' => null,
@@ -879,7 +879,7 @@ class EventController extends Controller
                 'mimetype' => $uploaded->getMimeType(),
                 'size' => $uploaded->getSize(),
                 'path' => $path,
-                'disk' => 'public',
+                'disk' => 's3',
                 'hash' => hash_file('sha256', $uploaded->getRealPath()),
             ]);
             $fileId = $file->id;

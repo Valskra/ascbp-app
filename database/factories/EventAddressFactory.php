@@ -14,12 +14,13 @@ class EventAddressFactory extends Factory
     {
         return [
             'event_id' => Event::factory(),
-            'street' => fake()->streetAddress(),
-            'city' => fake()->city(),
-            'postal_code' => fake()->postcode(),
+            'label' => $this->faker->optional()->randomElement(['Salle principale', 'Auditorium', 'Salle de conférence', 'Local associatif']),
+            'house_number' => $this->faker->buildingNumber(),
+            'street_name' => $this->faker->streetName(),
+            'postal_code' => $this->faker->postcode(),
+            'city' => $this->faker->city(),
             'country' => 'France',
-            'latitude' => fake()->latitude(),
-            'longitude' => fake()->longitude(),
+            'additional_info' => $this->faker->optional()->sentence(),
         ];
     }
 }

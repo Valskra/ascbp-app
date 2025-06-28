@@ -274,7 +274,7 @@ class ArticleController extends Controller
         $fileId = null;
         if ($request->hasFile('image')) {
             $uploaded = $request->file('image');
-            $path = $uploaded->store('articles', 'public');
+            $path = $uploaded->store('articles', 's3');
 
             $file = File::create([
                 'fileable_id' => null,
@@ -284,7 +284,7 @@ class ArticleController extends Controller
                 'mimetype' => $uploaded->getMimeType(),
                 'size' => $uploaded->getSize(),
                 'path' => $path,
-                'disk' => 'public',
+                'disk' => 's3',
                 'hash' => hash_file('sha256', $uploaded->getRealPath()),
             ]);
             $fileId = $file->id;
@@ -369,7 +369,7 @@ class ArticleController extends Controller
             }
 
             $uploaded = $request->file('image');
-            $path = $uploaded->store('articles', 'public');
+            $path = $uploaded->store('articles', 's3');
 
             $file = File::create([
                 'fileable_id' => null,
@@ -379,7 +379,7 @@ class ArticleController extends Controller
                 'mimetype' => $uploaded->getMimeType(),
                 'size' => $uploaded->getSize(),
                 'path' => $path,
-                'disk' => 'public',
+                'disk' => 's3',
                 'hash' => hash_file('sha256', $uploaded->getRealPath()),
             ]);
             $fileId = $file->id;

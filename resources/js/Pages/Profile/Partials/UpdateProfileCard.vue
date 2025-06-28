@@ -6,7 +6,7 @@ import { Cropper } from "vue-advanced-cropper"
 import "vue-advanced-cropper/dist/style.css"
 import UpdatePhoneForm from './UpdatePhoneForm.vue'
 import UpdateName from './UpdateName.vue'
-
+import Profile from '@/Components/svg/Profile.vue'
 const props = defineProps({
     user: {
         type: Object,
@@ -105,8 +105,7 @@ function submitForm() {
             <img v-if="user.profile_picture?.url" :src="user.profile_picture.url" alt="Photo de profil"
                 class="h-full w-full object-cover" />
 
-            <img v-else src="https://placehold.co/100" alt="Profil" class="h-full w-full object-cover" />
-
+            <Profile v-else :userId="user.id" size="150" class="h-full w-full object-cover" />
             <!-- Overlay apparaissant au hover -->
             <div
                 class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">

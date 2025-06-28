@@ -487,7 +487,7 @@ function dismissNotification(id) {
                                             <div
                                                 class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                                                 <span>{{ article.author.firstname }} {{ article.author.lastname
-                                                    }}</span>
+                                                }}</span>
                                                 <div class="flex items-center gap-2">
                                                     <span class="flex items-center gap-1">
                                                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

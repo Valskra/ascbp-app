@@ -50,6 +50,7 @@ class User extends Authenticatable
     protected $appends = [
         'is_admin',
         'is_animator',
+        'is_owner',
         'membership_status',
         'first_membership_date',
         'membership_time_left',
@@ -393,5 +394,42 @@ class User extends Authenticatable
             ->orderByDesc('publish_date')
             ->limit(3)
             ->get();
+    }
+
+    /**
+     * Détermine si l'utilisateur est Owner/Propriétaire.
+     * Condition : permission "manage_admin" ou rôle spécial "owner"
+     */
+    public function getIsOwnerAttribute(): bool
+    {
+        return $this->hasPermission('manage_admin') || $this->hasRole('owner');
+    }
+
+
+    /**
+     * Vérifie si l'utilisateur peut gérer les administrateurs
+     */
+    public function canManageAdmins(): bool
+    {
+        return $this->getIsOwnerAttribute();
+    }
+
+    /**
+     * Vérifie si l'utilisateur peut gérer les animateurs
+     */
+    public function canManageAnimators(): bool
+    {
+        return $this->is_admin || $this->getIsOwnerAttribute();
+    }
+
+    /**
+     * Obtient le niveau de permission le plus élevé de l'utilisateur
+     */
+    public function getHighestRoleAttribute(): string
+    {
+        if ($this->is_owner) return 'owner';
+        if ($this->is_admin) return 'admin';
+        if ($this->is_animator) return 'animator';
+        return 'member';
     }
 }

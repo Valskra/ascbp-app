@@ -56,10 +56,10 @@ function switchLayout() {
 
                             <!-- Managing Navigation Links -->
                             <div v-if="managingLayout" class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink v-if="user.is_admin" :href="route('admin.dashboard')"
+                                <!--NavLink v-if="user.is_admin" :href="route('admin.dashboard')"
                                     :active="route().current('admin.dashboard')">
                                     Admin
-                                </NavLink>
+                                </!--NavLink-->
                                 <NavLink v-if="user.is_admin" :href="route('admin.users')"
                                     :active="route().current('admin.users')">
                                     Utilisateurs

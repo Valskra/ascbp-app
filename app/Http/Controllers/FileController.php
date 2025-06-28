@@ -73,7 +73,7 @@ class FileController extends Controller
         $uploadedFile = $request->file('file');
 
         $path = $uploadedFile->store('user_profile_pictures', 's3');
-
+        $disk = 's3';
         $hash = hash_file('sha256', $uploadedFile->getRealPath());
 
         if (File::where('fileable_id', $request->user()->id)

@@ -13,15 +13,17 @@ class Role extends Model
         'name',
         'display_name',
         'description',
-        'permissions',
-    ];
+        'permissions_id',
 
-    protected $casts = [
-        'permissions' => 'object',
     ];
 
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_roles');
+    }
+
+    public function permissions()
+    {
+        return $this->belongsTo(Permission::class);
     }
 }

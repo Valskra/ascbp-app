@@ -2,7 +2,7 @@
 import ProfileInformationDisplay from "./ProfileInformationDisplay.vue";
 import { computed } from 'vue';
 import { useDateFormat } from '@vueuse/core';
-
+import Profile from '@/Components/svg/Profile.vue'
 const props = defineProps({
     user: {
         type: Object,
@@ -26,7 +26,7 @@ const birthDateFormatted = computed(() => {
         <img v-if="user.profile_picture?.url" :src="user.profile_picture.url" alt="Photo de profil"
             class="rounded-full border border-gray-300 dark:border-gray-600 mr-8 h-[220px] w-[220px]" />
 
-        <img v-else src="https://placehold.co/100" alt="Profil"
+        <Profile v-else :userId="user.id" size="150"
             class="rounded-full border border-gray-300 dark:border-gray-600 mr-8 h-[220px] w-[220px]" />
 
         <!-- Informations du profil -->

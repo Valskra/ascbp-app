@@ -81,17 +81,27 @@ Route::get('/certificate/{userId}/{token}', [CertificateController::class, 'show
     ->name('certificate.public');
 
 // Administration
+// Administration
 Route::middleware(['auth', IsAdmin::class])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard
+    Route::get('/', function () {
+        return Inertia::render('AdminDashboard');
+    })->name('dashboard');
+
+    // Gestion des utilisateurs
     Route::get('/users', [AdminUserController::class, 'index'])->name('users');
     Route::get('/users/export', [AdminUserController::class, 'export'])->name('export_users');
+    Route::post('/users/update-roles', [AdminUserController::class, 'updateRoles'])->name('users.update-roles');
+
+    // Gestion des rôles
+    Route::post('/roles/create', [AdminUserController::class, 'createRole'])->name('roles.create');
+
+    // Gestion des événements
     Route::get('/events', [AdminEventController::class, 'index'])->name('events');
     Route::get('/events/export', [AdminEventController::class, 'export'])->name('events.export');
     Route::get('/events/{event}/participants', [AdminEventController::class, 'participants'])->name('events.participants');
     Route::get('/events/{event}/participants/export', [AdminEventController::class, 'exportParticipants'])->name('events.participants.export');
     Route::delete('/events/{event}/participants/{registration}', [AdminEventController::class, 'unregisterUser'])->name('events.participants.unregister');
-    Route::get('/', function () {
-        return Inertia::render('AdminDashboard');
-    })->name('dashboard');
 });
 
 // Gestion des événements (animateurs)
